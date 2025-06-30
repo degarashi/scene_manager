@@ -1,11 +1,7 @@
-[gd_scene load_steps=7 format=3 uid="uid://8wqvcf8n7njw"]
+[gd_scene load_steps=6 format=3 uid="uid://8wqvcf8n7njw"]
 
 [ext_resource type="Script" uid="uid://c4qhx0sd62v0p" path="res://demo/button.gd" id="1"]
 [ext_resource type="Script" uid="uid://dkhiyifvpb81o" path="res://addons/scene_manager/scene_resource.gd" id="2_yvd4w"]
-
-[sub_resource type="Resource" id="Resource_wbct1"]
-script = ExtResource("2_yvd4w")
-string_value = "SCENE1"
 
 [sub_resource type="Resource" id="Resource_tef5p"]
 script = ExtResource("2_yvd4w")
@@ -19,7 +15,7 @@ string_value = "SCENE3"
 script = ExtResource("2_yvd4w")
 string_value = "SCENE3"
 
-[node name="Control" type="Control"]
+[node name="Scene2" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -46,19 +42,6 @@ grow_vertical = 2
 [node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
 layout_mode = 2
 theme_override_constants/separation = 15
-
-[node name="loading_scene_initialization" type="Button" parent="CenterContainer/VBoxContainer"]
-custom_minimum_size = Vector2(0, 150)
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 32
-text = "LOADING SCREEN
-WITH WAIT"
-script = ExtResource("1")
-scene = SubResource("Resource_wbct1")
-fade_out_speed = 0.2
-fade_in_speed = 0.0
-add_to_back = false
 
 [node name="loading_scene" type="Button" parent="CenterContainer/VBoxContainer"]
 custom_minimum_size = Vector2(200, 50)
@@ -131,7 +114,6 @@ text = "EXIT"
 script = ExtResource("1")
 fade_out_speed = 0.3
 
-[connection signal="button_up" from="CenterContainer/VBoxContainer/loading_scene_initialization" to="CenterContainer/VBoxContainer/loading_scene_initialization" method="_on_loading_scene_initialization_button_up"]
 [connection signal="button_up" from="CenterContainer/VBoxContainer/loading_scene" to="CenterContainer/VBoxContainer/loading_scene" method="_on_loading_scene_button_up"]
 [connection signal="button_up" from="CenterContainer/VBoxContainer/HBoxContainer/next_scene" to="CenterContainer/VBoxContainer/HBoxContainer/next_scene" method="_on_button_button_up"]
 [connection signal="button_up" from="CenterContainer/VBoxContainer/HBoxContainer/VBoxContainer/reset" to="CenterContainer/VBoxContainer/HBoxContainer/VBoxContainer/reset" method="_on_reset_button_up"]

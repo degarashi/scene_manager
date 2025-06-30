@@ -2,7 +2,8 @@ extends Node
 ## Main SceneManager that handles adding scenes and transitions.
 
 const FADE: String = "fade"
-const DEFAULT_TREE_NODE_NAME: String = "World" ## Default node name to be used for loading scenes
+const DEFAULT_TREE_NODE_NAME: String = "World" ## Default node name to be used for scenes
+const DEFAULT_LOADING_NODE_NAME: String = "===Transition===" ## Default node name for loading/transition scenes
 const _MAP_PARENT_INDEX: int = 0 # Index to the loaded scene map for the parent node
 const _MAP_SCENE_INDEX: int = 1 # Index to the loaded scene map for the scene node
 
@@ -44,6 +45,18 @@ class SceneLoadOptions:
 	var fade_in_time: float = ProjectSettings.get_setting(SceneManagerConstants.SETTINGS_FADE_IN_PROPERTY_NAME, SceneManagerConstants.DEFAULT_FADE_IN_TIME)
 	var clickable: bool = true ## Whether or not to block mouse input during the scene load. Defaults to true.
 	var add_to_back: bool = true ## Whether or not to add the scene onto the stack so the scene can go back to it.
+
+	
+	## Create a copy of the `SceneLoadOptions` class
+	func copy() -> SceneLoadOptions:
+		var options := SceneLoadOptions.new()
+		options.node_name = node_name
+		options.mode = mode
+		options.fade_out_time = fade_out_time
+		options.fade_in_time = fade_in_time
+		options.clickable = clickable
+		options.add_to_back = add_to_back
+		return options
 
 
 func _ready() -> void:
@@ -285,48 +298,8 @@ func load_scene(scene: Scenes.SceneName,
 		await _animation_player.animation_finished
 		fade_out_finished.emit()
 
-	var root := get_tree().get_root()
-
-	# If doing single scene loading, delete the specified node and load
-	# the scene into the default node.
-	var parent_node: Node = null
-	var new_scene_node: Node = null
-	if load_options.mode == SceneLoadingMode.SINGLE or load_options.mode == SceneLoadingMode.SINGLE_NODE:
-		# For the Single case, remove all nodes. For the Single Node case, only remove the specified
-		# node in the options.
-		if load_options.mode == SceneLoadingMode.SINGLE:
-			_unload_all_nodes()
-		else:
-			# If the node currently exists, completely remove it and recreate a blank node after
-			if root.has_node(load_options.node_name):
-				_unload_node(load_options.node_name)
-		
-		parent_node = Node.new()
-		parent_node.name = load_options.node_name
-		root.add_child(parent_node)
-
-		new_scene_node = _load_scene_node_from_path(_get_scene_value(scene))
-		parent_node.add_child(new_scene_node)
-
-		# Note we add the current scene to back buffer and not the new scene coming in
-		# as we want the old scene to revert to if needed.
-		if load_options.add_to_back:
-			_append_stack(_current_scene)
-	else:
-		# For additive, add the node if it doesn't exist then load the scene into that node.
-		if not root.has_node(load_options.node_name):
-			parent_node = Node.new()
-			parent_node.name = load_options.node_name
-			root.add_child(parent_node)
-		else:
-			parent_node = root.get_node(load_options.node_name)
-		
-		assert(parent_node, "ERROR: Could not get the node %s to use for the additive scene." % load_options.node_name)
-		
-		print("Loading scene from path")
-		new_scene_node = _load_scene_node_from_path(_get_scene_value(scene))
-		print("Adding child to scene")
-		parent_node.add_child(new_scene_node)
+	var new_scene_node: Node = _load_scene_node_from_path(_get_scene_value(scene))
+	var parent_node: Node = _add_scene_node(new_scene_node, load_options)
 
 	# Keep track of the loaded scene enum to the node it's a child of.
 	_loaded_scene_map[scene] = [parent_node, new_scene_node]
@@ -349,6 +322,50 @@ func unload_scene(scene: Scenes.SceneName) -> void:
 	
 	_loaded_scene_map[scene][_MAP_SCENE_INDEX].free()
 	_loaded_scene_map.erase(scene)
+
+
+## Adds the specified node to the scene based on the load_options.[br]
+## Returns the parent_node the node is under.
+func _add_scene_node(node: Node,
+		load_options: SceneLoadOptions = create_load_options()) -> Node:
+	var root := get_tree().get_root()
+
+	# If doing single scene loading, delete the specified node and load
+	# the scene into the default node.
+	var parent_node: Node = null
+	if load_options.mode == SceneLoadingMode.SINGLE or load_options.mode == SceneLoadingMode.SINGLE_NODE:
+		# For the Single case, remove all nodes. For the Single Node case, only remove the specified
+		# node in the options.
+		if load_options.mode == SceneLoadingMode.SINGLE:
+			_unload_all_nodes()
+		else:
+			# If the node currently exists, completely remove it and recreate a blank node after
+			if root.has_node(load_options.node_name):
+				_unload_node(load_options.node_name)
+		
+		parent_node = Node.new()
+		parent_node.name = load_options.node_name
+		root.add_child(parent_node)
+		parent_node.add_child(node)
+
+		# Note we add the current scene to back buffer and not the new scene coming in
+		# as we want the old scene to revert to if needed.
+		if load_options.add_to_back:
+			_append_stack(_current_scene)
+	else:
+		# For additive, add the node if it doesn't exist then load the scene into that node.
+		if not root.has_node(load_options.node_name):
+			parent_node = Node.new()
+			parent_node.name = load_options.node_name
+			root.add_child(parent_node)
+		else:
+			parent_node = root.get_node(load_options.node_name)
+		
+		assert(parent_node, "ERROR: Could not get the node %s to use for the additive scene." % load_options.node_name)
+		
+		parent_node.add_child(node)
+
+	return parent_node
 
 
 ## Frees the node and all children node underneath while removing the scenes in the map assocaited with them.[br]
@@ -416,52 +433,78 @@ func exit_game() -> void:
 ## so to use this, first has to call `load_scene_interactive` to load your scene
 ## and then have to listen on `load_finished` signal. After the signal emits,
 ## you call this function and this function adds the loaded scene to the scene
-## tree but exactly behind the current scene so that you still can not see the new scene.
+## tree but exactly behind the current scene so that you still can not see the new scene.[br]
+## This uses the recorded load options that was saved when loading the scene with
+## an transition/loading scene except it loads as a SINGLE_NODE if SINGLE is specified
+## in order not to conflict with unloading the transition scene.
 func add_loaded_scene_to_scene_tree() -> void:
 	if _load_scene != "":
 		var scene_resource = ResourceLoader.load_threaded_get(_load_scene) as PackedScene
 		if scene_resource:
-			var scene = scene_resource.instantiate()
-			scene.scene_file_path = _load_scene
-			var root = get_tree().get_root()
-			root.add_child(scene)
-			root.move_child(scene, root.get_child_count() - 2)
+			var scene_node := scene_resource.instantiate()
+			scene_node.scene_file_path = _load_scene
+
+			var temp_options := _recorded_load_options.copy()
+			if temp_options.mode == SceneLoadingMode.SINGLE:
+				temp_options.mode = SceneLoadingMode.SINGLE_NODE
+			var parent_node: Node = _add_scene_node(scene_node, temp_options)
+
+			# Make sure the parent_node is not the last node in order to make sure
+			# the transition scene is on top.
+			var root := get_tree().get_root()
+			root.move_child(parent_node, root.get_child_count() - 2)
+			
 			_load_scene = ""
 			_load_scene_enum = Scenes.SceneName.NONE
+
+			# Keep track of the loaded scene enum to the node it's a child of.
+			_loaded_scene_map[_recorded_scene] = [parent_node, scene_node]
 
 
 ## When you added the loaded scene to the scene tree by `add_loaded_scene_to_scene_tree`
 ## function, you call this function after you are sure that the added scene to scene tree
-## is completely ready and functional to change the active scene
-func change_scene_to_existing_scene_in_scene_tree(load_options: SceneLoadOptions = create_load_options()) -> void:
+## is completely ready and functional to change the active scene.[br]
+## This is used in the `load_scene_with_transition` flow and uses the recorded information for
+## switching scenes.
+func change_scene_to_loaded_scene() -> void:
 	_set_in_transition()
-	_set_clickable(load_options.clickable)
+	_set_clickable(_recorded_load_options.clickable)
 	
-	if _fade_out(load_options.fade_out_time):
+	if _fade_out(_recorded_load_options.fade_out_time):
 		await _animation_player.animation_finished
 		fade_out_finished.emit()
 
-	# actual change scene goes here
-	var root = get_tree().get_root()
-	# delete the loading screen scene
-	root.get_child(root.get_child_count() - 1).free()
-	# get the loaded, completely generated scene
-	var scene = root.get_child(root.get_child_count() - 1)
-	# inform godot which now this is the current scene
-	get_tree().set_current_scene(scene)
+	# Unload the transition/loading scene, which should be at the end
+	_unload_node(DEFAULT_LOADING_NODE_NAME)
 
-	# keeping the track of current scene and previous scenes
-	var path: String = scene.scene_file_path
-	var found_key: Scenes.SceneName = _get_scene_key_by_value(path)
-	if load_options.add_to_back && found_key != Scenes.SceneName.NONE:
-		_append_stack(found_key)
+	# If the original load options was SINGLE loading mode, then also remove any other
+	# node that isn't part of the load option node name.
+	if _recorded_load_options.mode == SceneLoadingMode.SINGLE:
+		var remove_nodes := {}
+		for key in _loaded_scene_map:
+			if _loaded_scene_map[key][_MAP_PARENT_INDEX].name != _recorded_load_options.node_name and \
+				not remove_nodes.has(_loaded_scene_map[key][_MAP_PARENT_INDEX]):
+				remove_nodes[_loaded_scene_map[key][_MAP_PARENT_INDEX]] = null
+
+		# Go through each parent node and unload them
+		for node in remove_nodes:
+			_unload_node(node.name)
 	
-	if _fade_in(load_options.fade_in_time):
+	# Get the recorded scene to switch to from the loaded scene map
+	#get_tree().set_current_scene(_loaded_scene_map[_recorded_scene][_MAP_SCENE_INDEX])
+	_current_scene = _recorded_scene
+
+	if _fade_in(_recorded_load_options.fade_in_time):
 		await _animation_player.animation_finished
 		fade_in_finished.emit()
 
 	_set_clickable(true)
 	_set_out_transition()
+
+	# Reset the recorded scene information now that the scene has fully loaded and is
+	# the active scene.
+	_recorded_scene = Scenes.SceneName.NONE
+	_recorded_load_options = null
 
 
 ## Loads scene interactive[br]
@@ -493,6 +536,11 @@ func load_scene_with_transition(next_scene: Scenes.SceneName,
 		transition_scene: Scenes.SceneName,
 		load_options: SceneLoadOptions = create_load_options()) -> void:
 	set_recorded_scene(next_scene, load_options)
+
+	# The load scene will be on it's own node that will be on top of everything else
+	load_options.node_name = DEFAULT_LOADING_NODE_NAME
+	load_options.mode = SceneLoadingMode.ADDITIVE
+	load_options.add_to_back = false
 	load_scene(transition_scene, load_options)
 
 
@@ -504,14 +552,6 @@ func get_loaded_scene() -> PackedScene:
 	if _load_scene != "":
 		return ResourceLoader.load_threaded_get(_load_scene) as PackedScene
 	return null
-
-
-## Changes scene to loaded scene
-func change_scene_to_loaded_scene(load_options: SceneLoadOptions) -> void:
-	if _load_scene != "":
-		var scene = ResourceLoader.load_threaded_get(_load_scene) as PackedScene
-		if scene:
-			load_scene(_load_scene_enum, load_options)
 
 
 ## Pops from the back stack and returns previous scene (scene before current scene)
@@ -528,7 +568,8 @@ func previous_scenes_length() -> int:
 ## into loading scene or just for next scene to know where to go next.
 func set_recorded_scene(key: Scenes.SceneName, load_options: SceneLoadOptions = create_load_options()) -> void:
 	_recorded_scene = key
-	_recorded_load_options = load_options
+	# Make sure to make a copy of the load options so it doesn't get affected by changes outside.
+	_recorded_load_options = load_options.copy()
 
 
 ## Returns the recorded scene.

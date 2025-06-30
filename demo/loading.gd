@@ -19,8 +19,8 @@ func percent_changed(number: int) -> void:
 func loading_finished() -> void:
 	loading.visible = false
 	next.visible = true
+	SceneManager.add_loaded_scene_to_scene_tree()
 
 
 func _on_next_button_up():
-	var general_options := SceneManager.create_load_options()
-	SceneManager.change_scene_to_loaded_scene(general_options)
+	SceneManager.change_scene_to_loaded_scene()

@@ -36,5 +36,4 @@ func loading_finished() -> void:
 
 
 func _on_next_button_up():
-	var general_options := SceneManager.create_load_options()
-	SceneManager.change_scene_to_existing_scene_in_scene_tree(general_options)
+	SceneManager.change_scene_to_loaded_scene()

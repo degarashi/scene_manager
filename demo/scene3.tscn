@@ -15,7 +15,7 @@ string_value = "SCENE1"
 script = ExtResource("2_reowv")
 string_value = "SCENE1"
 
-[node name="Control" type="Control"]
+[node name="Scene3" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
