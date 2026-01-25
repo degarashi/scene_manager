@@ -1,17 +1,12 @@
 extends Node
 ## Main SceneManager that handles adding scenes and transitions.
 
+const C = preload("./scene_manager_constants.gd")
 const FADE: String = "fade"
 const DEFAULT_TREE_NODE_NAME: String = "World" ## Default node name to be used for scenes
 const DEFAULT_LOADING_NODE_NAME: String = "===Transition===" ## Default node name for loading/transition scenes
 const _MAP_PARENT_INDEX: int = 0 # Index to the loaded scene map for the parent node
 const _MAP_SCENE_INDEX: int = 1 # Index to the loaded scene map for the scene node
-
-## Enums for how to load the scene.[br]
-## Single will make it so only one scene will exist for the whole tree. Default option.[br]
-## Single_Node will make it so only one scene will exist for the specified node.[br]
-## Additive will add the scene to the node along with anything else loaded.
-enum SceneLoadingMode { SINGLE, SINGLE_NODE, ADDITIVE }
 
 # Built in fade in/out for scene loading
 @onready var _fade_color_rect: ColorRect = find_child("fade")
@@ -40,9 +35,9 @@ signal fade_out_finished
 ## Parameter options to send when loading a new scene
 class SceneLoadOptions:
 	var node_name: String = DEFAULT_TREE_NODE_NAME ## Where in the node structure the new scene will load.
-	var mode: SceneLoadingMode = SceneLoadingMode.SINGLE ## Whether to only have a single scene or an additive load. Defaults to SINGLE.
-	var fade_out_time: float = ProjectSettings.get_setting(SceneManagerConstants.SETTINGS_FADE_OUT_PROPERTY_NAME, SceneManagerConstants.DEFAULT_FADE_OUT_TIME)
-	var fade_in_time: float = ProjectSettings.get_setting(SceneManagerConstants.SETTINGS_FADE_IN_PROPERTY_NAME, SceneManagerConstants.DEFAULT_FADE_IN_TIME)
+	var mode: C.SceneLoadingMode = C.SceneLoadingMode.SINGLE ## Whether to only have a single scene or an additive load. Defaults to SINGLE.
+	var fade_out_time: float = ProjectSettings.get_setting(C.SETTINGS_FADE_OUT_PROPERTY_NAME, C.DEFAULT_FADE_OUT_TIME)
+	var fade_in_time: float = ProjectSettings.get_setting(C.SETTINGS_FADE_IN_PROPERTY_NAME, C.DEFAULT_FADE_IN_TIME)
 	var clickable: bool = true ## Whether or not to block mouse input during the scene load. Defaults to true.
 	var add_to_back: bool = true ## Whether or not to add the scene onto the stack so the scene can go back to it.
 
@@ -236,10 +231,10 @@ func clear_back_buffer() -> void:
 ## change scene to `back` scene
 func create_load_options(
 		node: String = DEFAULT_TREE_NODE_NAME,
-		mode: SceneLoadingMode = SceneLoadingMode.SINGLE,
+		mode: C.SceneLoadingMode = C.SceneLoadingMode.SINGLE,
 		clickable: bool = true,
-		fade_out_time: float = ProjectSettings.get_setting(SceneManagerConstants.SETTINGS_FADE_OUT_PROPERTY_NAME, SceneManagerConstants.DEFAULT_FADE_OUT_TIME),
-		fade_in_time: float = ProjectSettings.get_setting(SceneManagerConstants.SETTINGS_FADE_IN_PROPERTY_NAME, SceneManagerConstants.DEFAULT_FADE_IN_TIME),
+		fade_out_time: float = ProjectSettings.get_setting(C.SETTINGS_FADE_OUT_PROPERTY_NAME, C.DEFAULT_FADE_OUT_TIME),
+		fade_in_time: float = ProjectSettings.get_setting(C.SETTINGS_FADE_IN_PROPERTY_NAME, C.DEFAULT_FADE_IN_TIME),
 		add_to_back: bool = true) -> SceneLoadOptions:
 	var options: SceneLoadOptions = SceneLoadOptions.new()
 	options.node_name = node
@@ -333,10 +328,10 @@ func _add_scene_node(node: Node,
 	# If doing single scene loading, delete the specified node and load
 	# the scene into the default node.
 	var parent_node: Node = null
-	if load_options.mode == SceneLoadingMode.SINGLE or load_options.mode == SceneLoadingMode.SINGLE_NODE:
+	if load_options.mode == C.SceneLoadingMode.SINGLE or load_options.mode == C.SceneLoadingMode.SINGLE_NODE:
 		# For the Single case, remove all nodes. For the Single Node case, only remove the specified
 		# node in the options.
-		if load_options.mode == SceneLoadingMode.SINGLE:
+		if load_options.mode == C.SceneLoadingMode.SINGLE:
 			_unload_all_nodes()
 		else:
 			# If the node currently exists, completely remove it and recreate a blank node after
@@ -445,8 +440,8 @@ func add_loaded_scene_to_scene_tree() -> void:
 			scene_node.scene_file_path = _load_scene
 
 			var temp_options := _recorded_load_options.copy()
-			if temp_options.mode == SceneLoadingMode.SINGLE:
-				temp_options.mode = SceneLoadingMode.SINGLE_NODE
+			if temp_options.mode == C.SceneLoadingMode.SINGLE:
+				temp_options.mode = C.SceneLoadingMode.SINGLE_NODE
 			var parent_node: Node = _add_scene_node(scene_node, temp_options)
 
 			# Make sure the parent_node is not the last node in order to make sure
@@ -479,7 +474,7 @@ func change_scene_to_loaded_scene() -> void:
 
 	# If the original load options was SINGLE loading mode, then also remove any other
 	# node that isn't part of the load option node name.
-	if _recorded_load_options.mode == SceneLoadingMode.SINGLE:
+	if _recorded_load_options.mode == C.SceneLoadingMode.SINGLE:
 		var remove_nodes := {}
 		for key in _loaded_scene_map:
 			if _loaded_scene_map[key][_MAP_PARENT_INDEX].name != _recorded_load_options.node_name and \
@@ -539,7 +534,7 @@ func load_scene_with_transition(next_scene: Scenes.SceneName,
 
 	# The load scene will be on it's own node that will be on top of everything else
 	load_options.node_name = DEFAULT_LOADING_NODE_NAME
-	load_options.mode = SceneLoadingMode.ADDITIVE
+	load_options.mode = C.SceneLoadingMode.ADDITIVE
 	load_options.add_to_back = false
 	load_scene(transition_scene, load_options)
 

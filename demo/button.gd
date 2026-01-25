@@ -1,7 +1,7 @@
 extends Button
 
 @export var scene: SceneResource
-@export var mode: SceneManager.SceneLoadingMode
+@export var mode: SceneManagerConstants.SceneLoadingMode
 @export var fade_out_speed: float = 1.0
 @export var fade_in_speed: float = 1.0
 @export var clickable: bool = false
@@ -19,7 +19,7 @@ func _on_button_additive_up():
 		return
 	
 	var options := SceneManager.SceneLoadOptions.new()
-	options.mode = SceneManager.SceneLoadingMode.ADDITIVE
+	options.mode = SceneManagerConstants.SceneLoadingMode.ADDITIVE
 	options.fade_in_time = 0
 	options.fade_out_time = 0
 	SceneManager.load_scene(scene.scene_value, options)
@@ -30,7 +30,7 @@ func _on_button_additive_node_up():
 		return
 	
 	var options := SceneManager.SceneLoadOptions.new()
-	options.mode = SceneManager.SceneLoadingMode.ADDITIVE
+	options.mode = SceneManagerConstants.SceneLoadingMode.ADDITIVE
 	options.node_name = "SAMPLE_NODE"
 	options.fade_in_time = 0
 	options.fade_out_time = 0
@@ -42,7 +42,7 @@ func _on_button_single_node_up():
 		return
 	
 	var options := SceneManager.SceneLoadOptions.new()
-	options.mode = SceneManager.SceneLoadingMode.SINGLE_NODE
+	options.mode = SceneManagerConstants.SceneLoadingMode.SINGLE_NODE
 	options.node_name = "SAMPLE_NODE"
 	options.fade_in_time = 0
 	options.fade_out_time = 0
