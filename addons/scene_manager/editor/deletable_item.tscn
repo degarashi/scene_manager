@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://ciaqe7l3hugns"]
 
 [ext_resource type="Script" uid="uid://ch4kd34yt31v6" path="res://addons/scene_manager/editor/deletable_item.gd" id="1_4r8to"]
-[ext_resource type="Texture2D" uid="uid://dhtahkclhmq8l" path="res://addons/scene_manager/icons/ImportFail.svg" id="2_drn60"]
+[ext_resource type="Texture2D" uid="uid://cmastd6qvqmvg" path="res://addons/scene_manager/icons/ImportFail.svg" id="2_drn60"]
 
 [node name="item" type="HBoxContainer"]
 offset_top = 24.0

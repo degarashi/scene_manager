@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://7r0ywsv3ga6g"]
 
 [ext_resource type="Script" uid="uid://kopmv06wlc1d" path="res://addons/scene_manager/editor/scene_list.gd" id="2"]
-[ext_resource type="Texture2D" uid="uid://dhtahkclhmq8l" path="res://addons/scene_manager/icons/ImportFail.svg" id="3"]
+[ext_resource type="Texture2D" uid="uid://cmastd6qvqmvg" path="res://addons/scene_manager/icons/ImportFail.svg" id="3"]
 
 [node name="scene_list" type="VBoxContainer"]
 anchors_preset = 15

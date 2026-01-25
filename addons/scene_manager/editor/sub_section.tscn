@@ -1,9 +1,9 @@
 [gd_scene load_steps=9 format=3 uid="uid://b4edho3whn67t"]
 
 [ext_resource type="Script" uid="uid://dookyr8uhx5wp" path="res://addons/scene_manager/editor/sub_section.gd" id="1_kgwwp"]
-[ext_resource type="Texture2D" uid="uid://dpew17ck1hbq" path="res://addons/scene_manager/icons/GuiOptionArrowRight.svg" id="1_yyg5g"]
+[ext_resource type="Texture2D" uid="uid://bh04o3lpsagne" path="res://addons/scene_manager/icons/GuiOptionArrowRight.svg" id="1_yyg5g"]
 [ext_resource type="Script" uid="uid://bwj6yigjptjbq" path="res://addons/scene_manager/editor/sub_section_button.gd" id="3_smgrs"]
-[ext_resource type="Texture2D" uid="uid://dhtahkclhmq8l" path="res://addons/scene_manager/icons/ImportFail.svg" id="4_chjuj"]
+[ext_resource type="Texture2D" uid="uid://cmastd6qvqmvg" path="res://addons/scene_manager/icons/ImportFail.svg" id="4_chjuj"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_uvnds"]
 content_margin_left = 5.0
