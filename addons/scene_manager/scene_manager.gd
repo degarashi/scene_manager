@@ -99,6 +99,22 @@ func _on_initial_setup() -> void:
 		push_warning("Loaded scene not added to the mapping due to being NONE.")
 
 
+# Helper to execute fade and wait for completion
+func _execute_fade(speed: float, is_out: bool) -> void:
+	var executed := false
+	if is_out:
+		executed = _fade_out(speed)
+	else:
+		executed = _fade_in(speed)
+
+	if executed:
+		await _animation_player.animation_finished
+		if is_out:
+			fade_out_finished.emit()
+		else:
+			fade_in_finished.emit()
+
+
 # `speed` unit is in seconds
 func _fade_in(speed: float) -> bool:
 	if speed <= 0:
@@ -270,9 +286,7 @@ func load_scene(
 	_set_in_transition()
 	_set_clickable(load_options.clickable)
 
-	if _fade_out(load_options.fade_out_time):
-		await _animation_player.animation_finished
-		fade_out_finished.emit()
+	await _execute_fade(load_options.fade_out_time, true)
 
 	var new_scene_node: Node = _load_scene_node_from_path(_get_scene_value(scene))
 	var parent_node: Node = _add_scene_node(new_scene_node, load_options)
@@ -282,9 +296,7 @@ func load_scene(
 	_current_scene_name = scene
 	scene_loaded.emit()
 
-	if _fade_in(load_options.fade_in_time):
-		await _animation_player.animation_finished
-		fade_in_finished.emit()
+	await _execute_fade(load_options.fade_in_time, false)
 
 	_set_clickable(true)
 	_set_out_transition()
@@ -469,9 +481,7 @@ func activate_loaded_scene() -> void:
 	_set_in_transition()
 	_set_clickable(_reserved_load_options.clickable)
 
-	if _fade_out(_reserved_load_options.fade_out_time):
-		await _animation_player.animation_finished
-		fade_out_finished.emit()
+	await _execute_fade(_reserved_load_options.fade_out_time, true)
 
 	# Unload the transition/loading scene, which should be at the end
 	_unload_node(C.DEFAULT_LOADING_NODE_NAME)
@@ -495,9 +505,7 @@ func activate_loaded_scene() -> void:
 	#get_tree().set_current_scene(_loaded_scene_map[_reserved_scene][_IDX_SCENE_NODE])
 	_current_scene_name = _reserved_scene
 
-	if _fade_in(_reserved_load_options.fade_in_time):
-		await _animation_player.animation_finished
-		fade_in_finished.emit()
+	await _execute_fade(_reserved_load_options.fade_in_time, false)
 
 	_set_clickable(true)
 	_set_out_transition()
@@ -593,19 +601,12 @@ func get_reserved_load_option() -> SceneLoadOptions:
 func pause(fade_out_time: float, general_options: SceneLoadOptions = create_load_options()) -> void:
 	_set_in_transition()
 	_set_clickable(general_options.clickable)
-
-	if _fade_out(fade_out_time):
-		await _animation_player.animation_finished
-		fade_out_finished.emit()
+	await _execute_fade(fade_out_time, true)
 
 
 ## Resume (fadein) after pause
 func resume(fade_in_time: float, general_options: SceneLoadOptions = create_load_options()) -> void:
 	_set_clickable(general_options.clickable)
-
-	if _fade_in(fade_in_time):
-		await _animation_player.animation_finished
-		fade_in_finished.emit()
-
+	await _execute_fade(fade_in_time, false)
 	_set_out_transition()
 	_set_clickable(true)
