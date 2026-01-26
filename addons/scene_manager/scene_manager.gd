@@ -24,7 +24,7 @@ var _reserved_scene: Scenes.SceneName = Scenes.SceneName.NONE
 var _reserved_load_options: SceneLoadOptions
 ## Keeps track of all loaded scenes (SceneName key)
 ##   and the node they belong to in an array (parent node: Node, scene node: Node)
-var _loaded_scene_map: Dictionary = {}
+var _loaded_scene_map: Dictionary[Scenes.SceneName, Array] = {}
 var _scene_db: SceneManagerData = SceneManagerData.new()
 
 signal load_finished
