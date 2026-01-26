@@ -16,7 +16,7 @@ const _MAP_SCENE_INDEX: int = 1
 @onready var _current_scene: Scenes.SceneName = Scenes.SceneName.NONE
 
 ## Scene path that is currently loading
-var _load_scene: String = ""
+var _loading_scene_path: String = ""
 ## Scene Enum of the scene that's currently loading
 var _load_scene_enum: Scenes.SceneName = Scenes.SceneName.NONE
 var _load_progress: Array = []
@@ -52,7 +52,7 @@ func _check_loading_progress() -> void:
 	if len(_load_progress) != 0:
 		prev_percent = int(_load_progress[0] * 100)
 
-	var status := ResourceLoader.load_threaded_get_status(_load_scene, _load_progress)
+	var status := ResourceLoader.load_threaded_get_status(_loading_scene_path, _load_progress)
 	var next_percent: int = int(_load_progress[0] * 100)
 	if prev_percent != next_percent:
 		load_percent_changed.emit(next_percent)
@@ -437,11 +437,11 @@ func exit_game() -> void:
 ## an transition/loading scene except it loads as a SINGLE_NODE if SINGLE is specified
 ## in order not to conflict with unloading the transition scene.
 func instantiate_loaded_scene() -> void:
-	if _load_scene != "":
-		var scene_resource := ResourceLoader.load_threaded_get(_load_scene) as PackedScene
+	if _loading_scene_path != "":
+		var scene_resource := ResourceLoader.load_threaded_get(_loading_scene_path) as PackedScene
 		if scene_resource:
 			var scene_node := scene_resource.instantiate()
-			scene_node.scene_file_path = _load_scene
+			scene_node.scene_file_path = _loading_scene_path
 
 			var temp_options := _reserved_load_options.copy()
 			if temp_options.mode == C.SceneLoadingMode.SINGLE:
@@ -453,7 +453,7 @@ func instantiate_loaded_scene() -> void:
 			var root := get_tree().get_root()
 			root.move_child(parent_node, root.get_child_count() - 2)
 
-			_load_scene = ""
+			_loading_scene_path = ""
 			_load_scene_enum = Scenes.SceneName.NONE
 
 			# Keep track of the loaded scene enum to the node it's a child of.
@@ -524,10 +524,10 @@ func activate_loaded_scene() -> void:
 ## https://github.com/godotengine/godot/issues/84012
 func load_scene_interactive(key: Scenes.SceneName, use_sub_threads = false) -> void:
 	set_process(true)
-	_load_scene = _get_scene_value(key)
+	_loading_scene_path = _get_scene_value(key)
 	_load_scene_enum = key
 	ResourceLoader.load_threaded_request(
-		_load_scene, "", use_sub_threads, ResourceLoader.CACHE_MODE_IGNORE
+		_loading_scene_path, "", use_sub_threads, ResourceLoader.CACHE_MODE_IGNORE
 	)
 
 
@@ -554,8 +554,8 @@ func load_scene_with_transition(
 ## If scene is not loaded, blocks and waits until scene is ready (acts blocking in code
 ## and may freeze your game, make sure scene is ready to get).
 func get_loaded_scene() -> PackedScene:
-	if _load_scene != "":
-		return ResourceLoader.load_threaded_get(_load_scene) as PackedScene
+	if _loading_scene_path != "":
+		return ResourceLoader.load_threaded_get(_loading_scene_path) as PackedScene
 	return null
 
 
