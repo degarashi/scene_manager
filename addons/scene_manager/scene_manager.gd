@@ -7,8 +7,8 @@ const _MAP_PARENT_INDEX: int = 0 # Index to the loaded scene map for the parent 
 const _MAP_SCENE_INDEX: int = 1 # Index to the loaded scene map for the scene node
 
 # Built in fade in/out for scene loading
-@onready var _fade_color_rect: ColorRect = find_child("fade")
-@onready var _animation_player: AnimationPlayer = find_child("animation_player")
+@onready var _fade_color_rect: ColorRect = %fade
+@onready var _animation_player: AnimationPlayer = %animation_player
 @onready var _in_transition: bool = false
 @onready var _back_buffer: RingBuffer = RingBuffer.new()
 @onready var _current_scene: Scenes.SceneName = Scenes.SceneName.NONE

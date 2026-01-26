@@ -32,6 +32,7 @@ script = ExtResource("1")
 layer = 100
 
 [node name="fade" type="ColorRect" parent="canvas"]
+unique_name_in_owner = true
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -41,6 +42,7 @@ mouse_filter = 2
 color = Color(0, 0, 0, 0)
 
 [node name="animation_player" type="AnimationPlayer" parent="."]
+unique_name_in_owner = true
 libraries = {
-"": SubResource("AnimationLibrary_p2st6")
+&"": SubResource("AnimationLibrary_p2st6")
 }
