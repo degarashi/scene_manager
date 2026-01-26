@@ -214,32 +214,6 @@ func clear_back_buffer() -> void:
 	_back_buffer.clear()
 
 
-## Creates options for loading a scene.[br]
-##
-## add_to_back means that you can go back to the scene if you
-## change scene to `back` scene
-func create_load_options(
-	node: String = C.DEFAULT_TREE_NODE_NAME,
-	mode: C.SceneLoadingMode = C.SceneLoadingMode.SINGLE,
-	clickable: bool = true,
-	fade_out_time: float = ProjectSettings.get_setting(
-		C.SETTINGS_FADE_OUT_PROPERTY_NAME, C.DEFAULT_FADE_OUT_TIME
-	),
-	fade_in_time: float = ProjectSettings.get_setting(
-		C.SETTINGS_FADE_IN_PROPERTY_NAME, C.DEFAULT_FADE_IN_TIME
-	),
-	add_to_back: bool = true
-) -> SceneLoadOptions:
-	var options: SceneLoadOptions = SceneLoadOptions.new()
-	options.node_name = node
-	options.mode = mode
-	options.fade_out_time = fade_out_time
-	options.fade_in_time = fade_in_time
-	options.clickable = clickable
-	options.add_to_back = add_to_back
-	return options
-
-
 ## Returns scene instance of passed scene key (blocking).[br]
 ##
 ## Note: you can activate `use_sub_threads` but just know that In the newest
@@ -276,9 +250,7 @@ func get_scene(key: Scenes.SceneName, use_sub_threads = false) -> PackedScene:
 
 ## Loads a specified scene to the tree.[br]
 ## By default it will swap the scene with the one already loaded in the default tree node.
-func load_scene(
-	scene: Scenes.SceneName, load_options: SceneLoadOptions = create_load_options()
-) -> void:
+func load_scene(scene: Scenes.SceneName, load_options := SceneLoadOptions.new()) -> void:
 	if scene == Scenes.SceneName.NONE:
 		push_warning("Attempted to load a NONE scene. Skipping load as it won't work.")
 		return
@@ -319,7 +291,7 @@ func unload_scene(scene: Scenes.SceneName) -> void:
 
 ## Adds the specified node to the scene based on the load_options.[br]
 ## Returns the parent_node the node is under.
-func _add_scene_node(node: Node, load_options: SceneLoadOptions = create_load_options()) -> Node:
+func _add_scene_node(node: Node, load_options := SceneLoadOptions.new()) -> Node:
 	var root := get_tree().get_root()
 
 	# If doing single scene loading, delete the specified node and load
@@ -546,7 +518,7 @@ func load_scene_interactive(key: Scenes.SceneName, use_sub_threads = false) -> v
 func load_scene_with_transition(
 	next_scene: Scenes.SceneName,
 	transition_scene: Scenes.SceneName,
-	load_options: SceneLoadOptions = create_load_options()
+	load_options := SceneLoadOptions.new()
 ) -> void:
 	reserve_next_scene(next_scene, load_options)
 
@@ -579,9 +551,7 @@ func get_history_count() -> int:
 
 ## Reserves a scene key to be used for loading scenes to know where to go after getting loaded
 ## into loading scene or just for next scene to know where to go next.
-func reserve_next_scene(
-	key: Scenes.SceneName, load_options: SceneLoadOptions = create_load_options()
-) -> void:
+func reserve_next_scene(key: Scenes.SceneName, load_options := SceneLoadOptions.new()) -> void:
 	_reserved_scene = key
 	# Make sure to make a copy of the load options so it doesn't get affected by changes outside.
 	_reserved_load_options = load_options.copy()
@@ -598,14 +568,14 @@ func get_reserved_load_option() -> SceneLoadOptions:
 
 
 ## Pause (fadeout). You can resume afterwards.
-func pause(fade_out_time: float, general_options: SceneLoadOptions = create_load_options()) -> void:
+func pause(fade_out_time: float, general_options := SceneLoadOptions.new()) -> void:
 	_set_in_transition()
 	_set_clickable(general_options.clickable)
 	await _execute_fade(fade_out_time, true)
 
 
 ## Resume (fadein) after pause
-func resume(fade_in_time: float, general_options: SceneLoadOptions = create_load_options()) -> void:
+func resume(fade_in_time: float, general_options := SceneLoadOptions.new()) -> void:
 	_set_clickable(general_options.clickable)
 	await _execute_fade(fade_in_time, false)
 	_set_out_transition()
