@@ -40,8 +40,8 @@ func _ready() -> void:
 	set_process(false)
 
 	_data.load()
-	var scene_file_path: String = get_tree().current_scene.scene_file_path
-	_current_scene = _get_scene_key_by_value(scene_file_path)
+	var scene_file_path_a: String = get_tree().current_scene.scene_file_path
+	_current_scene = _get_scene_key_by_value(scene_file_path_a)
 
 	call_deferred("_on_initial_setup")
 
