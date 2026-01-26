@@ -227,7 +227,7 @@ func loading_finished() -> void:
   label.text = ""
  # Loading finishes and world initialization or world generation or whatever you wanna call it will start
  elif progress.value == 70:
-  SceneManager.add_loaded_scene_to_scene_tree()
+  SceneManager.instantiate_loaded_scene()
   gap = 0
   label.text = "Scene Initialization . . ."
 
@@ -315,12 +315,12 @@ func _on_timeout():
     * Reloads the currently loaded scene.
 10. `exit_game`() -> void:
     * Exits the game completely.
-11. `add_loaded_scene_to_scene_tree`() -> void:
+11. `instantiate_loaded_scene`() -> void:
     * Imports loaded scene into the scene tree but doesn't change the current scene
     * Mainly used when your new loaded scene has a loading phase when added to scene tree
     * So to use this, first has to call `load_scene_interactive` to load your scene and then have to listen on `load_finished` signal and after the signal emits, you call this function and this function adds the loaded scene to the scene tree but exactly behind the current scene so that you still can not see the new scene
 12. `change_scene_to_existing_scene_in_scene_tree`(**load_options**: SceneLoadOptions = create_load_options()) -> void:
-    * When you added the loaded scene to the scene tree by `add_loaded_scene_to_scene_tree` function, you call this function after you are sure that the added scene to scene tree is completely ready and functional to change the active scene
+    * When you added the loaded scene to the scene tree by `instantiate_loaded_scene` function, you call this function after you are sure that the added scene to scene tree is completely ready and functional to change the active scene
 13. `load_scene_interactive`(**key**: Scenes.SceneName, **use_sub_threads** = false) -> void:
     * Loads scene interactive.
     * **Note**: Connect to `load_percent_changed(value: int)` and `load_finished` signals to listen to updates on your scene loading status.

@@ -436,7 +436,7 @@ func exit_game() -> void:
 ## This uses the reserved load options that was saved when loading the scene with
 ## an transition/loading scene except it loads as a SINGLE_NODE if SINGLE is specified
 ## in order not to conflict with unloading the transition scene.
-func add_loaded_scene_to_scene_tree() -> void:
+func instantiate_loaded_scene() -> void:
 	if _load_scene != "":
 		var scene_resource := ResourceLoader.load_threaded_get(_load_scene) as PackedScene
 		if scene_resource:
@@ -460,7 +460,7 @@ func add_loaded_scene_to_scene_tree() -> void:
 			_loaded_scene_map[_reserved_scene] = [parent_node, scene_node]
 
 
-## When you added the loaded scene to the scene tree by `add_loaded_scene_to_scene_tree`
+## When you added the loaded scene to the scene tree by `instantiate_loaded_scene`
 ## function, you call this function after you are sure that the added scene to scene tree
 ## is completely ready and functional to change the active scene.[br]
 ## This is used in the `load_scene_with_transition` flow and uses the reserved information for

@@ -30,7 +30,7 @@ func loading_finished() -> void:
 		label.text = ""
 	# Loading finishes and world initialization or world generation or whatever you wanna call it will start
 	elif progress.value == 70:
-		SceneManager.add_loaded_scene_to_scene_tree()
+		SceneManager.instantiate_loaded_scene()
 		gap = 0
 		label.text = "Scene Initialization . . ."
 
