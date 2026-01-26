@@ -101,7 +101,7 @@ func _on_initial_setup() -> void:
 
 # `speed` unit is in seconds
 func _fade_in(speed: float) -> bool:
-	if speed == 0:
+	if speed <= 0:
 		return false
 
 	fade_in_started.emit()
@@ -111,7 +111,7 @@ func _fade_in(speed: float) -> bool:
 
 # `speed` unit is in seconds
 func _fade_out(speed: float) -> bool:
-	if speed == 0:
+	if speed <= 0:
 		return false
 
 	fade_out_started.emit()
