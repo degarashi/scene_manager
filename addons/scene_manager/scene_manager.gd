@@ -165,7 +165,7 @@ func _get_scene_value(scene: Scenes.SceneName) -> String:
 
 
 # Restart the currently loaded scene
-func _refresh() -> bool:
+func _reload_current_scene() -> bool:
 	# Use the same parent node the scene currently has to keep it consistent.
 	var load_options := SceneLoadOptions.new()
 	load_options.node_name = _loaded_scene_map[_current_scene][_MAP_PARENT_INDEX].name
@@ -419,7 +419,7 @@ func load_previous_scene() -> bool:
 
 ## Reload the currently loaded scene.
 func reload_current_scene() -> void:
-	_refresh()
+	_reload_current_scene()
 
 
 # Exits the game completely.
