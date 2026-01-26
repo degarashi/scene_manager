@@ -3,8 +3,10 @@ extends Node
 
 const C = preload("./scene_manager_constants.gd")
 const FADE: String = "fade"
-const _MAP_PARENT_INDEX: int = 0 # Index to the loaded scene map for the parent node
-const _MAP_SCENE_INDEX: int = 1 # Index to the loaded scene map for the scene node
+# Index to the loaded scene map for the parent node
+const _MAP_PARENT_INDEX: int = 0
+# Index to the loaded scene map for the scene node
+const _MAP_SCENE_INDEX: int = 1
 
 # Built in fade in/out for scene loading
 @onready var _fade_color_rect: ColorRect = %fade
@@ -13,12 +15,16 @@ const _MAP_SCENE_INDEX: int = 1 # Index to the loaded scene map for the scene no
 @onready var _back_buffer: RingBuffer = RingBuffer.new()
 @onready var _current_scene: Scenes.SceneName = Scenes.SceneName.NONE
 
-var _load_scene: String = "" ## Scene path that is currently loading
-var _load_scene_enum: Scenes.SceneName = Scenes.SceneName.NONE ## Scene Enum of the scene that's currently loading
+## Scene path that is currently loading
+var _load_scene: String = ""
+## Scene Enum of the scene that's currently loading
+var _load_scene_enum: Scenes.SceneName = Scenes.SceneName.NONE
 var _load_progress: Array = []
 var _recorded_scene: Scenes.SceneName = Scenes.SceneName.NONE
 var _recorded_load_options: SceneLoadOptions
-var _loaded_scene_map: Dictionary = {} ## Keeps track of all loaded scenes (SceneName key) and the node they belong to in an array (parent node: Node, scene node: Node)
+## Keeps track of all loaded scenes (SceneName key)
+##   and the node they belong to in an array (parent node: Node, scene node: Node)
+var _loaded_scene_map: Dictionary = {}
 var _data: SceneManagerData = SceneManagerData.new()
 
 signal load_finished
@@ -32,7 +38,7 @@ signal fade_out_finished
 
 func _ready() -> void:
 	set_process(false)
-	
+
 	_data.load()
 	var scene_file_path: String = get_tree().current_scene.scene_file_path
 	_current_scene = _get_scene_key_by_value(scene_file_path)
@@ -45,12 +51,12 @@ func _process(_delta: float) -> void:
 	var prevPercent: int = 0
 	if len(_load_progress) != 0:
 		prevPercent = int(_load_progress[0] * 100)
-	
+
 	var status = ResourceLoader.load_threaded_get_status(_load_scene, _load_progress)
 	var nextPercent: int = int(_load_progress[0] * 100)
 	if prevPercent != nextPercent:
 		load_percent_changed.emit(nextPercent)
-	
+
 	if status == ResourceLoader.THREAD_LOAD_LOADED:
 		set_process(false)
 		_load_progress = []
@@ -68,7 +74,8 @@ func _current_scene_is_included(scene_file_path: String) -> bool:
 	return false
 
 
-# For the initial setup, move the current scene to the default parent node and store it in the mapping.
+# For the initial setup,
+# move the current scene to the default parent node and store it in the mapping.
 func _on_initial_setup() -> void:
 	var scene_node := get_tree().current_scene
 	var root := get_tree().root
@@ -92,7 +99,7 @@ func _on_initial_setup() -> void:
 func _fade_in(speed: float) -> bool:
 	if speed == 0:
 		return false
-	
+
 	fade_in_started.emit()
 	_animation_player.play(FADE, -1, -1 / speed, true)
 	return true
@@ -151,7 +158,7 @@ func _get_scene_key_by_value(path: String) -> Scenes.SceneName:
 		if _data.scenes[key]["value"] == path:
 			# Convert the string into an enum
 			return SceneManagerUtils.get_enum_from_string(key)
-			
+
 	return Scenes.SceneName.NONE
 
 
@@ -163,7 +170,7 @@ func _get_scene_value(scene: Scenes.SceneName) -> String:
 	for key in _data.scenes:
 		if scene_name == SceneManagerUtils.normalize_enum_string(key):
 			return _data.scenes[key]["value"]
-	
+
 	return ""
 
 
@@ -206,12 +213,17 @@ func clear_back_buffer() -> void:
 ## add_to_back means that you can go back to the scene if you
 ## change scene to `back` scene
 func create_load_options(
-		node: String = C.DEFAULT_TREE_NODE_NAME,
-		mode: C.SceneLoadingMode = C.SceneLoadingMode.SINGLE,
-		clickable: bool = true,
-		fade_out_time: float = ProjectSettings.get_setting(C.SETTINGS_FADE_OUT_PROPERTY_NAME, C.DEFAULT_FADE_OUT_TIME),
-		fade_in_time: float = ProjectSettings.get_setting(C.SETTINGS_FADE_IN_PROPERTY_NAME, C.DEFAULT_FADE_IN_TIME),
-		add_to_back: bool = true) -> SceneLoadOptions:
+	node: String = C.DEFAULT_TREE_NODE_NAME,
+	mode: C.SceneLoadingMode = C.SceneLoadingMode.SINGLE,
+	clickable: bool = true,
+	fade_out_time: float = ProjectSettings.get_setting(
+		C.SETTINGS_FADE_OUT_PROPERTY_NAME, C.DEFAULT_FADE_OUT_TIME
+	),
+	fade_in_time: float = ProjectSettings.get_setting(
+		C.SETTINGS_FADE_IN_PROPERTY_NAME, C.DEFAULT_FADE_IN_TIME
+	),
+	add_to_back: bool = true
+) -> SceneLoadOptions:
 	var options: SceneLoadOptions = SceneLoadOptions.new()
 	options.node_name = node
 	options.mode = mode
@@ -224,9 +236,9 @@ func create_load_options(
 
 ## Returns scene instance of passed scene key (blocking).[br]
 ##
-## Note: you can activate `use_sub_threads` but just know that In the newest 
+## Note: you can activate `use_sub_threads` but just know that In the newest
 ## versions of Godot there seems to be a bug that can cause a threadlock in
-## the resource loader that will result in infinite loading of the scene 
+## the resource loader that will result in infinite loading of the scene
 ## without any error.[br]
 ##
 ## Related Github Issues About `use_sub_threads`:[br]
@@ -239,9 +251,9 @@ func create_scene_instance(key: Scenes.SceneName, use_sub_threads = false) -> No
 
 ## Returns PackedScene of passed scene key (blocking).[br]
 ##
-## Note: you can activate `use_sub_threads` but just know that In the newest 
+## Note: you can activate `use_sub_threads` but just know that In the newest
 ## versions of Godot there seems to be a bug that can cause a threadlock in
-## the resource loader that will result in infinite loading of the scene 
+## the resource loader that will result in infinite loading of the scene
 ## without any error.[br]
 ##
 ## Related Github Issues About `use_sub_threads`:[br]
@@ -250,14 +262,17 @@ func create_scene_instance(key: Scenes.SceneName, use_sub_threads = false) -> No
 ## https://github.com/godotengine/godot/issues/84012
 func get_scene(key: Scenes.SceneName, use_sub_threads = false) -> PackedScene:
 	var address = _data.scenes[key]["value"]
-	ResourceLoader.load_threaded_request(address, "", use_sub_threads, ResourceLoader.CACHE_MODE_REUSE)
+	ResourceLoader.load_threaded_request(
+		address, "", use_sub_threads, ResourceLoader.CACHE_MODE_REUSE
+	)
 	return ResourceLoader.load_threaded_get(address)
 
 
 ## Loads a specified scene to the tree.[br]
 ## By default it will swap the scene with the one already loaded in the default tree node.
-func load_scene(scene: Scenes.SceneName,
-		load_options: SceneLoadOptions = create_load_options()) -> void:
+func load_scene(
+	scene: Scenes.SceneName, load_options: SceneLoadOptions = create_load_options()
+) -> void:
 	if scene == Scenes.SceneName.NONE:
 		push_warning("Attempted to load a NONE scene. Skipping load as it won't work.")
 		return
@@ -289,22 +304,29 @@ func load_scene(scene: Scenes.SceneName,
 func unload_scene(scene: Scenes.SceneName) -> void:
 	# Get the node from the map, free it, and cleans up the map
 	if not _loaded_scene_map.has(scene):
-		assert("ERROR: Attempting to remove a scene %s that has not been loaded." % SceneManagerUtils.get_string_from_enum(scene))
-	
+		assert(
+			(
+				"ERROR: Attempting to remove a scene %s that has not been loaded."
+				% SceneManagerUtils.get_string_from_enum(scene)
+			)
+		)
+
 	_loaded_scene_map[scene][_MAP_SCENE_INDEX].free()
 	_loaded_scene_map.erase(scene)
 
 
 ## Adds the specified node to the scene based on the load_options.[br]
 ## Returns the parent_node the node is under.
-func _add_scene_node(node: Node,
-		load_options: SceneLoadOptions = create_load_options()) -> Node:
+func _add_scene_node(node: Node, load_options: SceneLoadOptions = create_load_options()) -> Node:
 	var root := get_tree().get_root()
 
 	# If doing single scene loading, delete the specified node and load
 	# the scene into the default node.
 	var parent_node: Node = null
-	if load_options.mode == C.SceneLoadingMode.SINGLE or load_options.mode == C.SceneLoadingMode.SINGLE_NODE:
+	if (
+		load_options.mode == C.SceneLoadingMode.SINGLE
+		or load_options.mode == C.SceneLoadingMode.SINGLE_NODE
+	):
 		# For the Single case, remove all nodes. For the Single Node case, only remove the specified
 		# node in the options.
 		if load_options.mode == C.SceneLoadingMode.SINGLE:
@@ -313,7 +335,7 @@ func _add_scene_node(node: Node,
 			# If the node currently exists, completely remove it and recreate a blank node after
 			if root.has_node(load_options.node_name):
 				_unload_node(load_options.node_name)
-		
+
 		parent_node = Node.new()
 		parent_node.name = load_options.node_name
 		root.add_child(parent_node)
@@ -331,32 +353,39 @@ func _add_scene_node(node: Node,
 			root.add_child(parent_node)
 		else:
 			parent_node = root.get_node(load_options.node_name)
-		
-		assert(parent_node, "ERROR: Could not get the node %s to use for the additive scene." % load_options.node_name)
-		
+
+		assert(
+			parent_node,
+			(
+				"ERROR: Could not get the node %s to use for the additive scene."
+				% load_options.node_name
+			)
+		)
+
 		parent_node.add_child(node)
 
 	return parent_node
 
 
-## Frees the node and all children node underneath while removing the scenes in the map assocaited with them.[br]
+## Frees the node and all children node underneath
+##   while removing the scenes in the map assocaited with them.[br]
 ## Mainly used when removing the parent node, which will cause all the scenes to be removed.
 func _unload_node(node_name: String) -> void:
 	if not get_tree().root.has_node(node_name):
 		assert("ERROR: Attempting to remove the parent node %s that doesn't exist." % node_name)
-	
+
 	# Using the node name, find all the scenes that are loaded under it and free them before
 	# removing the parent node itself.
 	for key in _loaded_scene_map.keys():
 		if _loaded_scene_map[key][_MAP_PARENT_INDEX].name == node_name:
 			_loaded_scene_map[key][_MAP_SCENE_INDEX].free()
 			_loaded_scene_map.erase(key)
-	
+
 	get_tree().root.get_node(node_name).free()
 
 
 ## Frees all scene related nodes in the loaded scene map.[br]
-## Used mainly for Single scene loading which will unload all scenes. 
+## Used mainly for Single scene loading which will unload all scenes.
 func _unload_all_nodes() -> void:
 	# Get a list of all unique parent nodes to remove
 	# Using the dictionary keys as a set.
@@ -424,7 +453,7 @@ func add_loaded_scene_to_scene_tree() -> void:
 			# the transition scene is on top.
 			var root := get_tree().get_root()
 			root.move_child(parent_node, root.get_child_count() - 2)
-			
+
 			_load_scene = ""
 			_load_scene_enum = Scenes.SceneName.NONE
 
@@ -440,7 +469,7 @@ func add_loaded_scene_to_scene_tree() -> void:
 func change_scene_to_loaded_scene() -> void:
 	_set_in_transition()
 	_set_clickable(_recorded_load_options.clickable)
-	
+
 	if _fade_out(_recorded_load_options.fade_out_time):
 		await _animation_player.animation_finished
 		fade_out_finished.emit()
@@ -453,14 +482,16 @@ func change_scene_to_loaded_scene() -> void:
 	if _recorded_load_options.mode == C.SceneLoadingMode.SINGLE:
 		var remove_nodes := {}
 		for key in _loaded_scene_map:
-			if _loaded_scene_map[key][_MAP_PARENT_INDEX].name != _recorded_load_options.node_name and \
-				not remove_nodes.has(_loaded_scene_map[key][_MAP_PARENT_INDEX]):
+			if (
+				_loaded_scene_map[key][_MAP_PARENT_INDEX].name != _recorded_load_options.node_name
+				and not remove_nodes.has(_loaded_scene_map[key][_MAP_PARENT_INDEX])
+			):
 				remove_nodes[_loaded_scene_map[key][_MAP_PARENT_INDEX]] = null
 
 		# Go through each parent node and unload them
 		for node in remove_nodes:
 			_unload_node(node.name)
-	
+
 	# Get the recorded scene to switch to from the loaded scene map
 	#get_tree().set_current_scene(_loaded_scene_map[_recorded_scene][_MAP_SCENE_INDEX])
 	_current_scene = _recorded_scene
@@ -483,29 +514,33 @@ func change_scene_to_loaded_scene() -> void:
 ## Connect to `load_percent_changed(value: int)` and `load_finished` signals
 ## to listen to updates on your scene loading status.[br]
 ##
-## Note: You can activate `use_sub_threads` but just know that in the newest 
+## Note: You can activate `use_sub_threads` but just know that in the newest
 ## versions of Godot there seems to be a bug that can cause a threadlock in
-## the resource loader that will result in infinite loading of the scene 
+## the resource loader that will result in infinite loading of the scene
 ## without any error.[br]
 ##
 ## Related Github Issues About `use_sub_threads`:[br]
-## 
+##
 ## https://github.com/godotengine/godot/issues/85255[br]
 ## https://github.com/godotengine/godot/issues/84012
 func load_scene_interactive(key: Scenes.SceneName, use_sub_threads = false) -> void:
 	set_process(true)
 	_load_scene = _get_scene_value(key)
 	_load_scene_enum = key
-	ResourceLoader.load_threaded_request(_load_scene, "", use_sub_threads, ResourceLoader.CACHE_MODE_IGNORE)
+	ResourceLoader.load_threaded_request(
+		_load_scene, "", use_sub_threads, ResourceLoader.CACHE_MODE_IGNORE
+	)
 
 
 ## Loads a scene with a loading/transition scene.[br]
 ##
 ## This sets the recorded scene to the specified next_scene and loads the transition_scene.
 ## The transition_scene is the loading scene that should subscribe to the `load_finished` signal
-func load_scene_with_transition(next_scene: Scenes.SceneName,
-		transition_scene: Scenes.SceneName,
-		load_options: SceneLoadOptions = create_load_options()) -> void:
+func load_scene_with_transition(
+	next_scene: Scenes.SceneName,
+	transition_scene: Scenes.SceneName,
+	load_options: SceneLoadOptions = create_load_options()
+) -> void:
 	set_recorded_scene(next_scene, load_options)
 
 	# The load scene will be on it's own node that will be on top of everything else
@@ -537,7 +572,9 @@ func previous_scenes_length() -> int:
 
 ## Records a scene key to be used for loading scenes to know where to go after getting loaded
 ## into loading scene or just for next scene to know where to go next.
-func set_recorded_scene(key: Scenes.SceneName, load_options: SceneLoadOptions = create_load_options()) -> void:
+func set_recorded_scene(
+	key: Scenes.SceneName, load_options: SceneLoadOptions = create_load_options()
+) -> void:
 	_recorded_scene = key
 	# Make sure to make a copy of the load options so it doesn't get affected by changes outside.
 	_recorded_load_options = load_options.copy()
@@ -557,7 +594,7 @@ func get_recorded_load_option() -> SceneLoadOptions:
 func pause(fade_out_time: float, general_options: SceneLoadOptions = create_load_options()) -> void:
 	_set_in_transition()
 	_set_clickable(general_options.clickable)
-	
+
 	if _fade_out(fade_out_time):
 		await _animation_player.animation_finished
 		fade_out_finished.emit()
@@ -566,7 +603,7 @@ func pause(fade_out_time: float, general_options: SceneLoadOptions = create_load
 ## Resume (fadein) after pause
 func resume(fade_in_time: float, general_options: SceneLoadOptions = create_load_options()) -> void:
 	_set_clickable(general_options.clickable)
-	
+
 	if _fade_in(fade_in_time):
 		await _animation_player.animation_finished
 		fade_in_finished.emit()
