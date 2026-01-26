@@ -52,7 +52,7 @@ func _process(_delta: float) -> void:
 	if len(_load_progress) != 0:
 		prev_percent = int(_load_progress[0] * 100)
 
-	var status = ResourceLoader.load_threaded_get_status(_load_scene, _load_progress)
+	var status := ResourceLoader.load_threaded_get_status(_load_scene, _load_progress)
 	var next_percent: int = int(_load_progress[0] * 100)
 	if prev_percent != next_percent:
 		load_percent_changed.emit(next_percent)
@@ -68,7 +68,7 @@ func _process(_delta: float) -> void:
 
 
 func _current_scene_is_included(scene_file_path: String) -> bool:
-	for include_path in Scenes.scenes._include_list:
+	for include_path: String in Scenes.scenes._include_list:
 		if scene_file_path.begins_with(include_path):
 			return true
 	return false
@@ -439,7 +439,7 @@ func exit_game() -> void:
 ## in order not to conflict with unloading the transition scene.
 func add_loaded_scene_to_scene_tree() -> void:
 	if _load_scene != "":
-		var scene_resource = ResourceLoader.load_threaded_get(_load_scene) as PackedScene
+		var scene_resource := ResourceLoader.load_threaded_get(_load_scene) as PackedScene
 		if scene_resource:
 			var scene_node := scene_resource.instantiate()
 			scene_node.scene_file_path = _load_scene
