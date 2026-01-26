@@ -48,14 +48,14 @@ func _ready() -> void:
 
 # Used for interactive change scene
 func _process(_delta: float) -> void:
-	var prevPercent: int = 0
+	var prev_percent: int = 0
 	if len(_load_progress) != 0:
-		prevPercent = int(_load_progress[0] * 100)
+		prev_percent = int(_load_progress[0] * 100)
 
 	var status = ResourceLoader.load_threaded_get_status(_load_scene, _load_progress)
-	var nextPercent: int = int(_load_progress[0] * 100)
-	if prevPercent != nextPercent:
-		load_percent_changed.emit(nextPercent)
+	var next_percent: int = int(_load_progress[0] * 100)
+	if prev_percent != next_percent:
+		load_percent_changed.emit(next_percent)
 
 	if status == ResourceLoader.THREAD_LOAD_LOADED:
 		set_process(false)
