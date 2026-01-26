@@ -19,7 +19,7 @@ const _MAP_SCENE_INDEX: int = 1
 var _loading_scene_path: String = ""
 ## Scene Enum of the scene that's currently loading
 var _load_scene_enum: Scenes.SceneName = Scenes.SceneName.NONE
-var _load_progress: Array = []
+var _load_status_buffer: Array = []
 var _reserved_scene: Scenes.SceneName = Scenes.SceneName.NONE
 var _reserved_load_options: SceneLoadOptions
 ## Keeps track of all loaded scenes (SceneName key)
@@ -49,17 +49,17 @@ func _ready() -> void:
 # Used for interactive change scene
 func _check_loading_progress() -> void:
 	var prev_percent: int = 0
-	if len(_load_progress) != 0:
-		prev_percent = int(_load_progress[0] * 100)
+	if len(_load_status_buffer) != 0:
+		prev_percent = int(_load_status_buffer[0] * 100)
 
-	var status := ResourceLoader.load_threaded_get_status(_loading_scene_path, _load_progress)
-	var next_percent: int = int(_load_progress[0] * 100)
+	var status := ResourceLoader.load_threaded_get_status(_loading_scene_path, _load_status_buffer)
+	var next_percent: int = int(_load_status_buffer[0] * 100)
 	if prev_percent != next_percent:
 		load_percent_changed.emit(next_percent)
 
 	if status == ResourceLoader.THREAD_LOAD_LOADED:
 		set_process(false)
-		_load_progress = []
+		_load_status_buffer = []
 		load_finished.emit()
 	elif status == ResourceLoader.THREAD_LOAD_IN_PROGRESS:
 		pass
