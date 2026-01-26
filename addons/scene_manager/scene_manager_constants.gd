@@ -11,6 +11,10 @@ enum SceneLoadingMode {
 	ADDITIVE
 }
 
+## Default node name to be used for scenes
+const DEFAULT_TREE_NODE_NAME: String = "World"
+## Default node name for loading/transition scenes
+const DEFAULT_LOADING_NODE_NAME: String = "===Transition==="
 const DEFAULT_PATH_TO_SCENES := "res://scenes.gd"
 const DEFAULT_FADE_OUT_TIME: float = 1
 const DEFAULT_FADE_IN_TIME: float = 1

@@ -18,7 +18,7 @@ func _on_button_additive_up():
 	if scene == null:
 		return
 	
-	var options := SceneManager.SceneLoadOptions.new()
+	var options := SceneLoadOptions.new()
 	options.mode = SceneManagerConstants.SceneLoadingMode.ADDITIVE
 	options.fade_in_time = 0
 	options.fade_out_time = 0
@@ -29,7 +29,7 @@ func _on_button_additive_node_up():
 	if scene == null:
 		return
 	
-	var options := SceneManager.SceneLoadOptions.new()
+	var options := SceneLoadOptions.new()
 	options.mode = SceneManagerConstants.SceneLoadingMode.ADDITIVE
 	options.node_name = "SAMPLE_NODE"
 	options.fade_in_time = 0
@@ -41,7 +41,7 @@ func _on_button_single_node_up():
 	if scene == null:
 		return
 	
-	var options := SceneManager.SceneLoadOptions.new()
+	var options := SceneLoadOptions.new()
 	options.mode = SceneManagerConstants.SceneLoadingMode.SINGLE_NODE
 	options.node_name = "SAMPLE_NODE"
 	options.fade_in_time = 0
