@@ -2,6 +2,8 @@ extends Node
 ## Main SceneManager that handles adding scenes and transitions.
 
 const C = preload("./scene_manager_constants.gd")
+const RING_BUFFER = preload("uid://t3tlcswbndjo")
+
 const FADE: String = "fade"
 # Index to the loaded scene map for the parent node
 const _IDX_WRAPPER_NODE: int = 0
@@ -12,7 +14,7 @@ const _IDX_SCENE_NODE: int = 1
 @onready var _fade_color_rect: ColorRect = %fade
 @onready var _animation_player: AnimationPlayer = %animation_player
 @onready var _in_transition: bool = false
-@onready var _back_buffer: RingBuffer = RingBuffer.new()
+@onready var _back_buffer := RING_BUFFER.new()
 @onready var _current_scene_name: Scenes.SceneName = Scenes.SceneName.NONE
 
 ## Scene path that is currently loading

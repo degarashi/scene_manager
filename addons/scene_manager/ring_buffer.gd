@@ -1,4 +1,3 @@
-class_name RingBuffer
 ## A simple ring buffer implementation
 
 const DEFAULT_RING_SIZE: int = 5
