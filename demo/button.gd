@@ -17,35 +17,35 @@ func _on_button_button_up():
 func _on_button_additive_up():
 	if scene == null:
 		return
-	
-	var options := SceneLoadOptions.new()
-	options.mode = SceneManagerConstants.SceneLoadingMode.ADDITIVE
-	options.fade_in_time = 0
-	options.fade_out_time = 0
+
+	var options := SceneLoadOptions.new(
+		SceneManagerConstants.DEFAULT_TREE_NODE_NAME,
+		SceneManagerConstants.SceneLoadingMode.ADDITIVE,
+		true,
+		0.0,
+		0.0,
+		true
+	)
 	SceneManager.load_scene(scene.scene_value, options)
 
 
 func _on_button_additive_node_up():
 	if scene == null:
 		return
-	
-	var options := SceneLoadOptions.new()
-	options.mode = SceneManagerConstants.SceneLoadingMode.ADDITIVE
-	options.node_name = "SAMPLE_NODE"
-	options.fade_in_time = 0
-	options.fade_out_time = 0
+
+	var options := SceneLoadOptions.new(
+		"SAMPLE_NODE", SceneManagerConstants.SceneLoadingMode.ADDITIVE, true, 0.0, 0.0, true
+	)
 	SceneManager.load_scene(scene.scene_value, options)
 
 
 func _on_button_single_node_up():
 	if scene == null:
 		return
-	
-	var options := SceneLoadOptions.new()
-	options.mode = SceneManagerConstants.SceneLoadingMode.SINGLE_NODE
-	options.node_name = "SAMPLE_NODE"
-	options.fade_in_time = 0
-	options.fade_out_time = 0
+
+	var options := SceneLoadOptions.new(
+		"SAMPLE_NODE", SceneManagerConstants.SceneLoadingMode.SINGLE_NODE, true, 0.0, 0.0, true
+	)
 	SceneManager.load_scene(scene.scene_value, options)
 
 
