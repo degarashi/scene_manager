@@ -25,7 +25,7 @@ var _reserved_load_options: SceneLoadOptions
 ## Keeps track of all loaded scenes (SceneName key)
 ##   and the node they belong to in an array (parent node: Node, scene node: Node)
 var _loaded_scene_map: Dictionary = {}
-var _data: SceneManagerData = SceneManagerData.new()
+var _scene_db: SceneManagerData = SceneManagerData.new()
 
 signal load_finished
 signal load_percent_changed(value: int)
@@ -39,7 +39,7 @@ signal fade_out_finished
 func _ready() -> void:
 	set_process(false)
 
-	_data.load()
+	_scene_db.load()
 	var scene_file_path_a: String = get_tree().current_scene.scene_file_path
 	_current_scene_name = _get_scene_key_by_path(scene_file_path_a)
 
@@ -144,8 +144,8 @@ func _pop_stack() -> Scenes.SceneName:
 
 # Returns the scene key of the passed scene value (scene address)
 func _get_scene_key_by_path(path: String) -> Scenes.SceneName:
-	for key in _data.scenes:
-		if _data.scenes[key]["value"] == path:
+	for key in _scene_db.scenes:
+		if _scene_db.scenes[key]["value"] == path:
 			# Convert the string into an enum
 			return SceneManagerUtils.get_enum_from_string(key)
 
@@ -157,9 +157,9 @@ func _get_scene_value(scene: Scenes.SceneName) -> String:
 	# The enums are normalized to have all caps, but the keys in the scenes may not have that,
 	# do a string comparison with everything normalized.
 	var scene_name: String = SceneManagerUtils.get_string_from_enum(scene)
-	for key in _data.scenes:
+	for key in _scene_db.scenes:
 		if scene_name == SceneManagerUtils.normalize_enum_string(key):
-			return _data.scenes[key]["value"]
+			return _scene_db.scenes[key]["value"]
 
 	return ""
 
@@ -251,7 +251,7 @@ func create_scene_instance(key: Scenes.SceneName, use_sub_threads = false) -> No
 ## https://github.com/godotengine/godot/issues/85255[br]
 ## https://github.com/godotengine/godot/issues/84012
 func get_scene(key: Scenes.SceneName, use_sub_threads = false) -> PackedScene:
-	var address = _data.scenes[key]["value"]
+	var address = _scene_db.scenes[key]["value"]
 	ResourceLoader.load_threaded_request(
 		address, "", use_sub_threads, ResourceLoader.CACHE_MODE_REUSE
 	)
