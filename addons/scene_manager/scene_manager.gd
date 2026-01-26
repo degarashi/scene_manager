@@ -47,7 +47,7 @@ func _ready() -> void:
 
 
 # Used for interactive change scene
-func _process(_delta: float) -> void:
+func _check_loading_progress() -> void:
 	var prev_percent: int = 0
 	if len(_load_progress) != 0:
 		prev_percent = int(_load_progress[0] * 100)
@@ -65,6 +65,10 @@ func _process(_delta: float) -> void:
 		pass
 	else:
 		assert(false, "Scene Manager Error: for some reason, loading failed.")
+
+
+func _process(_delta: float) -> void:
+	_check_loading_progress()
 
 
 func _current_scene_is_included(scene_file_path: String) -> bool:
