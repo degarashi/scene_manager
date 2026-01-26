@@ -13,7 +13,7 @@ const _IDX_SCENE_NODE: int = 1
 @onready var _animation_player: AnimationPlayer = %animation_player
 @onready var _in_transition: bool = false
 @onready var _back_buffer: RingBuffer = RingBuffer.new()
-@onready var _current_scene: Scenes.SceneName = Scenes.SceneName.NONE
+@onready var _current_scene_name: Scenes.SceneName = Scenes.SceneName.NONE
 
 ## Scene path that is currently loading
 var _loading_scene_path: String = ""
@@ -41,7 +41,7 @@ func _ready() -> void:
 
 	_data.load()
 	var scene_file_path_a: String = get_tree().current_scene.scene_file_path
-	_current_scene = _get_scene_key_by_value(scene_file_path_a)
+	_current_scene_name = _get_scene_key_by_path(scene_file_path_a)
 
 	call_deferred("_on_initial_setup")
 
@@ -93,8 +93,8 @@ func _on_initial_setup() -> void:
 
 	# Don't map a NONE scene as that shouldn't be here. It's possible to reach here
 	# if the loaded scene wasn't part of the enums and loaded some other way.
-	if _current_scene != Scenes.SceneName.NONE:
-		_loaded_scene_map[_current_scene] = [default_node, scene_node]
+	if _current_scene_name != Scenes.SceneName.NONE:
+		_loaded_scene_map[_current_scene_name] = [default_node, scene_node]
 	else:
 		push_warning("Loaded scene not added to the mapping due to being NONE.")
 
@@ -143,7 +143,7 @@ func _pop_stack() -> Scenes.SceneName:
 
 
 # Returns the scene key of the passed scene value (scene address)
-func _get_scene_key_by_value(path: String) -> Scenes.SceneName:
+func _get_scene_key_by_path(path: String) -> Scenes.SceneName:
 	for key in _data.scenes:
 		if _data.scenes[key]["value"] == path:
 			# Convert the string into an enum
@@ -168,9 +168,9 @@ func _get_scene_value(scene: Scenes.SceneName) -> String:
 func _reload_current_scene() -> bool:
 	# Use the same parent node the scene currently has to keep it consistent.
 	var load_options := SceneLoadOptions.new()
-	load_options.node_name = _loaded_scene_map[_current_scene][_IDX_WRAPPER_NODE].name
+	load_options.node_name = _loaded_scene_map[_current_scene_name][_IDX_WRAPPER_NODE].name
 	load_options.add_to_back = false
-	load_scene(_current_scene, load_options)
+	load_scene(_current_scene_name, load_options)
 	return true
 
 
@@ -279,7 +279,7 @@ func load_scene(
 
 	# Keep track of the loaded scene enum to the node it's a child of.
 	_loaded_scene_map[scene] = [parent_node, new_scene_node]
-	_current_scene = scene
+	_current_scene_name = scene
 	scene_loaded.emit()
 
 	if _fade_in(load_options.fade_in_time):
@@ -334,7 +334,7 @@ func _add_scene_node(node: Node, load_options: SceneLoadOptions = create_load_op
 		# Note we add the current scene to back buffer and not the new scene coming in
 		# as we want the old scene to revert to if needed.
 		if load_options.add_to_back:
-			_append_stack(_current_scene)
+			_append_stack(_current_scene_name)
 	else:
 		# For additive, add the node if it doesn't exist then load the scene into that node.
 		if not root.has_node(load_options.node_name):
@@ -407,10 +407,10 @@ func _load_scene_node_from_path(path: String) -> Node:
 ## Note this assumes Single loading and will remove any additive scenes with default options.
 func load_previous_scene() -> bool:
 	var pop: Scenes.SceneName = _pop_stack()
-	if pop != Scenes.SceneName.NONE and _current_scene != Scenes.SceneName.NONE:
+	if pop != Scenes.SceneName.NONE and _current_scene_name != Scenes.SceneName.NONE:
 		# Use the same parent node the scene currently has to keep it consistent.
 		var load_options := SceneLoadOptions.new()
-		load_options.node_name = _loaded_scene_map[_current_scene][_IDX_WRAPPER_NODE].name
+		load_options.node_name = _loaded_scene_map[_current_scene_name][_IDX_WRAPPER_NODE].name
 		load_options.add_to_back = false
 		load_scene(pop, load_options)
 		return true
@@ -493,7 +493,7 @@ func activate_loaded_scene() -> void:
 
 	# Get the reserved scene to switch to from the loaded scene map
 	#get_tree().set_current_scene(_loaded_scene_map[_reserved_scene][_IDX_SCENE_NODE])
-	_current_scene = _reserved_scene
+	_current_scene_name = _reserved_scene
 
 	if _fade_in(_reserved_load_options.fade_in_time):
 		await _animation_player.animation_finished
