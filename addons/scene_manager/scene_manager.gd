@@ -142,20 +142,6 @@ func _pop_stack() -> Scenes.SceneName:
 	return Scenes.SceneName.NONE
 
 
-# Changes scene to the previous scene.[br]
-# Note this assumes Single loading and will remove any additive scenes with default options.
-func _back() -> bool:
-	var pop: Scenes.SceneName = _pop_stack()
-	if pop != Scenes.SceneName.NONE and _current_scene != Scenes.SceneName.NONE:
-		# Use the same parent node the scene currently has to keep it consistent.
-		var load_options := SceneLoadOptions.new()
-		load_options.node_name = _loaded_scene_map[_current_scene][_MAP_PARENT_INDEX].name
-		load_options.add_to_back = false
-		load_scene(pop, load_options)
-		return true
-	return false
-
-
 # Returns the scene key of the passed scene value (scene address)
 func _get_scene_key_by_value(path: String) -> Scenes.SceneName:
 	for key in _data.scenes:
@@ -417,9 +403,18 @@ func _load_scene_node_from_path(path: String) -> Node:
 	return result
 
 
-## Changes the scene to the previous.
-func go_back() -> void:
-	_back()
+## Changes the scene to the previous.[br]
+## Note this assumes Single loading and will remove any additive scenes with default options.
+func load_previous_scene() -> bool:
+	var pop: Scenes.SceneName = _pop_stack()
+	if pop != Scenes.SceneName.NONE and _current_scene != Scenes.SceneName.NONE:
+		# Use the same parent node the scene currently has to keep it consistent.
+		var load_options := SceneLoadOptions.new()
+		load_options.node_name = _loaded_scene_map[_current_scene][_MAP_PARENT_INDEX].name
+		load_options.add_to_back = false
+		load_scene(pop, load_options)
+		return true
+	return false
 
 
 ## Reload the currently loaded scene.

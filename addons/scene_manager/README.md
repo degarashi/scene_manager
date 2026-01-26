@@ -101,6 +101,6 @@ There are additional helper functions for changing the scenes the manager suppor
 
 > Note these functions are still being adjusted and worked on.
 
-- `go_back` will load the scene on the back buffer to go back to the previous scene. Note this will load the scene in **SINGLE** mode so all other scenes in the tree will be removed. Note if the back buffer size was set to 0, then nothing will happen as there will be nothing in the buffer.
+- `load_previous_scene` will load the scene on the back buffer to go back to the previous scene. Note this will load the scene in **SINGLE** mode so all other scenes in the tree will be removed. Note if the back buffer size was set to 0, then nothing will happen as there will be nothing in the buffer.
 - `reload_current_scene` will load the current scene again in **SINGLE** mode.
 - `exit_game` quits the game immediately.

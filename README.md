@@ -151,7 +151,7 @@ func _on_loading_scene_initialization_button_up():
 
 
 func _on_back_pressed() -> void:
-	SceneManager.go_back()
+	SceneManager.load_previous_scene()
 
 
 func _on_reload_pressed() -> void:
@@ -309,7 +309,7 @@ func _on_timeout():
 7. `unload_scene`(**scene**: Scenes.SceneName) -> void:
     * Unloads the specified scene from the tree.
     * Throws an assert error if the scene hasn't been loaded.
-8. `go_back`() -> void:
+8. `load_previous_scene`() -> void:
     * Changes the scene back to the previous in `SINGLE` mode.
 9. `reload_current_scene`() -> void:
     * Reloads the currently loaded scene.

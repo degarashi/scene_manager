@@ -68,7 +68,7 @@ func _on_loading_scene_initialization_button_up():
 
 
 func _on_back_pressed() -> void:
-	SceneManager.go_back()
+	SceneManager.load_previous_scene()
 
 
 func _on_reload_pressed() -> void:
