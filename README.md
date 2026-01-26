@@ -188,7 +188,7 @@ func _on_next_button_up():
  var fade_out_options = SceneManager.create_options(1.0, "scribbles", 0.2, true)
  var fade_in_options = SceneManager.create_options(1.0, "crooked_tiles", 0.2, true)
  var general_options = SceneManager.create_general_options(Color(0, 0, 0), 0, false, true)
- SceneManager.change_scene_to_loaded_scene(fade_out_options, fade_in_options, general_options)
+ SceneManager.activate_loaded_scene(fade_out_options, fade_in_options, general_options)
 ```
 
 ### More Complex Example With Loading Screen for Scenarios That Scenes Need Some Time in Background
@@ -326,7 +326,7 @@ func _on_timeout():
     * **Note**: Connect to `load_percent_changed(value: int)` and `load_finished` signals to listen to updates on your scene loading status.
 14. `get_loaded_scene`() -> PackedScene:
     * Returns the loaded scene. If the scene isn't loaded, will block and wait until the loaded scene is ready.
-15. `change_scene_to_loaded_scene`(**load_options**: SceneLoadOptions) -> void:
+15. `activate_loaded_scene`(**load_options**: SceneLoadOptions) -> void:
     * Changes scene to interactively loaded scene.
 16. `pop_previous_scene`() -> Scenes.SceneName:
     * Pops from the back stack and returns previous scene (scene before current scene)

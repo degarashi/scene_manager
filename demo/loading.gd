@@ -23,4 +23,4 @@ func loading_finished() -> void:
 
 
 func _on_next_button_up():
-	SceneManager.change_scene_to_loaded_scene()
+	SceneManager.activate_loaded_scene()

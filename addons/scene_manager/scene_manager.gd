@@ -465,7 +465,7 @@ func add_loaded_scene_to_scene_tree() -> void:
 ## is completely ready and functional to change the active scene.[br]
 ## This is used in the `load_scene_with_transition` flow and uses the reserved information for
 ## switching scenes.
-func change_scene_to_loaded_scene() -> void:
+func activate_loaded_scene() -> void:
 	_set_in_transition()
 	_set_clickable(_reserved_load_options.clickable)
 
