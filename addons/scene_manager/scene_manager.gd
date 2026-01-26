@@ -4,9 +4,9 @@ extends Node
 const C = preload("./scene_manager_constants.gd")
 const FADE: String = "fade"
 # Index to the loaded scene map for the parent node
-const _MAP_PARENT_INDEX: int = 0
+const _IDX_WRAPPER_NODE: int = 0
 # Index to the loaded scene map for the scene node
-const _MAP_SCENE_INDEX: int = 1
+const _IDX_SCENE_NODE: int = 1
 
 # Built in fade in/out for scene loading
 @onready var _fade_color_rect: ColorRect = %fade
@@ -168,7 +168,7 @@ func _get_scene_value(scene: Scenes.SceneName) -> String:
 func _reload_current_scene() -> bool:
 	# Use the same parent node the scene currently has to keep it consistent.
 	var load_options := SceneLoadOptions.new()
-	load_options.node_name = _loaded_scene_map[_current_scene][_MAP_PARENT_INDEX].name
+	load_options.node_name = _loaded_scene_map[_current_scene][_IDX_WRAPPER_NODE].name
 	load_options.add_to_back = false
 	load_scene(_current_scene, load_options)
 	return true
@@ -301,7 +301,7 @@ func unload_scene(scene: Scenes.SceneName) -> void:
 			)
 		)
 
-	_loaded_scene_map[scene][_MAP_SCENE_INDEX].free()
+	_loaded_scene_map[scene][_IDX_SCENE_NODE].free()
 	_loaded_scene_map.erase(scene)
 
 
@@ -367,8 +367,8 @@ func _unload_node(node_name: String) -> void:
 	# Using the node name, find all the scenes that are loaded under it and free them before
 	# removing the parent node itself.
 	for key in _loaded_scene_map.keys():
-		if _loaded_scene_map[key][_MAP_PARENT_INDEX].name == node_name:
-			_loaded_scene_map[key][_MAP_SCENE_INDEX].free()
+		if _loaded_scene_map[key][_IDX_WRAPPER_NODE].name == node_name:
+			_loaded_scene_map[key][_IDX_SCENE_NODE].free()
 			_loaded_scene_map.erase(key)
 
 	get_tree().root.get_node(node_name).free()
@@ -381,8 +381,8 @@ func _unload_all_nodes() -> void:
 	# Using the dictionary keys as a set.
 	var unique_nodes := {}
 	for key in _loaded_scene_map:
-		if not unique_nodes.has(_loaded_scene_map[key][_MAP_PARENT_INDEX]):
-			unique_nodes[_loaded_scene_map[key][_MAP_PARENT_INDEX]] = null
+		if not unique_nodes.has(_loaded_scene_map[key][_IDX_WRAPPER_NODE]):
+			unique_nodes[_loaded_scene_map[key][_IDX_WRAPPER_NODE]] = null
 
 	# Go through each parent node and unload them
 	for node in unique_nodes:
@@ -410,7 +410,7 @@ func load_previous_scene() -> bool:
 	if pop != Scenes.SceneName.NONE and _current_scene != Scenes.SceneName.NONE:
 		# Use the same parent node the scene currently has to keep it consistent.
 		var load_options := SceneLoadOptions.new()
-		load_options.node_name = _loaded_scene_map[_current_scene][_MAP_PARENT_INDEX].name
+		load_options.node_name = _loaded_scene_map[_current_scene][_IDX_WRAPPER_NODE].name
 		load_options.add_to_back = false
 		load_scene(pop, load_options)
 		return true
@@ -482,17 +482,17 @@ func activate_loaded_scene() -> void:
 		var remove_nodes := {}
 		for key in _loaded_scene_map:
 			if (
-				_loaded_scene_map[key][_MAP_PARENT_INDEX].name != _reserved_load_options.node_name
-				and not remove_nodes.has(_loaded_scene_map[key][_MAP_PARENT_INDEX])
+				_loaded_scene_map[key][_IDX_WRAPPER_NODE].name != _reserved_load_options.node_name
+				and not remove_nodes.has(_loaded_scene_map[key][_IDX_WRAPPER_NODE])
 			):
-				remove_nodes[_loaded_scene_map[key][_MAP_PARENT_INDEX]] = null
+				remove_nodes[_loaded_scene_map[key][_IDX_WRAPPER_NODE]] = null
 
 		# Go through each parent node and unload them
 		for node in remove_nodes:
 			_unload_node(node.name)
 
 	# Get the reserved scene to switch to from the loaded scene map
-	#get_tree().set_current_scene(_loaded_scene_map[_reserved_scene][_MAP_SCENE_INDEX])
+	#get_tree().set_current_scene(_loaded_scene_map[_reserved_scene][_IDX_SCENE_NODE])
 	_current_scene = _reserved_scene
 
 	if _fade_in(_reserved_load_options.fade_in_time):
