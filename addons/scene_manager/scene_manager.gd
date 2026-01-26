@@ -565,7 +565,7 @@ func pop_previous_scene() -> Scenes.SceneName:
 
 
 ## Returns how many scenes there are in list of previous scenes.
-func previous_scenes_length() -> int:
+func get_history_count() -> int:
 	return _back_buffer.size()
 
 

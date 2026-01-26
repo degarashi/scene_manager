@@ -330,7 +330,7 @@ func _on_timeout():
     * Changes scene to interactively loaded scene.
 16. `pop_previous_scene`() -> Scenes.SceneName:
     * Pops from the back stack and returns previous scene (scene before current scene)
-17. `previous_scenes_length`() -> int:
+17. `get_history_count`() -> int:
     * Returns how many scenes there are in list of previous scenes.
 18. `set_reserved_scene`(**key**: Scenes.SceneName) -> void:
     * Records a scene key to be used for loading scenes to know where to go after getting loaded into loading scene or just for next scene to know where to go next.
