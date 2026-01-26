@@ -11,8 +11,9 @@ extends Button
 func _on_button_button_up():
 	if scene == null:
 		return
-	
+
 	SceneManager.load_scene(scene.scene_value)
+
 
 func _on_button_additive_up():
 	if scene == null:
@@ -56,15 +57,17 @@ func _on_reset_button_up():
 func _on_loading_scene_button_up():
 	if scene == null:
 		return
-	
+
 	SceneManager.load_scene_with_transition(scene.scene_value, Scenes.SceneName.LOADING)
 
 
 func _on_loading_scene_initialization_button_up():
 	if scene == null:
 		return
-	
-	SceneManager.load_scene_with_transition(scene.scene_value, Scenes.SceneName.LOADING_WITH_INITIALIZATION)
+
+	SceneManager.load_scene_with_transition(
+		scene.scene_value, Scenes.SceneName.LOADING_WITH_INITIALIZATION
+	)
 
 
 func _on_back_pressed() -> void:
