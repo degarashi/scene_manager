@@ -175,7 +175,7 @@ extends Control
 func _ready():
  SceneManager.load_percent_changed.connect(percent_changed)
  SceneManager.load_finished.connect(loading_finished)
- SceneManager.load_scene_interactive(SceneManager.get_recorded_scene())
+ SceneManager.load_scene_interactive(SceneManager.get_reserved_scene())
 
 func percent_changed(number: int) -> void:
  progress.value = number
@@ -211,7 +211,7 @@ var gap = 30
 func _ready():
  SceneManager.load_percent_changed.connect(percent_changed)
  SceneManager.load_finished.connect(loading_finished)
- SceneManager.load_scene_interactive(SceneManager.get_recorded_scene())
+ SceneManager.load_scene_interactive(SceneManager.get_reserved_scene())
 
 func percent_changed(number: int) -> void:
  # the last `gap%` is for the loaded scene itself to load its own data or initialize or world generate or ...
@@ -332,10 +332,10 @@ func _on_timeout():
     * Pops from the back stack and returns previous scene (scene before current scene)
 17. `previous_scenes_length`() -> int:
     * Returns how many scenes there are in list of previous scenes.
-18. `set_recorded_scene`(**key**: Scenes.SceneName) -> void:
+18. `set_reserved_scene`(**key**: Scenes.SceneName) -> void:
     * Records a scene key to be used for loading scenes to know where to go after getting loaded into loading scene or just for next scene to know where to go next.
-19. `get_recorded_scene`() -> Scenes.SceneName:
-    * Returns recorded scene by `set_recorded_scene` function.
+19. `get_reserved_scene`() -> Scenes.SceneName:
+    * Returns reserved scene by `set_reserved_scene` function.
 20. `pause`(**fade_out_time**: float, **general_options**: SceneLoadOptions = create_load_options()) -> void:
     * Just executes the fade out animation.
     * Use it with `resume` function when you need to do something but do not want the player to see it.

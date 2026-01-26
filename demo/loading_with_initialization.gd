@@ -12,7 +12,7 @@ var gap = 30
 func _ready():
 	SceneManager.load_percent_changed.connect(percent_changed)
 	SceneManager.load_finished.connect(loading_finished)
-	SceneManager.load_scene_interactive(SceneManager.get_recorded_scene())
+	SceneManager.load_scene_interactive(SceneManager.get_reserved_scene())
 
 
 func percent_changed(number: int) -> void:

@@ -20,8 +20,8 @@ var _load_scene: String = ""
 ## Scene Enum of the scene that's currently loading
 var _load_scene_enum: Scenes.SceneName = Scenes.SceneName.NONE
 var _load_progress: Array = []
-var _recorded_scene: Scenes.SceneName = Scenes.SceneName.NONE
-var _recorded_load_options: SceneLoadOptions
+var _reserved_scene: Scenes.SceneName = Scenes.SceneName.NONE
+var _reserved_load_options: SceneLoadOptions
 ## Keeps track of all loaded scenes (SceneName key)
 ##   and the node they belong to in an array (parent node: Node, scene node: Node)
 var _loaded_scene_map: Dictionary = {}
@@ -182,7 +182,7 @@ func _set_clickable(clickable: bool) -> void:
 		_fade_color_rect.mouse_filter = Control.MOUSE_FILTER_STOP
 
 
-## Limits how deep the scene manager is allowed to record previous scenes which
+## Limits how deep the scene manager is allowed to reserved previous scenes which
 ## affects in changing scene to `back`(previous scene) functionality.[br]
 ##
 ## allowed `input` values:[br]
@@ -433,7 +433,7 @@ func exit_game() -> void:
 ## and then have to listen on `load_finished` signal. After the signal emits,
 ## you call this function and this function adds the loaded scene to the scene
 ## tree but exactly behind the current scene so that you still can not see the new scene.[br]
-## This uses the recorded load options that was saved when loading the scene with
+## This uses the reserved load options that was saved when loading the scene with
 ## an transition/loading scene except it loads as a SINGLE_NODE if SINGLE is specified
 ## in order not to conflict with unloading the transition scene.
 func add_loaded_scene_to_scene_tree() -> void:
@@ -443,7 +443,7 @@ func add_loaded_scene_to_scene_tree() -> void:
 			var scene_node := scene_resource.instantiate()
 			scene_node.scene_file_path = _load_scene
 
-			var temp_options := _recorded_load_options.copy()
+			var temp_options := _reserved_load_options.copy()
 			if temp_options.mode == C.SceneLoadingMode.SINGLE:
 				temp_options.mode = C.SceneLoadingMode.SINGLE_NODE
 			var parent_node: Node = _add_scene_node(scene_node, temp_options)
@@ -457,19 +457,19 @@ func add_loaded_scene_to_scene_tree() -> void:
 			_load_scene_enum = Scenes.SceneName.NONE
 
 			# Keep track of the loaded scene enum to the node it's a child of.
-			_loaded_scene_map[_recorded_scene] = [parent_node, scene_node]
+			_loaded_scene_map[_reserved_scene] = [parent_node, scene_node]
 
 
 ## When you added the loaded scene to the scene tree by `add_loaded_scene_to_scene_tree`
 ## function, you call this function after you are sure that the added scene to scene tree
 ## is completely ready and functional to change the active scene.[br]
-## This is used in the `load_scene_with_transition` flow and uses the recorded information for
+## This is used in the `load_scene_with_transition` flow and uses the reserved information for
 ## switching scenes.
 func change_scene_to_loaded_scene() -> void:
 	_set_in_transition()
-	_set_clickable(_recorded_load_options.clickable)
+	_set_clickable(_reserved_load_options.clickable)
 
-	if _fade_out(_recorded_load_options.fade_out_time):
+	if _fade_out(_reserved_load_options.fade_out_time):
 		await _animation_player.animation_finished
 		fade_out_finished.emit()
 
@@ -478,11 +478,11 @@ func change_scene_to_loaded_scene() -> void:
 
 	# If the original load options was SINGLE loading mode, then also remove any other
 	# node that isn't part of the load option node name.
-	if _recorded_load_options.mode == C.SceneLoadingMode.SINGLE:
+	if _reserved_load_options.mode == C.SceneLoadingMode.SINGLE:
 		var remove_nodes := {}
 		for key in _loaded_scene_map:
 			if (
-				_loaded_scene_map[key][_MAP_PARENT_INDEX].name != _recorded_load_options.node_name
+				_loaded_scene_map[key][_MAP_PARENT_INDEX].name != _reserved_load_options.node_name
 				and not remove_nodes.has(_loaded_scene_map[key][_MAP_PARENT_INDEX])
 			):
 				remove_nodes[_loaded_scene_map[key][_MAP_PARENT_INDEX]] = null
@@ -491,21 +491,21 @@ func change_scene_to_loaded_scene() -> void:
 		for node in remove_nodes:
 			_unload_node(node.name)
 
-	# Get the recorded scene to switch to from the loaded scene map
-	#get_tree().set_current_scene(_loaded_scene_map[_recorded_scene][_MAP_SCENE_INDEX])
-	_current_scene = _recorded_scene
+	# Get the reserved scene to switch to from the loaded scene map
+	#get_tree().set_current_scene(_loaded_scene_map[_reserved_scene][_MAP_SCENE_INDEX])
+	_current_scene = _reserved_scene
 
-	if _fade_in(_recorded_load_options.fade_in_time):
+	if _fade_in(_reserved_load_options.fade_in_time):
 		await _animation_player.animation_finished
 		fade_in_finished.emit()
 
 	_set_clickable(true)
 	_set_out_transition()
 
-	# Reset the recorded scene information now that the scene has fully loaded and is
+	# Reset the reserved scene information now that the scene has fully loaded and is
 	# the active scene.
-	_recorded_scene = Scenes.SceneName.NONE
-	_recorded_load_options = null
+	_reserved_scene = Scenes.SceneName.NONE
+	_reserved_load_options = null
 
 
 ## Loads scene interactive[br]
@@ -533,14 +533,14 @@ func load_scene_interactive(key: Scenes.SceneName, use_sub_threads = false) -> v
 
 ## Loads a scene with a loading/transition scene.[br]
 ##
-## This sets the recorded scene to the specified next_scene and loads the transition_scene.
+## This sets the reserved scene to the specified next_scene and loads the transition_scene.
 ## The transition_scene is the loading scene that should subscribe to the `load_finished` signal
 func load_scene_with_transition(
 	next_scene: Scenes.SceneName,
 	transition_scene: Scenes.SceneName,
 	load_options: SceneLoadOptions = create_load_options()
 ) -> void:
-	set_recorded_scene(next_scene, load_options)
+	reserve_next_scene(next_scene, load_options)
 
 	# The load scene will be on it's own node that will be on top of everything else
 	load_options.node_name = C.DEFAULT_LOADING_NODE_NAME
@@ -569,24 +569,24 @@ func previous_scenes_length() -> int:
 	return _back_buffer.size()
 
 
-## Records a scene key to be used for loading scenes to know where to go after getting loaded
+## Reserves a scene key to be used for loading scenes to know where to go after getting loaded
 ## into loading scene or just for next scene to know where to go next.
-func set_recorded_scene(
+func reserve_next_scene(
 	key: Scenes.SceneName, load_options: SceneLoadOptions = create_load_options()
 ) -> void:
-	_recorded_scene = key
+	_reserved_scene = key
 	# Make sure to make a copy of the load options so it doesn't get affected by changes outside.
-	_recorded_load_options = load_options.copy()
+	_reserved_load_options = load_options.copy()
 
 
-## Returns the recorded scene.
-func get_recorded_scene() -> Scenes.SceneName:
-	return _recorded_scene
+## Returns the reserved scene.
+func get_reserved_scene() -> Scenes.SceneName:
+	return _reserved_scene
 
 
-## Returns the recorded load options for the recorded scene.
-func get_recorded_load_option() -> SceneLoadOptions:
-	return _recorded_load_options
+## Returns the reserved load options for the reserved scene.
+func get_reserved_load_option() -> SceneLoadOptions:
+	return _reserved_load_options
 
 
 ## Pause (fadeout). You can resume afterwards.
