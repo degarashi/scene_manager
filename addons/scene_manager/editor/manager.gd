@@ -145,7 +145,7 @@ func get_all_lists_names_except(excepts: Array = [""]) -> Array:
 	var arr: Array = []
 	for i in range(len(excepts)):
 		excepts[i] = excepts[i].capitalize()
-	for node in _get_lists_nodes():
+	for node in _get_section_lists():
 		if node.name in excepts:
 			continue
 		arr.append(node.name)
@@ -161,25 +161,25 @@ func _clear_scenes_list(name: String) -> void:
 
 # Clears scenes inside all UI lists
 func _clear_all_lists() -> void:
-	for list in _get_lists_nodes():
+	for list in _get_section_lists():
 		list.clear_list()
 
 
 # Removes all tabs in scene manager
 func _delete_all_tabs() -> void:
-	for node in _get_lists_nodes():
+	for node in _get_section_lists():
 		node.free()
 
 
 # Returns nodes of all section lists from UI in `Scene Manager` tool
-func _get_lists_nodes() -> Array:
+func _get_section_lists() -> Array:
 	return _tab_container.get_children()
 
 
 # Returns node of a specific list in UI.
 # Note that the Node is part of `scene_list.gd` and has access to those functions.
 func _get_scene_list_node_by_name(name: String) -> Node:
-	for node in _get_lists_nodes():
+	for node in _get_section_lists():
 		if name.capitalize() == node.name:
 			return node
 	return null
@@ -187,13 +187,13 @@ func _get_scene_list_node_by_name(name: String) -> Node:
 
 # Sorts all the lists in the UI based on the key name.
 func _sort_scenes_in_lists() -> void:
-	for list_node in _get_lists_nodes():
+	for list_node in _get_section_lists():
 		list_node.sort_scenes()
 
 
 # Renames a scene in all the lists.
 func _rename_scene_in_lists(key: String, new_key: String) -> void:
-	for list_node in _get_lists_nodes():
+	for list_node in _get_section_lists():
 		list_node.update_item_key(key, new_key)
 		list_node.sort_scenes()
 
@@ -281,7 +281,7 @@ func _reload_ui_tabs() -> void:
 		_add_scene_ui_list(ALL_LIST_NAME)
 	for section in _data.sections:
 		var found = false
-		for list in _get_lists_nodes():
+		for list in _get_section_lists():
 			if list.name == section:
 				found = true
 		if not found:
@@ -291,7 +291,7 @@ func _reload_ui_tabs() -> void:
 # Loops through the UI lists and updates them with the "unsaved changes"
 #   visibility if the data has changed.
 func _refresh_save_changes() -> void:
-	for list in _get_lists_nodes():
+	for list in _get_section_lists():
 		list.set_changes_unsaved(_data.has_changes)
 
 
@@ -310,7 +310,7 @@ func _refresh_ui() -> void:
 func update_all_scene_with_key(
 	scene_key: String, scene_new_key: String, value: String, except_list: Array = []
 ) -> void:
-	for list in _get_lists_nodes():
+	for list in _get_section_lists():
 		if list not in except_list:
 			list.update_scene_with_key(scene_key, scene_new_key, value)
 
