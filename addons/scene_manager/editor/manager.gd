@@ -104,7 +104,6 @@ func _on_item_renamed(_node: Node, previous_name: String, new_name: String) -> v
 	_rename_scene_in_lists(previous_name, new_name)
 
 	if _manager_data.auto_save:
-		_save_delay_timer.wait_time = 0.5
 		_save_delay_timer.start()
 
 
