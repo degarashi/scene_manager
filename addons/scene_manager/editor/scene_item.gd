@@ -115,7 +115,7 @@ func _on_popup_button_button_up():
 # Happens when open scene button clicks
 func _on_open_scene_button_up():
 	# Open it
-	EditorPlugin.new().get_editor_interface().open_scene_from_path(get_value())
+	EditorInterface.open_scene_from_path(get_value())
 	# Show in FileSystem
 	EditorInterface.get_file_system_dock().navigate_to_path(get_value())
 
@@ -128,9 +128,7 @@ func _on_value_gui_input(event: InputEvent):
 		and event.button_index == MOUSE_BUTTON_LEFT
 		and _mouse_is_over_value
 	):
-		EditorPlugin.new().get_editor_interface().get_file_system_dock().navigate_to_path(
-			get_value()
-		)
+		EditorInterface.get_file_system_dock().navigate_to_path(get_value())
 
 
 # Happens when mouse is over value input
