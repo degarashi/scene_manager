@@ -101,8 +101,15 @@ func _on_popup_button_button_up():
 		_popup_menu.set_item_checked(i, section in _root.get_sections(get_value()))
 		i += 1
 
-	var popup_size = _popup_menu.size
-	_popup_menu.popup(Rect2(get_global_mouse_position(), popup_size))
+	# Recalculate size since menu content changed
+	_popup_menu.reset_size()
+
+	# Get mouse screen coordinates (global coordinates)
+	# Get window position via get_screen_transform().origin and add local mouse position
+	var popup_pos := get_screen_transform().origin + get_local_mouse_position()
+
+	_popup_menu.set_position(popup_pos)
+	_popup_menu.popup()
 
 
 # Happens when open scene button clicks
