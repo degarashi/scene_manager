@@ -24,13 +24,13 @@ func _ready() -> void:
 
 ## Add child to the sub section list
 func add_item(item: Node) -> void:
-	item._sub_section = self
+	item.set_subsection(self)
 	_list.add_child(item)
 
 
 ## Removes an item from sub section list
 func remove_item(item: Node) -> void:
-	item._sub_section = null
+	item.set_subsection(null)
 	_list.remove_child(item)
 
 
