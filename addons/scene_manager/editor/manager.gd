@@ -83,7 +83,7 @@ func _on_data_changed() -> void:
 	_refresh_save_changes()
 
 
-func _on_section_removed(node: Node, section_name: String) -> void:
+func _on_section_removed(_node: Node, section_name: String) -> void:
 	_data.remove_section(section_name)
 
 	# Loop through the scenes and update the categorized for the "All" list
@@ -97,7 +97,7 @@ func _on_timer_timeout() -> void:
 	_on_data_changed()
 
 
-func _on_item_renamed(node: Node, previous_name: String, new_name: String) -> void:
+func _on_item_renamed(_node: Node, previous_name: String, new_name: String) -> void:
 	_data.change_name(previous_name, new_name)
 	_rename_scene_in_lists(previous_name, new_name)
 
@@ -448,7 +448,7 @@ func _on_hide_button_up():
 
 
 # Tab changes
-func _on_tab_container_tab_changed(tab: int):
+func _on_tab_container_tab_changed(_tab: int):
 	_on_section_name_text_changed(_section_name_line_edit.text)
 
 
