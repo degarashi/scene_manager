@@ -46,7 +46,7 @@ func _ready() -> void:
 		_main_subsection = sub
 
 		var sub2 := SUB_SECTION.instantiate()
-		sub._root = _root
+		sub2._root = _root
 		sub2.name = SectionName.CATEGORIZED
 		_container.add_child(sub2)
 		sub2.enable_delete_button(false)
