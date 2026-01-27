@@ -11,11 +11,13 @@ const SCENE_LIST_ITEM = preload("res://addons/scene_manager/editor/scene_list.ts
 
 # Icons
 const ICON_HIDE_BUTTON_CHECKED = preload("res://addons/scene_manager/icons/GuiChecked.svg")
-const ICON_HIDE_BUTTON_UNCHECKED = preload("res://addons/scene_manager/icons/GuiCheckedDisabled.svg")
+const ICON_HIDE_BUTTON_UNCHECKED = preload(
+	"res://addons/scene_manager/icons/GuiCheckedDisabled.svg"
+)
 const ICON_EXPAND_BUTTON = preload("res://addons/scene_manager/icons/Expand.svg")
 const ICON_COLLAPSE_BUTTON = preload("res://addons/scene_manager/icons/Collapse.svg")
 
-const ALL_LIST_NAME := "All" ## Default list that contains all scenes
+const ALL_LIST_NAME := "All"  ## Default list that contains all scenes
 
 # UI nodes and items
 @onready var _include_list: Node = find_child("include_list")
@@ -38,7 +40,7 @@ const ALL_LIST_NAME := "All" ## Default list that contains all scenes
 @onready var _include_panel_container: Node = find_child("include_panel")
 
 var _data: SceneManagerData = SceneManagerData.new()
-var _autosave_timer: Timer = null ## Timer for autosave when the key changes
+var _autosave_timer: Timer = null  ## Timer for autosave when the key changes
 
 # UI signal callbacks
 signal include_child_deleted(node: Node, address: String)
@@ -50,12 +52,12 @@ signal section_removed(node: Node, section_name: String)
 
 func _ready() -> void:
 	_data.load()
-	
+
 	# Refreshes the UI with the latest data
 	_on_refresh_button_up()
 	_change_auto_save_state(_data.auto_save)
 	_show_includes_list(_data.includes_visible)
-	
+
 	include_child_deleted.connect(_on_include_child_deleted)
 	item_renamed.connect(_on_item_renamed)
 	item_added_to_list.connect(_on_added_to_list)
@@ -72,10 +74,11 @@ func _ready() -> void:
 
 #region Signal Callbacks
 
+
 func _on_data_changed() -> void:
 	if _data.auto_save:
 		_data.save()
-	
+
 	# Update the lists to show "unsaved changes" if there's any changes from the scene file.
 	_refresh_save_changes()
 
@@ -86,7 +89,7 @@ func _on_section_removed(node: Node, section_name: String) -> void:
 	# Loop through the scenes and update the categorized for the "All" list
 	for scene in _data.scenes:
 		_update_categorized(scene)
-	
+
 	_on_data_changed()
 
 
@@ -97,7 +100,7 @@ func _on_timer_timeout() -> void:
 func _on_item_renamed(node: Node, previous_name: String, new_name: String) -> void:
 	_data.change_name(previous_name, new_name)
 	_rename_scene_in_lists(previous_name, new_name)
-	
+
 	if _data.auto_save:
 		_autosave_timer.wait_time = 0.5
 		_autosave_timer.start()
@@ -122,6 +125,7 @@ func _on_include_child_deleted(node: Node, address: String) -> void:
 	_data.remove_include_path(address)
 	_on_data_changed()
 	_on_refresh_button_up()
+
 
 #endregion Signal Callbacks
 
@@ -204,7 +208,9 @@ func _update_categorized(key: String) -> void:
 
 
 ## Removes a scene from a specific list.
-func remove_scene_from_list(section_name: String, scene_name: String, scene_address: String) -> void:
+func remove_scene_from_list(
+	section_name: String, scene_name: String, scene_address: String
+) -> void:
 	var list: Node = _get_scene_list_node_by_name(section_name)
 	list.remove_item(scene_name, scene_address)
 
@@ -214,7 +220,9 @@ func remove_scene_from_list(section_name: String, scene_name: String, scene_addr
 ## This function is used in `scene_item.gd` script and plus doing what it is supposed
 ## to do, removes and again adds the item in `All` section so that it can be placed
 ## in correct place in correct section.
-func add_scene_to_list(list_name: String, scene_name: String, scene_address: String, categorized: bool = false) -> void:
+func add_scene_to_list(
+	list_name: String, scene_name: String, scene_address: String, categorized: bool = false
+) -> void:
 	var list: Node = _get_scene_list_node_by_name(list_name)
 	if list == null:
 		return
@@ -235,7 +243,7 @@ func _remove_include_item(address: String) -> void:
 		if node.get_address() == address:
 			remove_item = node
 			break
-	
+
 	if remove_item:
 		_include_list.remove_child(remove_item)
 		remove_item.free()
@@ -254,7 +262,7 @@ func _reload_ui_scenes() -> void:
 		var scene = _data.scenes[key]
 		for section in scene["sections"]:
 			add_scene_to_list(section, key, scene["value"], true)
-		
+
 		add_scene_to_list(ALL_LIST_NAME, key, scene["value"], _data.has_sections(scene["value"]))
 
 	_sort_scenes_in_lists()
@@ -280,7 +288,8 @@ func _reload_ui_tabs() -> void:
 			_add_scene_ui_list(section)
 
 
-# Loops through the UI lists and updates them with the "unsaved changes" visibility if the data has changed.
+# Loops through the UI lists and updates them with the "unsaved changes"
+#   visibility if the data has changed.
 func _refresh_save_changes() -> void:
 	for list in _get_lists_nodes():
 		list.set_changes_unsaved(_data.has_changes)
@@ -298,7 +307,9 @@ func _on_refresh_button_up() -> void:
 ## Gets called by other nodes in UI
 ##
 ## Updates name of all scene_key.
-func update_all_scene_with_key(scene_key: String, scene_new_key: String, value: String, except_list: Array = []) -> void:
+func update_all_scene_with_key(
+	scene_key: String, scene_new_key: String, value: String, except_list: Array = []
+) -> void:
 	for list in _get_lists_nodes():
 		if list not in except_list:
 			list.update_scene_with_key(scene_key, scene_new_key, value)
@@ -350,7 +361,7 @@ func _on_add_button_up():
 	if _include_exists_in_list(_address_line_edit.text):
 		_address_line_edit.text = ""
 		return
-	
+
 	_add_include_ui_item(_address_line_edit.text)
 	_data.add_include_path(_address_line_edit.text)
 
@@ -375,7 +386,10 @@ func _on_file_dialog_dir_file_selected(path):
 # When include address bar text changes
 func _on_address_text_changed(new_text: String) -> void:
 	if new_text != "":
-		if DirAccess.dir_exists_absolute(new_text) or FileAccess.file_exists(new_text) and new_text.begins_with("res://"):
+		if (
+			DirAccess.dir_exists_absolute(new_text)
+			or FileAccess.file_exists(new_text) and new_text.begins_with("res://")
+		):
 			_add_button.disabled = false
 		else:
 			_add_button.disabled = true
