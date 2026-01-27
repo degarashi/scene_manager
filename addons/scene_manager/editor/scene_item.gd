@@ -29,7 +29,7 @@ var _mouse_is_over_value: bool
 var _previous_key: String
 
 # Nodes
-@onready var _root: Node = self
+@onready var _root: SMgrManager
 @onready var _popup_menu: PopupMenu = %popup_menu
 @onready var _key_edit: LineEdit = %key
 @onready var _key: String = %key.text

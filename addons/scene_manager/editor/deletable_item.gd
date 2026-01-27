@@ -5,7 +5,7 @@ extends HBoxContainer
 const F = preload("uid://cpxe18s2130m8")
 
 ## Reference to the manager root node
-var _root: Node = null
+var _root: SMgrManager
 
 ## Internal node references
 @onready var _address_label: LineEdit = %address

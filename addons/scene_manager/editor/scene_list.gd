@@ -14,7 +14,7 @@ class SectionName:
 	const CATEGORIZED = "Categorized"
 
 
-var _root: Node
+var _root: SMgrManager
 # "All" subsection by default. In the "All" list, this is "Uncategorized" items
 var _main_subsection: Node = null
 # Mainly used for the default "All" list for "Categorized" items
