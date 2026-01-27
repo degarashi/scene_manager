@@ -12,13 +12,13 @@ const INVALID_KEY_NAME: String = "none"
 
 ## Returns whether or not the key in the scene item is valid
 var is_valid: bool:
-	set(value):
-		is_valid = value
+	set(valid):
+		is_valid = valid
 		if is_inside_tree():
-			if value:
+			if valid:
 				remove_custom_theme()
 			else:
-				custom_set_theme(DUPLICATE_LINE_EDIT)
+				_custom_set_theme(DUPLICATE_LINE_EDIT)
 
 var _sub_section: Control
 var _list: Control
@@ -74,7 +74,7 @@ func set_subsection(node: Control) -> void:
 
 
 ## Sets passed theme to normal theme of `key` LineEdit
-func custom_set_theme(theme: StyleBox) -> void:
+func _custom_set_theme(theme: StyleBox) -> void:
 	get_key_node().add_theme_stylebox_override("normal", theme)
 
 
