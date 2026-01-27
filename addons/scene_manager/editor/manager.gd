@@ -40,7 +40,7 @@ const ALL_LIST_NAME := "All"  ## Default list that contains all scenes
 @onready var _include_panel_container: Node = find_child("include_panel")
 
 var _manager_data: SceneManagerData = SceneManagerData.new()
-var _autosave_timer: Timer = null  ## Timer for autosave when the key changes
+var _save_delay_timer: Timer = null  ## Timer for autosave when the key changes
 
 # UI signal callbacks
 signal include_child_deleted(node: Node, address: String)
@@ -48,6 +48,15 @@ signal item_renamed(node: Node, previous_name: String, new_name: String)
 signal item_added_to_list(node: Node, list_name: String)
 signal item_removed_from_list(node: Node, list_name: String)
 signal section_removed(node: Node, section_name: String)
+
+
+## Create a new Timer node to write to the scenes.gd file when the timer ends
+func _init_save_delay_timer() -> void:
+	_save_delay_timer = Timer.new()
+	_save_delay_timer.wait_time = 0.5
+	_save_delay_timer.one_shot = true
+	add_child(_save_delay_timer)
+	_save_delay_timer.timeout.connect(_on_timer_timeout)
 
 
 func _ready() -> void:
@@ -64,12 +73,7 @@ func _ready() -> void:
 	item_removed_from_list.connect(_on_item_removed_from_list)
 	section_removed.connect(_on_section_removed)
 
-	# Create a new Timer node to write to the scenes.gd file when the timer ends
-	_autosave_timer = Timer.new()
-	_autosave_timer.wait_time = 0.5
-	_autosave_timer.one_shot = true
-	add_child(_autosave_timer)
-	_autosave_timer.timeout.connect(_on_timer_timeout)
+	_init_save_delay_timer()
 
 
 #region Signal Callbacks
@@ -102,8 +106,8 @@ func _on_item_renamed(_node: Node, previous_name: String, new_name: String) -> v
 	_rename_scene_in_lists(previous_name, new_name)
 
 	if _manager_data.auto_save:
-		_autosave_timer.wait_time = 0.5
-		_autosave_timer.start()
+		_save_delay_timer.wait_time = 0.5
+		_save_delay_timer.start()
 
 
 func _on_added_to_list(node: Node, list_name: String) -> void:
@@ -263,7 +267,9 @@ func _reload_ui_scenes() -> void:
 		for section in scene["sections"]:
 			add_scene_to_list(section, key, scene["value"], true)
 
-		add_scene_to_list(ALL_LIST_NAME, key, scene["value"], _manager_data.has_sections(scene["value"]))
+		add_scene_to_list(
+			ALL_LIST_NAME, key, scene["value"], _manager_data.has_sections(scene["value"])
+		)
 
 	_sort_scenes_in_lists()
 
