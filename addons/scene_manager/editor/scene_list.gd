@@ -7,7 +7,13 @@ const SCENE_ITEM = preload("res://addons/scene_manager/editor/scene_item.tscn")
 const SUB_SECTION = preload("res://addons/scene_manager/editor/sub_section.tscn")
 const ALL_LIST_NAME := "All"
 
-var _root: Node = self
+
+class SectionName:
+	const UNCATEGORIZED = "Uncategorized"
+	const CATEGORIZED = "Categorized"
+
+
+var _root: Node
 # "All" subsection by default. In the "All" list, this is "Uncategorized" items
 var _main_subsection: Node = null
 # Mainly used for the default "All" list for "Categorized" items
@@ -30,18 +36,18 @@ func _ready() -> void:
 		_delete_list_button.visible = false
 		_delete_list_button.focus_mode = Control.FOCUS_NONE
 
-		var sub = SUB_SECTION.instantiate()
+		var sub := SUB_SECTION.instantiate()
 		sub._root = _root
-		sub.name = "Uncategorized"
+		sub.name = SectionName.UNCATEGORIZED
 		_container.add_child(sub)
 		sub.open()
 		sub.enable_delete_button(false)
 		sub.set_delete_visible(false)
 		_main_subsection = sub
 
-		var sub2 = SUB_SECTION.instantiate()
+		var sub2 := SUB_SECTION.instantiate()
 		sub._root = _root
-		sub2.name = "Categorized"
+		sub2.name = SectionName.CATEGORIZED
 		_container.add_child(sub2)
 		sub2.enable_delete_button(false)
 		sub2.set_delete_visible(false)
