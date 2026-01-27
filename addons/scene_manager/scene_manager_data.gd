@@ -260,7 +260,7 @@ func load() -> void:
 # Internal function for loading the data from the `scene.gd` file.
 # This is useful for loading previous values before the current values are written to do
 # a comparison.
-func _load_file() -> Dictionary:
+static func _load_file() -> Dictionary:
 	var data: Dictionary = {}
 
 	var file_path := ProjectSettings.get_setting(
