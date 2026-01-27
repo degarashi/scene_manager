@@ -263,13 +263,11 @@ func load() -> void:
 func _load_file() -> Dictionary:
 	var data: Dictionary = {}
 
-	if FileAccess.file_exists(
-		ProjectSettings.get_setting(C.SETTINGS_SCENE_PROPERTY_NAME, C.DEFAULT_PATH_TO_SCENES)
-	):
-		var file := FileAccess.open(
-			ProjectSettings.get_setting(C.SETTINGS_SCENE_PROPERTY_NAME, C.DEFAULT_PATH_TO_SCENES),
-			FileAccess.READ
-		)
+	var file_path := ProjectSettings.get_setting(
+		C.SETTINGS_SCENE_PROPERTY_NAME, C.DEFAULT_PATH_TO_SCENES
+	)
+	if FileAccess.file_exists(file_path):
+		var file := FileAccess.open(file_path, FileAccess.READ)
 		var dictionary := ""
 		var in_dictionary := false
 		while not file.eof_reached():
