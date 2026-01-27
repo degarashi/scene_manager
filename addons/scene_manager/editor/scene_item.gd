@@ -30,9 +30,9 @@ var _previous_key: String
 
 # Nodes
 @onready var _root: Node = self
-@onready var _popup_menu: PopupMenu = find_child("popup_menu")
-@onready var _key_edit: LineEdit = get_node("key")
-@onready var _key: String = get_node("key").text
+@onready var _popup_menu: PopupMenu = %popup_menu
+@onready var _key_edit: LineEdit = %key
+@onready var _key: String = %key.text
 
 
 # Finds and fills `_root` variable properly
@@ -46,27 +46,27 @@ func _ready() -> void:
 func set_key(text: String) -> void:
 	_previous_key = text
 	_key = text
-	get_node("key").text = text
+	%key.text = text
 
 
 ## Sets value of `value`
 func set_value(text: String) -> void:
-	get_node("value").text = text
+	%value.text = text
 
 
 ## Return `key` string value
 func get_key() -> String:
-	return get_node("key").text
+	return %key.text
 
 
 ## Return `value` string value
 func get_value() -> String:
-	return get_node("value").text
+	return %value.text
 
 
 ## Returns `key` node
 func get_key_node() -> Node:
-	return get_node("key")
+	return %key
 
 
 ## Sets subsection for current item
@@ -156,7 +156,7 @@ func _on_popup_menu_index_pressed(index: int):
 func _update_key(text: String) -> void:
 	# Normalize the key to be lower case without symbols and replacing spaces with underscores
 	text = SceneManagerUtils.normalize_key_string(text)
-	get_node("key").text = text
+	%key.text = text
 	name = text
 	_key = text
 
