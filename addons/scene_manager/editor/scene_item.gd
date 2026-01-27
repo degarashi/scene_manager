@@ -12,14 +12,13 @@ const INVALID_KEY_NAME: String = "none"
 
 ## Returns whether or not the key in the scene item is valid
 var is_valid: bool:
-	get:
-		return is_valid
 	set(value):
 		is_valid = value
-		if value:
-			remove_custom_theme()
-		else:
-			custom_set_theme(DUPLICATE_LINE_EDIT)
+		if is_inside_tree():
+			if value:
+				remove_custom_theme()
+			else:
+				custom_set_theme(DUPLICATE_LINE_EDIT)
 
 var _sub_section: Control
 var _list: Control
