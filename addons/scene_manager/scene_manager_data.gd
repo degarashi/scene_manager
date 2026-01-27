@@ -6,6 +6,7 @@ class_name SceneManagerData
 
 # Project Settings property name
 const ROOT_ADDRESS = "res://"
+const C = preload("uid://c3vvdktou45u")
 
 # Data dictionary keys
 const INCLUDE_LIST_KEY := "_include_list"
@@ -30,23 +31,17 @@ const SCENE_DATA_END_DICTIONARY: String = "# [End Scene Dictionary]"
 ## Whether or not the editor plugin will auto save.
 var auto_save: bool:
 	get:
-		return ProjectSettings.get_setting(
-			SceneManagerConstants.SETTINGS_AUTO_SAVE_PROPERTY_NAME, false
-		)
+		return ProjectSettings.get_setting(C.SETTINGS_AUTO_SAVE_PROPERTY_NAME, false)
 	set(value):
-		ProjectSettings.set_setting(SceneManagerConstants.SETTINGS_AUTO_SAVE_PROPERTY_NAME, value)
+		ProjectSettings.set_setting(C.SETTINGS_AUTO_SAVE_PROPERTY_NAME, value)
 		ProjectSettings.save()
 
 ## Whether or not to show the includes directories in the editor plugin
 var includes_visible: bool:
 	get:
-		return ProjectSettings.get_setting(
-			SceneManagerConstants.SETTINGS_INCLUDES_VISIBLE_PROPERTY_NAME, false
-		)
+		return ProjectSettings.get_setting(C.SETTINGS_INCLUDES_VISIBLE_PROPERTY_NAME, false)
 	set(value):
-		ProjectSettings.set_setting(
-			SceneManagerConstants.SETTINGS_INCLUDES_VISIBLE_PROPERTY_NAME, value
-		)
+		ProjectSettings.set_setting(C.SETTINGS_INCLUDES_VISIBLE_PROPERTY_NAME, value)
 		ProjectSettings.save()
 
 ## Returns the scenes from `scenes` variable of `scenes.gd` file
@@ -209,10 +204,7 @@ func save() -> void:
 		return
 
 	var file := FileAccess.open(
-		ProjectSettings.get_setting(
-			SceneManagerConstants.SETTINGS_SCENE_PROPERTY_NAME,
-			SceneManagerConstants.DEFAULT_PATH_TO_SCENES
-		),
+		ProjectSettings.get_setting(C.SETTINGS_SCENE_PROPERTY_NAME, C.DEFAULT_PATH_TO_SCENES),
 		FileAccess.WRITE
 	)
 
@@ -272,16 +264,10 @@ func _load_file() -> Dictionary:
 	var data: Dictionary = {}
 
 	if FileAccess.file_exists(
-		ProjectSettings.get_setting(
-			SceneManagerConstants.SETTINGS_SCENE_PROPERTY_NAME,
-			SceneManagerConstants.DEFAULT_PATH_TO_SCENES
-		)
+		ProjectSettings.get_setting(C.SETTINGS_SCENE_PROPERTY_NAME, C.DEFAULT_PATH_TO_SCENES)
 	):
 		var file := FileAccess.open(
-			ProjectSettings.get_setting(
-				SceneManagerConstants.SETTINGS_SCENE_PROPERTY_NAME,
-				SceneManagerConstants.DEFAULT_PATH_TO_SCENES
-			),
+			ProjectSettings.get_setting(C.SETTINGS_SCENE_PROPERTY_NAME, C.DEFAULT_PATH_TO_SCENES),
 			FileAccess.READ
 		)
 		var dictionary := ""
