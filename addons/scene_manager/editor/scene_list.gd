@@ -7,9 +7,9 @@ const SCENE_ITEM = preload("res://addons/scene_manager/editor/scene_item.tscn")
 const SUB_SECTION = preload("res://addons/scene_manager/editor/sub_section.tscn")
 const ALL_LIST_NAME := "All"
 
-@onready var _container: VBoxContainer = find_child("container")
-@onready var _delete_list_button: Button = find_child("delete_list")
-@onready var _save_label: Label = find_child("save_label")
+@onready var _container: VBoxContainer = %container
+@onready var _delete_list_button: Button = %delete_list
+@onready var _save_label: Label = %save_label
 
 var _root: Node = self
 var _main_subsection: Node = null # "All" subsection by default. In the "All" list, this is "Uncategorized" items
@@ -196,7 +196,7 @@ func _sort_node_list(parent: Node) -> void:
 ## Return an array of record nodes from UI list
 func get_list_nodes() -> Array:
 	if _container == null:
-		_container = find_child("container")
+		_container = %container
 	
 	var arr: Array[Node] = []
 	for scene_item in _container.get_children():

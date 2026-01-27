@@ -15,6 +15,7 @@ script = ExtResource("2")
 layout_mode = 2
 
 [node name="delete_list" type="Button" parent="_title"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(28, 28)
 layout_mode = 2
 icon = ExtResource("3")
@@ -24,6 +25,8 @@ custom_minimum_size = Vector2(28, 28)
 layout_mode = 2
 
 [node name="save_label" type="Label" parent="_title"]
+unique_name_in_owner = true
+visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Unsaved changes*"
@@ -35,6 +38,7 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [node name="container" type="VBoxContainer" parent="scenes"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 
