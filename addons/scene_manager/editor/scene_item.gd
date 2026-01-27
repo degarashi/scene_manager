@@ -1,18 +1,14 @@
 @tool
 extends HBoxContainer
 
-const F = preload("uid://cpxe18s2130m8")
-const DUPLICATE_LINE_EDIT: StyleBox = preload("res://addons/scene_manager/themes/line_edit_duplicate.tres")
-const INVALID_KEY_NAME: String = "none"
-
-# Nodes
-@onready var _root: Node = self
-@onready var _popup_menu: PopupMenu = find_child("popup_menu")
-@onready var _key_edit: LineEdit = get_node("key")
-@onready var _key: String = get_node("key").text
-
 signal key_changed(key: String)
 signal key_reset
+
+const F = preload("uid://cpxe18s2130m8")
+const DUPLICATE_LINE_EDIT: StyleBox = preload(
+	"res://addons/scene_manager/themes/line_edit_duplicate.tres"
+)
+const INVALID_KEY_NAME: String = "none"
 
 ## Returns whether or not the key in the scene item is valid
 var is_valid: bool:
@@ -28,7 +24,15 @@ var is_valid: bool:
 var _sub_section: Control
 var _list: Control
 var _mouse_is_over_value: bool
-var _previous_key: String # Used when comparing the user typed key
+
+# Used when comparing the user typed key
+var _previous_key: String
+
+# Nodes
+@onready var _root: Node = self
+@onready var _popup_menu: PopupMenu = find_child("popup_menu")
+@onready var _key_edit: LineEdit = get_node("key")
+@onready var _key: String = get_node("key").text
 
 
 # Finds and fills `_root` variable properly
@@ -37,7 +41,8 @@ func _ready() -> void:
 	_root = F.find_manager_root(self)
 
 
-## Directly set the key. Called by other UI elements when updating as this bypases the text normalization.
+## Directly set the key. Called by other UI elements
+##   when updating as this bypases the text normalization.
 func set_key(text: String) -> void:
 	_previous_key = text
 	_key = text
@@ -95,7 +100,7 @@ func _on_popup_button_button_up():
 		_popup_menu.set_item_id(i, 0)
 		_popup_menu.set_item_checked(i, section in _root.get_sections(get_value()))
 		i += 1
-	
+
 	var popup_size = _popup_menu.size
 	_popup_menu.popup(Rect2(get_global_mouse_position(), popup_size))
 
@@ -110,8 +115,15 @@ func _on_open_scene_button_up():
 
 # Happens on input on the value element
 func _on_value_gui_input(event: InputEvent):
-	if event is InputEventMouseButton and event.is_released() and event.button_index == MOUSE_BUTTON_LEFT and _mouse_is_over_value:
-		EditorPlugin.new().get_editor_interface().get_file_system_dock().navigate_to_path(get_value())
+	if (
+		event is InputEventMouseButton
+		and event.is_released()
+		and event.button_index == MOUSE_BUTTON_LEFT
+		and _mouse_is_over_value
+	):
+		EditorPlugin.new().get_editor_interface().get_file_system_dock().navigate_to_path(
+			get_value()
+		)
 
 
 # Happens when mouse is over value input
@@ -166,7 +178,7 @@ func _on_key_focus_exited() -> void:
 	_submit_key()
 
 
-func _on_key_text_submitted(new_text:String) -> void:
+func _on_key_text_submitted(_new_text: String) -> void:
 	_submit_key()
 
 
@@ -175,7 +187,7 @@ func _on_key_gui_input(event: InputEvent) -> void:
 	if event is InputEventKey:
 		if event.is_pressed():
 			return
-		
+
 		# Runs when InputEventKey is released
 		if _previous_key != _key:
 			key_changed.emit(_key)
