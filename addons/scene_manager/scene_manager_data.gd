@@ -25,52 +25,44 @@ const SCENE_DATA_ENUM: String = "# [Scene Enum]"
 const SCENE_DATA_DICTIONARY: String = "# [Scene Dictionary]"
 const SCENE_DATA_END_DICTIONARY: String = "# [End Scene Dictionary]"
 
-# A dictionary cache which contains every scenes exact addresses as key and an array 
-# assigned as values which categories every section name the scene is part of
-#
-# Example: { "res://demo/scene3.tscn": ["Character", "Menu"] }
-var _sections: Dictionary = {}
-var _data: Dictionary = {} # Main data storage for all settings
-var _file_data: Dictionary = {} # Current data in the file to use when comparing against the data
-
-
 #region Accessors to the dictionary data
 
 ## Whether or not the editor plugin will auto save.
 var auto_save: bool:
 	get:
-		return ProjectSettings.get_setting(SceneManagerConstants.SETTINGS_AUTO_SAVE_PROPERTY_NAME, false)
+		return ProjectSettings.get_setting(
+			SceneManagerConstants.SETTINGS_AUTO_SAVE_PROPERTY_NAME, false
+		)
 	set(value):
 		ProjectSettings.set_setting(SceneManagerConstants.SETTINGS_AUTO_SAVE_PROPERTY_NAME, value)
 		ProjectSettings.save()
 
-
 ## Whether or not to show the includes directories in the editor plugin
 var includes_visible: bool:
 	get:
-		return ProjectSettings.get_setting(SceneManagerConstants.SETTINGS_INCLUDES_VISIBLE_PROPERTY_NAME, false)
+		return ProjectSettings.get_setting(
+			SceneManagerConstants.SETTINGS_INCLUDES_VISIBLE_PROPERTY_NAME, false
+		)
 	set(value):
-		ProjectSettings.set_setting(SceneManagerConstants.SETTINGS_INCLUDES_VISIBLE_PROPERTY_NAME, value)
+		ProjectSettings.set_setting(
+			SceneManagerConstants.SETTINGS_INCLUDES_VISIBLE_PROPERTY_NAME, value
+		)
 		ProjectSettings.save()
-
 
 ## Returns the scenes from `scenes` variable of `scenes.gd` file
 var scenes: Dictionary:
 	get:
 		return _data[SCENE_DATA_KEY]
 
-
 ## Returns the array value of `_include_list` key from `scenes` variable of `scenes.gd` file
 var includes: Array:
 	get:
 		return _data[INCLUDE_LIST_KEY]
 
-
 ## Returns the array value of `_sections` key from `scenes` variable of `scenes.gd` file
 var sections: Array:
 	get:
 		return _data[SECTIONS_KEY]
-
 
 ## Returns true if there's been changes that haven't been saved.[br]
 ## Note this only works in the editor. Does not function in a build.
@@ -79,6 +71,13 @@ var has_changes: bool:
 		return not _file_data.recursive_equal(_data, 3)
 
 #endregion Accessors
+# A dictionary cache which contains every scenes exact addresses as key and an array
+# assigned as values which categories every section name the scene is part of
+#
+# Example: { "res://demo/scene3.tscn": ["Character", "Menu"] }
+var _sections: Dictionary = {}
+var _data: Dictionary = {}  # Main data storage for all settings
+var _file_data: Dictionary = {}  # Current data in the file to use when comparing against the data
 
 
 ## Adds the include path to the data, which is where the scene manager will look for scenes.
@@ -102,7 +101,9 @@ func add_to_subsection(scene_address: String, section_name: String, sub_section:
 
 
 ## Removes the scene from the specified subsection.
-func remove_from_subsection(scene_address: String, section_name: String, sub_section: String) -> void:
+func remove_from_subsection(
+	scene_address: String, section_name: String, _sub_section: String
+) -> void:
 	for key in scenes:
 		if scenes[key]["value"] == scene_address:
 			scenes[key]["settings"][section_name]["subsection"] = ""
@@ -113,6 +114,7 @@ func remove_from_subsection(scene_address: String, section_name: String, sub_sec
 func change_name(old_scene_name: String, new_scene_name: String) -> void:
 	scenes[new_scene_name] = scenes[old_scene_name]
 	scenes.erase(old_scene_name)
+
 
 #region Section Handler
 
@@ -125,7 +127,7 @@ func add_section(section_name: String) -> void:
 ## Removes the section from the list and updates the rest of the scenes.
 func remove_section(section_name: String) -> void:
 	_data[SECTIONS_KEY].erase(section_name)
-	
+
 	# Loop through the _sections cache and remove sections associated with the addresses
 	var to_erase := []
 	for key in _sections:
@@ -133,10 +135,10 @@ func remove_section(section_name: String) -> void:
 			_sections[key].erase(section_name)
 			if _sections[key].is_empty():
 				to_erase.append(key)
-	
+
 	for item in to_erase:
 		_sections.erase(item)
-	
+
 	# Go through the data and also update the scenes there
 	for key in scenes:
 		if scenes[key]["sections"].has(section_name):
@@ -147,10 +149,10 @@ func remove_section(section_name: String) -> void:
 func add_scene_to_section(scene_address: String, section_name: String) -> void:
 	if section_name == "All":
 		return
-	
+
 	if not _sections.has(scene_address):
 		_sections[scene_address] = []
-	
+
 	if not section_name in _sections[scene_address]:
 		_sections[scene_address].append(section_name)
 
@@ -169,10 +171,10 @@ func remove_scene_from_section(scene_address: String, section_name: String) -> v
 
 	if section_name in _sections[scene_address]:
 		_sections[scene_address].erase(section_name)
-	
+
 	if _sections[scene_address].is_empty():
 		_sections.erase(scene_address)
-	
+
 	# Locate the scene in the data and also update it there if it's not already added
 	for key in scenes:
 		if scenes[key]["value"] == scene_address:
@@ -192,21 +194,27 @@ func get_scene_sections(scene_address: String) -> Array:
 func has_sections(scene_address: String) -> bool:
 	return scene_address in _sections and _sections[scene_address] != []
 
-#endregion Section Handler
 
+#endregion Section Handler
 
 #region File Save and Load
 
+
 ## Saves all data to the `scenes.gd` file.
 func save() -> void:
-	# To prevent writing to the file when not necessary, compare the dictionary against the stored file content
+	# To prevent writing to the file when not necessary,
+	# compare the dictionary against the stored file content
 	if not has_changes:
 		# File is the same as the current data, don't do any unneeded file writing
 		return
 
 	var file := FileAccess.open(
-		ProjectSettings.get_setting(SceneManagerConstants.SETTINGS_SCENE_PROPERTY_NAME, SceneManagerConstants.DEFAULT_PATH_TO_SCENES),
-		FileAccess.WRITE)
+		ProjectSettings.get_setting(
+			SceneManagerConstants.SETTINGS_SCENE_PROPERTY_NAME,
+			SceneManagerConstants.DEFAULT_PATH_TO_SCENES
+		),
+		FileAccess.WRITE
+	)
 
 	# Generates the scene.gd file with all the scene data
 	var write_data: String = SCENE_DATA_HEADER
@@ -224,7 +232,7 @@ func save() -> void:
 			num_invalid += 1
 		else:
 			write_data += "\n\t%s, " % key.to_upper()
-	
+
 	write_data += "\n}\n\n"
 
 	write_data += SCENE_DATA_DICTIONARY + "\n"
@@ -263,12 +271,20 @@ func load() -> void:
 func _load_file() -> Dictionary:
 	var data: Dictionary = {}
 
-	if FileAccess.file_exists(ProjectSettings.get_setting(SceneManagerConstants.SETTINGS_SCENE_PROPERTY_NAME,
-			SceneManagerConstants.DEFAULT_PATH_TO_SCENES)):
-		var file := FileAccess.open(ProjectSettings.get_setting(SceneManagerConstants.SETTINGS_SCENE_PROPERTY_NAME,
-				SceneManagerConstants.DEFAULT_PATH_TO_SCENES),
-				FileAccess.READ)
-		var dictionary := "";
+	if FileAccess.file_exists(
+		ProjectSettings.get_setting(
+			SceneManagerConstants.SETTINGS_SCENE_PROPERTY_NAME,
+			SceneManagerConstants.DEFAULT_PATH_TO_SCENES
+		)
+	):
+		var file := FileAccess.open(
+			ProjectSettings.get_setting(
+				SceneManagerConstants.SETTINGS_SCENE_PROPERTY_NAME,
+				SceneManagerConstants.DEFAULT_PATH_TO_SCENES
+			),
+			FileAccess.READ
+		)
+		var dictionary := ""
 		var in_dictionary := false
 		while not file.eof_reached():
 			var line := file.get_line()
@@ -276,16 +292,17 @@ func _load_file() -> Dictionary:
 				in_dictionary = false
 			elif line == SCENE_DATA_DICTIONARY:
 				in_dictionary = true
-				file.get_line() #skip to json
+				file.get_line()  #skip to json
 			elif in_dictionary:
 				dictionary += line.strip_escapes()
 
 		var json = JSON.new()
 		var err = json.parse(dictionary)
-		assert (err == OK, "Scene Manager Error: `scenes.gd` File is corrupted.")
+		assert(err == OK, "Scene Manager Error: `scenes.gd` File is corrupted.")
 		data = json.data
-	
+
 	return data
+
 
 #endregion File Save and Load
 
@@ -298,7 +315,7 @@ func _get_included_scenes() -> Dictionary:
 
 	for include_dir: String in includes:
 		var dir := DirAccess.open(include_dir)
-		if not dir: # If it's a file
+		if not dir:  # If it's a file
 			if not FileAccess.file_exists(include_dir):
 				print("Couldn't open ", include_dir)
 			else:
@@ -311,7 +328,7 @@ func _get_included_scenes() -> Dictionary:
 			var new_files = _get_scenes_helper(include_dir)
 			if len(new_files) != 0:
 				files.merge(new_files, true)
-	
+
 	return files
 
 
@@ -321,16 +338,17 @@ func _get_scenes_helper(root_path: String) -> Dictionary:
 	var folders: Array = []
 	var dir := DirAccess.open(root_path)
 	var original_root_path = root_path
-	
+
 	if root_path[len(root_path) - 1] != "/":
 		root_path = root_path + "/"
-	 
+
 	if dir:
-		dir.list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547
+		# TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547
+		dir.list_dir_begin()
 
 		if dir.file_exists(root_path + ".gdignore"):
 			return files
-		
+
 		var file_folder := dir.get_next()
 		while file_folder != "":
 			var exact_address := root_path + file_folder
@@ -338,7 +356,7 @@ func _get_scenes_helper(root_path: String) -> Dictionary:
 				folders.append(file_folder)
 			elif file_folder.get_extension() == "tscn":
 				files[exact_address] = file_folder.get_basename().get_file()
-			
+
 			file_folder = dir.get_next()
 
 		dir.list_dir_end()
@@ -361,7 +379,7 @@ func _remove_scenes(path: String) -> void:
 # Refreshes the scene dictionary with the latest includes when the include path changes.
 func _refresh_scenes() -> void:
 	var include_scenes: Dictionary = _get_included_scenes()
-	
+
 	# Cache the paths currently in the data to use for comparison for the next parts.
 	# The address is the key as this will be used for lookup. The scene name was the key
 	# will be useful for the removal as the data uses that as the key.
@@ -381,14 +399,11 @@ func _refresh_scenes() -> void:
 
 	if scenes_to_add.size() == 0:
 		return
-	
+
 	# Loop through the remaining paths and add these new scenes with default values.
 	# Note that the dictionary value is the default scene name derived from the file.
 	for address in scenes_to_add:
-		var new_data := {
-			"sections": [],
-			"value": address
-		}
+		var new_data := {"sections": [], "value": address}
 
 		_data.scenes[scenes_to_add[address]] = new_data
 
@@ -403,5 +418,5 @@ func _dict_subtract(lh: Dictionary, rh: Dictionary) -> Dictionary:
 	for key in lh:
 		if key in rh:
 			result.erase(key)
-	
+
 	return result
