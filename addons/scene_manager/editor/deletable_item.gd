@@ -1,31 +1,44 @@
 @tool
 extends HBoxContainer
 
-@onready var _root: Node = self
+## Reference to the manager root node
+var _root: Node = null
+
+## Internal node references
+@onready var _address_label: LineEdit = %address
 
 
-# Finds and fills `_root` variable properly
 func _ready() -> void:
-	while true:
-		if _root == null:
-			## If we are here, we are running in editor, so get out
-			break
-		elif _root.name == "Scene Manager" || _root.name == "menu":
-			break
-		_root = _root.get_parent()
+	_root = _find_manager_root()
 
 
-# Sets address of current item
+## Safely traverse parents to find the root manager node using match
+func _find_manager_root() -> Node:
+	var current: Node = get_parent()
+	while current != null:
+		match current.name:
+			"Scene Manager", "menu":
+				return current
+		current = current.get_parent()
+	return null
+
+
+## Set address and update node name
 func set_address(addr: String) -> void:
-	get_node("address").text = addr
+	get_node("%address").text = addr
 	name = addr
 
 
-# Returns address of current item
+## Return the current address text
 func get_address() -> String:
-	return get_node("address").text
+	return _address_label.text
 
 
-# Remove Button
+## Notify the root manager to handle deletion via signal
 func _on_remove_button_up() -> void:
-	_root.emit_signal("include_child_deleted", self, get_address())
+	const SIG_NAME = "include_child_deleted"
+	if _root and _root.has_signal(SIG_NAME):
+		_root.emit_signal(SIG_NAME, self, get_address())
+	else:
+		# Fallback if root is not found
+		queue_free()
