@@ -1,6 +1,7 @@
 @tool
 extends Node
 
+const F = preload("uid://cpxe18s2130m8")
 # Scene item and sub_section to instance and add in list
 const SCENE_ITEM = preload("res://addons/scene_manager/editor/scene_item.tscn")
 const SUB_SECTION = preload("res://addons/scene_manager/editor/sub_section.tscn")
@@ -19,13 +20,7 @@ var _secondary_subsection: Node = null # Mainly used for the default "All" list 
 #
 # Start up of `All` list
 func _ready() -> void:
-	while true:
-		if _root == null:
-			## If we are here, we are running in editor, so get out
-			break
-		elif _root.name == "Scene Manager" || _root.name == "menu":
-			break
-		_root = _root.get_parent()
+	_root = F.find_manager_root(self)
 
 	if name == ALL_LIST_NAME:
 		_delete_list_button.icon = null
