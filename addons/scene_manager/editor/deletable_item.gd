@@ -1,4 +1,5 @@
 @tool
+class_name SMgrDeletableItem
 extends HBoxContainer
 
 const F = preload("uid://cpxe18s2130m8")

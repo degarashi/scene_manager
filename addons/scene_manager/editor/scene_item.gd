@@ -1,4 +1,5 @@
 @tool
+class_name SMgrSceneItem
 extends HBoxContainer
 
 signal key_changed(key: String)

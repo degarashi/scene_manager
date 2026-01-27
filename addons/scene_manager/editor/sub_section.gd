@@ -1,4 +1,5 @@
 @tool
+class_name SMgrSubSection
 extends Control
 
 # Nodes
