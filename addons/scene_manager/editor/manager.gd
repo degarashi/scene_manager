@@ -75,7 +75,7 @@ func _ready() -> void:
 #region Signal Callbacks
 
 
-func _on_data_changed() -> void:
+func _handle_data_modification() -> void:
 	if _data.auto_save:
 		_data.save()
 
@@ -90,11 +90,11 @@ func _on_section_removed(_node: Node, section_name: String) -> void:
 	for scene in _data.scenes:
 		_update_categorized(scene)
 
-	_on_data_changed()
+	_handle_data_modification()
 
 
 func _on_timer_timeout() -> void:
-	_on_data_changed()
+	_handle_data_modification()
 
 
 func _on_item_renamed(_node: Node, previous_name: String, new_name: String) -> void:
@@ -109,13 +109,13 @@ func _on_item_renamed(_node: Node, previous_name: String, new_name: String) -> v
 func _on_added_to_list(node: Node, list_name: String) -> void:
 	_data.add_scene_to_section(node.get_value(), list_name)
 	_update_categorized(node.get_key())
-	_on_data_changed()
+	_handle_data_modification()
 
 
 func _on_item_removed_from_list(node: Node, list_name: String) -> void:
 	_data.remove_scene_from_section(node.get_value(), list_name)
 	_update_categorized(node.get_key())
-	_on_data_changed()
+	_handle_data_modification()
 
 
 # When an include item remove button clicks
@@ -123,7 +123,7 @@ func _on_include_child_deleted(node: Node, address: String) -> void:
 	node.queue_free()
 	await node.tree_exited
 	_data.remove_include_path(address)
-	_on_data_changed()
+	_handle_data_modification()
 	_refresh_ui()
 
 
@@ -368,7 +368,7 @@ func _on_add_button_up():
 	_address_line_edit.text = ""
 	_add_button.disabled = true
 
-	_on_data_changed()
+	_handle_data_modification()
 	_refresh_ui()
 
 
@@ -413,7 +413,7 @@ func _on_add_section_button_up():
 		_section_name_line_edit.text = ""
 		_add_section_button.disabled = true
 
-		_on_data_changed()
+		_handle_data_modification()
 
 
 # When section name text changes
@@ -444,7 +444,7 @@ func _show_includes_list(value: bool) -> void:
 func _on_hide_button_up():
 	_data.includes_visible = not _data.includes_visible
 	_show_includes_list(_data.includes_visible)
-	_on_data_changed()
+	_handle_data_modification()
 
 
 # Tab changes
@@ -466,4 +466,4 @@ func _change_auto_save_state(value: bool) -> void:
 func _on_auto_save_button_up():
 	_data.auto_save = not _data.auto_save
 	_change_auto_save_state(_data.auto_save)
-	_on_data_changed()
+	_handle_data_modification()
