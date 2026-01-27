@@ -7,13 +7,15 @@ const SCENE_ITEM = preload("res://addons/scene_manager/editor/scene_item.tscn")
 const SUB_SECTION = preload("res://addons/scene_manager/editor/sub_section.tscn")
 const ALL_LIST_NAME := "All"
 
+var _root: Node = self
+# "All" subsection by default. In the "All" list, this is "Uncategorized" items
+var _main_subsection: Node = null
+# Mainly used for the default "All" list for "Categorized" items
+var _secondary_subsection: Node = null
+
 @onready var _container: VBoxContainer = %container
 @onready var _delete_list_button: Button = %delete_list
 @onready var _save_label: Label = %save_label
-
-var _root: Node = self
-var _main_subsection: Node = null # "All" subsection by default. In the "All" list, this is "Uncategorized" items
-var _secondary_subsection: Node = null # Mainly used for the default "All" list for "Categorized" items
 
 
 # Finds and fills `_root` variable properly
@@ -55,7 +57,7 @@ func _ready() -> void:
 		sub.enable_delete_button(false)
 		sub.set_delete_visible(false)
 		_main_subsection = sub
-	
+
 	_save_label.visible = false
 
 
@@ -63,7 +65,7 @@ func _ready() -> void:
 func add_item(key: String, value: String, categorized: bool = false) -> void:
 	if not is_node_ready():
 		await ready
-	
+
 	var item = SCENE_ITEM.instantiate()
 	item.set_key(key)
 	item.set_value(value)
@@ -83,28 +85,30 @@ func add_item(key: String, value: String, categorized: bool = false) -> void:
 func update_item_categorized(key: String, categorized: bool) -> void:
 	# Make sure this is the correct list
 	if name != ALL_LIST_NAME:
-		push_warning("Cannot set categorization in a list other than All (attempting to set in %s)" % name)
+		push_warning(
+			"Cannot set categorization in a list other than All (attempting to set in %s)" % name
+		)
 		return
-	
+
 	# Find the item in the sub sections.
 	var item = _main_subsection.get_item(key)
 	if item:
 		# If the item is already not categorized, then nothing needs to be done
 		if not categorized:
 			return
-		
+
 		# Otherwise, the item should go into the "Categorized"
 		_main_subsection.remove_item(item)
 		_secondary_subsection.add_item(item)
 		_sort_node_list(_secondary_subsection.get_list_container())
 		return
-	
+
 	item = _secondary_subsection.get_item(key)
 	if item:
 		# If it's already categorized, nothing needs to be done
 		if categorized:
 			return
-		
+
 		# Otherwise, the item should go into the "Uncategorized"
 		_secondary_subsection.remove_item(item)
 		_main_subsection.add_item(item)
@@ -183,21 +187,21 @@ func sort_scenes() -> void:
 
 # Internal helper method to sort a list of nodes under a given parent.
 func _sort_node_list(parent: Node) -> void:
-		var sorted_nodes := parent.get_children()
-		sorted_nodes.sort_custom(
-			func(a: Node, b: Node): return a.get_key().naturalnocasecmp_to(b.get_key()) < 0
-		)
+	var sorted_nodes := parent.get_children()
+	sorted_nodes.sort_custom(
+		func(a: Node, b: Node): return a.get_key().naturalnocasecmp_to(b.get_key()) < 0
+	)
 
-		for i in range(sorted_nodes.size()):
-			if sorted_nodes[i].get_index() != i:
-				parent.move_child(sorted_nodes[i], i)
+	for i in range(sorted_nodes.size()):
+		if sorted_nodes[i].get_index() != i:
+			parent.move_child(sorted_nodes[i], i)
 
 
 ## Return an array of record nodes from UI list
 func get_list_nodes() -> Array:
 	if _container == null:
 		_container = %container
-	
+
 	var arr: Array[Node] = []
 	for scene_item in _container.get_children():
 		var nodes = scene_item.get_items()
