@@ -5,6 +5,13 @@ extends MarginContainer
 ## Handles UI callbacks for modifying data and writes the scene.gd file which
 ## stores all the scene information in the project.
 
+# UI signal callbacks
+signal include_child_deleted(node: Node, address: String)
+signal item_renamed(node: Node, previous_name: String, new_name: String)
+signal item_added_to_list(node: Node, list_name: String)
+signal item_removed_from_list(node: Node, list_name: String)
+signal section_removed(node: Node, section_name: String)
+
 # Scene item, include item prefabs
 const SCENE_INCLUDE_ITEM = preload("res://addons/scene_manager/editor/deletable_item.tscn")
 const SCENE_LIST_ITEM = preload("res://addons/scene_manager/editor/scene_list.tscn")
@@ -16,6 +23,9 @@ const ICON_EXPAND_BUTTON = preload("res://addons/scene_manager/icons/Expand.svg"
 const ICON_COLLAPSE_BUTTON = preload("res://addons/scene_manager/icons/Collapse.svg")
 
 const ALL_LIST_NAME := "All"  ## Default list that contains all scenes
+
+var _manager_data: SceneManagerData = SceneManagerData.new()
+var _save_delay_timer: Timer = null  ## Timer for autosave when the key changes
 
 # UI nodes and items
 @onready var _include_list: Node = %include_list
@@ -36,16 +46,6 @@ const ALL_LIST_NAME := "All"  ## Default list that contains all scenes
 @onready var _tab_container: TabContainer = %tab_container
 @onready var _include_container: Node = %includes
 @onready var _include_panel_container: Node = %include_panel
-
-var _manager_data: SceneManagerData = SceneManagerData.new()
-var _save_delay_timer: Timer = null  ## Timer for autosave when the key changes
-
-# UI signal callbacks
-signal include_child_deleted(node: Node, address: String)
-signal item_renamed(node: Node, previous_name: String, new_name: String)
-signal item_added_to_list(node: Node, list_name: String)
-signal item_removed_from_list(node: Node, list_name: String)
-signal section_removed(node: Node, section_name: String)
 
 
 ## Create a new Timer node to write to the scenes.gd file when the timer ends
