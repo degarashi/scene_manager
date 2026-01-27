@@ -1,6 +1,7 @@
 @tool
 extends HBoxContainer
 
+const F = preload("uid://cpxe18s2130m8")
 const DUPLICATE_LINE_EDIT: StyleBox = preload("res://addons/scene_manager/themes/line_edit_duplicate.tres")
 const INVALID_KEY_NAME: String = "none"
 
@@ -33,13 +34,7 @@ var _previous_key: String # Used when comparing the user typed key
 # Finds and fills `_root` variable properly
 func _ready() -> void:
 	_previous_key = _key
-	while true:
-		if _root == null:
-			## If we are here, we are running in editor, so get out
-			break
-		elif _root.name == "Scene Manager" || _root.name == "menu":
-			break
-		_root = _root.get_parent()
+	_root = F.find_manager_root(self)
 
 
 ## Directly set the key. Called by other UI elements when updating as this bypases the text normalization.
