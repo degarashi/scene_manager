@@ -18,24 +18,24 @@ const ICON_COLLAPSE_BUTTON = preload("res://addons/scene_manager/icons/Collapse.
 const ALL_LIST_NAME := "All"  ## Default list that contains all scenes
 
 # UI nodes and items
-@onready var _include_list: Node = find_child("include_list")
+@onready var _include_list: Node = %include_list
 # add save, refresh
-@onready var _save_button: Button = find_child("save")
-@onready var _refresh_button: Button = find_child("refresh")
-@onready var _auto_save_button: Button = find_child("auto_save")
+@onready var _save_button: Button = %save
+@onready var _refresh_button: Button = %refresh
+@onready var _auto_save_button: Button = %auto_save
 # add list
-@onready var _add_section_button: Button = find_child("add_section")
-@onready var _section_name_line_edit: LineEdit = find_child("section_name")
+@onready var _add_section_button: Button = %add_section
+@onready var _section_name_line_edit: LineEdit = %section_name
 # add include
-@onready var _address_line_edit: LineEdit = find_child("address")
-@onready var _file_dialog: FileDialog = find_child("file_dialog")
-@onready var _hide_button: Button = find_child("hide")
-@onready var _hide_unhide_button: Button = find_child("hide_unhide")
-@onready var _add_button: Button = find_child("add")
+@onready var _address_line_edit: LineEdit = %address
+@onready var _file_dialog: FileDialog = %file_dialog
+@onready var _hide_button: Button = %hide
+@onready var _hide_unhide_button: Button = %hide_unhide
+@onready var _add_button: Button = %add
 # containers
-@onready var _tab_container: TabContainer = find_child("tab_container")
-@onready var _include_container: Node = find_child("includes")
-@onready var _include_panel_container: Node = find_child("include_panel")
+@onready var _tab_container: TabContainer = %tab_container
+@onready var _include_container: Node = %includes
+@onready var _include_panel_container: Node = %include_panel
 
 var _manager_data: SceneManagerData = SceneManagerData.new()
 var _save_delay_timer: Timer = null  ## Timer for autosave when the key changes
