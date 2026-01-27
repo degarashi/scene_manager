@@ -1,13 +1,13 @@
 [gd_scene load_steps=9 format=3 uid="uid://crnf0w0s44hxx"]
 
 [ext_resource type="PackedScene" uid="uid://dn5j8ms67xutr" path="res://addons/scene_manager/editor/label.tscn" id="2"]
-[ext_resource type="Texture2D" uid="uid://bev77ckqyrjpi" path="res://addons/scene_manager/icons/FileDialog.svg" id="3"]
-[ext_resource type="Texture2D" uid="uid://bdn1vhvurdojs" path="res://addons/scene_manager/icons/Collapse.svg" id="4_vqnpn"]
-[ext_resource type="Texture2D" uid="uid://iqslrudove2" path="res://addons/scene_manager/icons/Reload.svg" id="5_2r30m"]
-[ext_resource type="Texture2D" uid="uid://cnxnhb0abyiau" path="res://addons/scene_manager/icons/Save.svg" id="5_yw87d"]
+[ext_resource type="Texture2D" uid="uid://bh5qft2w2580j" path="res://addons/scene_manager/icons/FileDialog.svg" id="3"]
+[ext_resource type="Texture2D" uid="uid://bd6ob6pgam1gt" path="res://addons/scene_manager/icons/Collapse.svg" id="4_vqnpn"]
+[ext_resource type="Texture2D" uid="uid://ceksw4v7wfgdq" path="res://addons/scene_manager/icons/Reload.svg" id="5_2r30m"]
+[ext_resource type="Texture2D" uid="uid://dym61e8lwgplt" path="res://addons/scene_manager/icons/Save.svg" id="5_yw87d"]
 [ext_resource type="Script" uid="uid://bp7a48n3n7idd" path="res://addons/scene_manager/editor/manager.gd" id="6"]
-[ext_resource type="Texture2D" uid="uid://v7trhu01enu7" path="res://addons/scene_manager/icons/GuiChecked.svg" id="7_d04a5"]
-[ext_resource type="Texture2D" uid="uid://dgt41owxx2rno" path="res://addons/scene_manager/icons/GuiCheckedDisabled.svg" id="7_xu84e"]
+[ext_resource type="Texture2D" uid="uid://c1ps4ed6wrx51" path="res://addons/scene_manager/icons/GuiChecked.svg" id="7_d04a5"]
+[ext_resource type="Texture2D" uid="uid://bu5cjmgtiiwfp" path="res://addons/scene_manager/icons/GuiCheckedDisabled.svg" id="7_xu84e"]
 
 [node name="root_container" type="MarginContainer"]
 anchors_preset = 15
