@@ -10,10 +10,8 @@ const SCENE_INCLUDE_ITEM = preload("res://addons/scene_manager/editor/deletable_
 const SCENE_LIST_ITEM = preload("res://addons/scene_manager/editor/scene_list.tscn")
 
 # Icons
-const ICON_HIDE_BUTTON_CHECKED = preload("res://addons/scene_manager/icons/GuiChecked.svg")
-const ICON_HIDE_BUTTON_UNCHECKED = preload(
-	"res://addons/scene_manager/icons/GuiCheckedDisabled.svg"
-)
+const ICON_CHECKBOX_ON = preload("res://addons/scene_manager/icons/GuiChecked.svg")
+const ICON_CHECKBOX_OFF = preload("res://addons/scene_manager/icons/GuiCheckedDisabled.svg")
 const ICON_EXPAND_BUTTON = preload("res://addons/scene_manager/icons/Expand.svg")
 const ICON_COLLAPSE_BUTTON = preload("res://addons/scene_manager/icons/Collapse.svg")
 
@@ -462,10 +460,10 @@ func _change_auto_save_state(value: bool) -> void:
 	if !value:
 		_save_button.disabled = false
 		_auto_save_button.set_meta("enabled", false)
-		_auto_save_button.icon = ICON_HIDE_BUTTON_UNCHECKED
+		_auto_save_button.icon = ICON_CHECKBOX_OFF
 	else:
 		_auto_save_button.set_meta("enabled", true)
-		_auto_save_button.icon = ICON_HIDE_BUTTON_CHECKED
+		_auto_save_button.icon = ICON_CHECKBOX_ON
 	_save_button.disabled = _auto_save_button.get_meta("enabled", true)
 
 
