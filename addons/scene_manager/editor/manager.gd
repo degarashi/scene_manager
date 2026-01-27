@@ -54,7 +54,7 @@ func _ready() -> void:
 	_data.load()
 
 	# Refreshes the UI with the latest data
-	_on_refresh_button_up()
+	_refresh_ui()
 	_change_auto_save_state(_data.auto_save)
 	_show_includes_list(_data.includes_visible)
 
@@ -124,7 +124,7 @@ func _on_include_child_deleted(node: Node, address: String) -> void:
 	await node.tree_exited
 	_data.remove_include_path(address)
 	_on_data_changed()
-	_on_refresh_button_up()
+	_refresh_ui()
 
 
 #endregion Signal Callbacks
@@ -296,7 +296,7 @@ func _refresh_save_changes() -> void:
 
 
 # Refresh button
-func _on_refresh_button_up() -> void:
+func _refresh_ui() -> void:
 	_data.load()
 	_clear_all()
 	_reload_ui_tabs()
@@ -369,7 +369,7 @@ func _on_add_button_up():
 	_add_button.disabled = true
 
 	_on_data_changed()
-	_on_refresh_button_up()
+	_refresh_ui()
 
 
 # Pops up file dialog to select a folder to include
