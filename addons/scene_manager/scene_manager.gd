@@ -1,71 +1,106 @@
 extends Node
-## Main SceneManager that handles adding scenes and transitions.
+## Main SceneManager that handles adding and transitioning between scenes.
 
-const C = preload("./scene_manager_constants.gd")
-const RING_BUFFER = preload("uid://t3tlcswbndjo")
+# ------------- [Signal] -------------
+## Emitted when loading is completed.
+signal load_finished
+## Emitted when loading progress (0-100) changes.
+signal load_percent_changed(value: int)
+## Emitted when scene instantiation is completed.
+signal scene_loaded
+## Emitted at the start of the fade-in effect.
+signal fade_in_started
+## Emitted at the start of the fade-out effect.
+signal fade_out_started
+## Emitted when the fade-in effect finishes.
+signal fade_in_finished
+## Emitted when the fade-out effect finishes.
+signal fade_out_finished
+
+# ------------- [Constants] -------------
+const _C = preload("uid://c3vvdktou45u")
+const _RING_BUFFER = preload("uid://t3tlcswbndjo")
+const _INITIAL_FADE_IN_TIME = 1.0
 
 
-class AnimKey:
+# ------------- [Defines] -------------
+## Internal class to hold entries of loaded scenes.
+class _SceneEntry:
+	var container_node: Node
+	var scene_node: Node
+
+	## Initialize the instance.
+	## @param p_wrapper The parent wrapper node.
+	## @param p_scene The main scene node.
+	func _init(p_wrapper: Node, p_scene: Node) -> void:
+		container_node = p_wrapper
+		scene_node = p_scene
+
+
+## Definition of animation keys.
+class _AnimKey:
 	const FADE = &"fade"
 
 
-# Index to the loaded scene map for the parent node
-const _IDX_WRAPPER_NODE: int = 0
-# Index to the loaded scene map for the scene node
-const _IDX_SCENE_NODE: int = 1
+static var _ps := preload("uid://dn6eh4s0h8jhi")
+## Path of the scene currently being loaded.
+var _loading_scene_path: String = ""
+## ID of the scene currently being loaded.
+var _load_scene_id: Scenes.Id = Scenes.Id.NONE
+## Array for holding raw loading progress data.
+var _load_progress: Array = []
+## Reserved scene ID for the next scheduled load.
+var _reserved_scene_id: Scenes.Id = Scenes.Id.NONE
+## Load options for the reserved scene.
+var _reserved_options: SceneLoadOptions
 
-# Built in fade in/out for scene loading
+## Map of loaded scenes (Key: Id, Value: _SceneEntry).
+var _loaded_scene_map: Dictionary[Scenes.Id, _SceneEntry] = {}
+## Scene database.
+var _scene_db: SMgrData
 @onready var _fade_color_rect: ColorRect = %fade
 @onready var _animation_player: AnimationPlayer = %animation_player
-@onready var _in_transition: bool = false
-@onready var _back_buffer := RING_BUFFER.new()
-@onready var _current_scene_enum: Scenes.SceneName = Scenes.SceneName.NONE
-
-## Scene path that is currently loading
-var _loading_scene_path: String = ""
-## Scene Enum of the scene that's currently loading
-var _load_scene_enum: Scenes.SceneName = Scenes.SceneName.NONE
-var _load_status_buffer: Array = []
-var _reserved_scene: Scenes.SceneName = Scenes.SceneName.NONE
-var _reserved_load_options: SceneLoadOptions
-## Keeps track of all loaded scenes (SceneName key)
-##   and the node they belong to in an array (parent node: Node, scene node: Node)
-var _loaded_scene_map: Dictionary[Scenes.SceneName, Array] = {}
-var _scene_db: SMgrData
-
-signal load_finished
-signal load_percent_changed(value: int)
-signal scene_loaded
-signal fade_in_started
-signal fade_out_started
-signal fade_in_finished
-signal fade_out_finished
+## Flag indicating if a transition is in progress.
+@onready var _is_transitioning: bool = false
+## Stack for scene transition history.
+@onready var _history_stack := _RING_BUFFER.new()
+## Current scene ID.
+@onready var _current_scene_enum: Scenes.Id = Scenes.Id.NONE
 
 
+# ------------- [Callbacks] -------------
+## Initialization process when ready.
 func _ready() -> void:
 	set_process(false)
 
-	_scene_db = SMgrData.load_data(SMgrProjectSettings.scene_path)
-	var scene_file_path_a: String = get_tree().current_scene.scene_file_path
-	_current_scene_enum = _get_scene_enum_by_path(scene_file_path_a)
+	_scene_db = SMgrData.load_data(_ps.scene_path)
+	var path: String = get_tree().current_scene.scene_file_path
+	_current_scene_enum = _scene_db.get_scene_enum_by_path(path)
 
 	call_deferred("_on_initial_setup")
 
 
-# Used for interactive change scene
+## Monitors loading progress.
+## @param _delta Frame elapsed time.
+func _process(_delta: float) -> void:
+	_check_loading_progress()
+
+
+# ------------- [Private Method] -------------
+## Checks progress during interactive scene switching and emits signals.
 func _check_loading_progress() -> void:
 	var prev_percent: int = 0
-	if len(_load_status_buffer) != 0:
-		prev_percent = int(_load_status_buffer[0] * 100)
+	if len(_load_progress) != 0:
+		prev_percent = int(_load_progress[0] * 100)
 
-	var status := ResourceLoader.load_threaded_get_status(_loading_scene_path, _load_status_buffer)
-	var next_percent: int = int(_load_status_buffer[0] * 100)
+	var status := ResourceLoader.load_threaded_get_status(_loading_scene_path, _load_progress)
+	var next_percent: int = int(_load_progress[0] * 100)
 	if prev_percent != next_percent:
 		load_percent_changed.emit(next_percent)
 
 	if status == ResourceLoader.THREAD_LOAD_LOADED:
 		set_process(false)
-		_load_status_buffer = []
+		_load_progress = []
 		load_finished.emit()
 	elif status == ResourceLoader.THREAD_LOAD_IN_PROGRESS:
 		pass
@@ -73,40 +108,49 @@ func _check_loading_progress() -> void:
 		assert(false, "Scene Manager Error: for some reason, loading failed.")
 
 
-func _process(_delta: float) -> void:
-	_check_loading_progress()
+## Creates a full-screen Control wrapper to hold scenes.
+## @param node_name Name of the wrapper node.
+## @return Configured Control node.
+func _create_ui_wrapper(node_name: String) -> Control:
+	var wrapper := Control.new()
+	wrapper.name = node_name
+
+	# Set to expand across the whole screen (Full Rect).
+	wrapper.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+
+	# The wrapper itself should not block mouse events.
+	wrapper.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	return wrapper
 
 
-func _current_scene_is_included(scene_file_path: String) -> bool:
-	for include_path: String in Scenes.scenes._include_list:
-		if scene_file_path.begins_with(include_path):
-			return true
-	return false
-
-
-# For the initial setup,
-# move the current scene to the default parent node and store it in the mapping.
+## Initial setup: moves the current scene to the default parent node and stores it in the map.
 func _on_initial_setup() -> void:
 	var scene_node := get_tree().current_scene
 	var root := get_tree().root
 
-	var default_node := Node.new()
-	default_node.name = C.DEFAULT_TREE_NODE_NAME
+	# Create wrapper using the helper function.
+	var default_node := _create_ui_wrapper(_C.DEFAULT_TREE_NODE_NAME)
 
-	root.remove_child(scene_node)
-	default_node.add_child(scene_node)
+	# Order: Add to root first, then reparent.
 	root.add_child(default_node)
+	scene_node.reparent(default_node)
 
 	# Don't map a NONE scene as that shouldn't be here. It's possible to reach here
 	# if the loaded scene wasn't part of the enums and loaded some other way.
-	if _current_scene_enum != Scenes.SceneName.NONE:
-		_loaded_scene_map[_current_scene_enum] = [default_node, scene_node]
+	if _current_scene_enum != Scenes.Id.NONE:
+		_loaded_scene_map[_current_scene_enum] = _SceneEntry.new(default_node, scene_node)
 	else:
 		push_warning("Loaded scene not added to the mapping due to being NONE.")
 
+	# Execute fade-in on application start.
+	_execute_fade_async(_INITIAL_FADE_IN_TIME, false)
 
-# Helper to execute fade and wait for completion
-func _execute_fade(speed: float, is_out: bool) -> void:
+
+## Executes fade effect and waits for completion.
+## @param speed Playback speed (seconds).
+## @param is_out True for fade-out, false for fade-in.
+func _execute_fade_async(speed: float, is_out: bool) -> void:
 	var executed := false
 	if is_out:
 		executed = _fade_out(speed)
@@ -121,82 +165,57 @@ func _execute_fade(speed: float, is_out: bool) -> void:
 			fade_in_finished.emit()
 
 
-# `speed` unit is in seconds
+## Plays fade-in animation.
+## @param speed Playback speed (seconds).
+## @return True if executed.
 func _fade_in(speed: float) -> bool:
 	if speed <= 0:
 		return false
 
 	fade_in_started.emit()
-	_animation_player.play(AnimKey.FADE, -1, -1 / speed, true)
+	_animation_player.play(_AnimKey.FADE, -1, -1 / speed, true)
 	return true
 
 
-# `speed` unit is in seconds
+## Plays fade-out animation.
+## @param speed Playback speed (seconds).
+## @return True if executed.
 func _fade_out(speed: float) -> bool:
 	if speed <= 0:
 		return false
 
 	fade_out_started.emit()
-	_animation_player.play(AnimKey.FADE, -1, 1 / speed, false)
+	_animation_player.play(_AnimKey.FADE, -1, 1 / speed, false)
 	return true
 
 
-# Activates `in_transition` mode
-func _set_in_transition() -> void:
-	_in_transition = true
+## Sets the transition start flag.
+func _set_transition_started() -> void:
+	_is_transitioning = true
 
 
-# Deactivates `in_transition` mode
-func _set_out_transition() -> void:
-	_in_transition = false
+## Sets the transition finished flag.
+func _set_transition_finished() -> void:
+	_is_transitioning = false
 
 
-# Adds current scene to `_back_buffer`
-func _append_stack(key: Scenes.SceneName) -> void:
-	_back_buffer.push(key)
+## Appends current scene to the history stack.
+## @param scene ID of the scene to add.
+func _append_history(scene: Scenes.Id) -> void:
+	_history_stack.push(scene)
 
 
-# Pops most recent added scene from `_back_buffer`
-func _pop_stack() -> Scenes.SceneName:
-	var pop := _back_buffer.pop()
-	if pop:
-		return pop
-	return Scenes.SceneName.NONE
+## Retrieves and removes the latest scene from the history stack.
+## @return The retrieved scene ID.
+func _pop_history() -> Scenes.Id:
+	var target_scene := _history_stack.pop()
+	if target_scene:
+		return target_scene
+	return Scenes.Id.NONE
 
 
-# Returns the scene key of the passed scene value (scene address)
-func _get_scene_enum_by_path(path: String) -> Scenes.SceneName:
-	for scene_name in _scene_db.scenes:
-		if _scene_db.scenes[scene_name].path == path:
-			# Convert the string into an enum
-			return SceneManagerUtils.get_enum_from_scene_name(scene_name)
-
-	return Scenes.SceneName.NONE
-
-
-# Returns the raw dictionary values for the scene
-func _get_scene_value(scene: Scenes.SceneName) -> String:
-	# The enums are normalized to have all caps, but the keys in the scenes may not have that,
-	# do a string comparison with everything normalized.
-	var enum_string: String = SceneManagerUtils.get_enum_string_from_enum(scene)
-	for scene_name in _scene_db.scenes:
-		if enum_string == SceneManagerUtils.sanitize_as_enum_string(scene_name):
-			return _scene_db.scenes[scene_name].path
-
-	return ""
-
-
-# Restart the currently loaded scene
-func _reload_current_scene() -> bool:
-	# Use the same parent node the scene currently has to keep it consistent.
-	var load_options := SceneLoadOptions.new()
-	load_options.node_name = _loaded_scene_map[_current_scene_enum][_IDX_WRAPPER_NODE].name
-	load_options.add_to_back = false
-	load_scene(_current_scene_enum, load_options)
-	return true
-
-
-# Makes menu clickable or unclickable during transitions
+## Configures mouse event transparency during transitions.
+## @param clickable True if clicks should be allowed.
 func _set_clickable(clickable: bool) -> void:
 	if clickable:
 		_fade_color_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -204,385 +223,290 @@ func _set_clickable(clickable: bool) -> void:
 		_fade_color_rect.mouse_filter = Control.MOUSE_FILTER_STOP
 
 
-## Limits how deep the scene manager is allowed to reserved previous scenes which
-## affects in changing scene to `back`(previous scene) functionality.[br]
-##
-## allowed `input` values:[br]
-## input =  0 => we can not go back to any previous scenes[br]
-## input >  0 => we can go back to `input` or less previous scenes[br]
-func set_back_limit(input: int) -> void:
-	input = maxi(input, 0)
-	_back_buffer.set_capacity(input)
-
-
-## Clears the `_back_buffer`.
-func clear_back_buffer() -> void:
-	_back_buffer.clear()
-
-
-## Returns scene instance of passed scene key (blocking).[br]
-##
-## Note: you can activate `use_sub_threads` but just know that In the newest
-## versions of Godot there seems to be a bug that can cause a threadlock in
-## the resource loader that will result in infinite loading of the scene
-## without any error.[br]
-##
-## Related Github Issues About `use_sub_threads`:[br]
-##
-## https://github.com/godotengine/godot/issues/85255[br]
-## https://github.com/godotengine/godot/issues/84012
-func create_scene_instance(key: Scenes.SceneName, use_sub_threads = false) -> Node:
-	return get_scene(key, use_sub_threads).instantiate()
-
-
-## Returns PackedScene of passed scene key (blocking).[br]
-##
-## Note: you can activate `use_sub_threads` but just know that In the newest
-## versions of Godot there seems to be a bug that can cause a threadlock in
-## the resource loader that will result in infinite loading of the scene
-## without any error.[br]
-##
-## Related Github Issues About `use_sub_threads`:[br]
-##
-## https://github.com/godotengine/godot/issues/85255[br]
-## https://github.com/godotengine/godot/issues/84012
-func get_scene(key: Scenes.SceneName, use_sub_threads = false) -> PackedScene:
-	var address := _scene_db.get_scene_path_from_enum(key)
-	ResourceLoader.load_threaded_request(
-		address, "", use_sub_threads, ResourceLoader.CACHE_MODE_REUSE
-	)
-	return ResourceLoader.load_threaded_get(address)
-
-
-## Loads a specified scene to the tree.[br]
-## By default it will swap the scene with the one already loaded in the default tree node.
-func load_scene(scene: Scenes.SceneName, load_options := SceneLoadOptions.new()) -> void:
-	if scene == Scenes.SceneName.NONE:
-		push_warning("Attempted to load a NONE scene. Skipping load as it won't work.")
-		return
-
-	_set_in_transition()
-	_set_clickable(load_options.clickable)
-
-	await _execute_fade(load_options.fade_out_time, true)
-
-	var new_scene_node: Node = _load_scene_node_from_path(_get_scene_value(scene))
-	var parent_node: Node = _add_scene_node(new_scene_node, load_options)
-
-	# Keep track of the loaded scene enum to the node it's a child of.
-	_loaded_scene_map[scene] = [parent_node, new_scene_node]
-	_current_scene_enum = scene
-	scene_loaded.emit()
-
-	await _execute_fade(load_options.fade_in_time, false)
-
-	_set_clickable(true)
-	_set_out_transition()
-
-
-## Unloads the scene from the tree.
-func unload_scene(scene: Scenes.SceneName) -> void:
-	# Get the node from the map, free it, and cleans up the map
-	if not _loaded_scene_map.has(scene):
-		assert(
-			(
-				"ERROR: Attempting to remove a scene %s that has not been loaded."
-				% SceneManagerUtils.get_enum_string_from_enum(scene)
-			)
-		)
-
-	_loaded_scene_map[scene][_IDX_SCENE_NODE].free()
-	_loaded_scene_map.erase(scene)
-
-
-## Adds the specified node to the scene based on the load_options.[br]
-## Returns the parent_node the node is under.
-func _add_scene_node(node: Node, load_options := SceneLoadOptions.new()) -> Node:
+## Attaches a specified node to the scene tree based on load options.
+## @param node The instance to add.
+## @param load_options Loading configuration options.
+## @return The parent node where the scene was added.
+func _attach_scene_to_tree(node: Node, load_options := SceneLoadOptions.new()) -> Node:
+	# For single scene loading, remove specified nodes and load the scene into a default node.
 	var root := get_tree().get_root()
+	var parent_node: Node = root.get_node_or_null(load_options.node_name)
 
-	# If doing single scene loading, remove the specified node and load
-	# the scene into the default node.
-	var parent_node: Node = null
 	if (
-		load_options.mode == C.SceneLoadingMode.SINGLE
-		or load_options.mode == C.SceneLoadingMode.SINGLE_NODE
+		load_options.mode == _C.SceneLoadingMode.SINGLE
+		or load_options.mode == _C.SceneLoadingMode.SINGLE_NODE
 	):
-		# For the Single case, remove all nodes. For the Single Node case, only remove the specified
-		# node in the options.
-		if load_options.mode == C.SceneLoadingMode.SINGLE:
+		# SINGLE: Remove all nodes.
+		# SINGLE_NODE: Remove only the node specified in options.
+		if load_options.mode == _C.SceneLoadingMode.SINGLE:
 			_unload_all_nodes()
-		else:
-			# If the node currently exists, completely remove it and recreate a blank node after
-			if root.has_node(load_options.node_name):
-				_unload_node(load_options.node_name)
+		elif parent_node:
+			_unload_node(load_options.node_name)
 
-		parent_node = Node.new()
-		parent_node.name = load_options.node_name
+		# Create using the helper function.
+		parent_node = _create_ui_wrapper(load_options.node_name)
 		root.add_child(parent_node)
 		parent_node.add_child(node)
 
-		# Note we add the current scene to back buffer and not the new scene coming in
-		# as we want the old scene to revert to if needed.
+		# Add the "current scene" to history, not the incoming one,
+		# so we can return to it later if needed.
 		if load_options.add_to_back:
-			_append_stack(_current_scene_enum)
+			_append_history(_current_scene_enum)
 	else:
-		# For additive, add the node if it doesn't exist then load the scene into that node.
-		if not root.has_node(load_options.node_name):
-			parent_node = Node.new()
-			parent_node.name = load_options.node_name
+		# ADDITIVE: Create node if it doesn't exist, then load the scene into it.
+		if not parent_node:
+			parent_node = _create_ui_wrapper(load_options.node_name)
 			root.add_child(parent_node)
-		else:
-			parent_node = root.get_node(load_options.node_name)
 
-		assert(
-			parent_node,
-			(
-				"ERROR: Could not get the node %s to use for the additive scene."
-				% load_options.node_name
-			)
-		)
-
+		assert(parent_node, "Error: Could not retrieve node %s." % load_options.node_name)
 		parent_node.add_child(node)
 
 	return parent_node
 
 
-## Frees the node and all children node underneath
-##   while removing the scenes in the map assocaited with them.[br]
-## Mainly used when removing the parent node, which will cause all the scenes to be removed.
+## Frees all scenes under a specified parent node and removes them from the map.
+## @param node_name Name of the parent node to release.
 func _unload_node(node_name: String) -> void:
 	if not get_tree().root.has_node(node_name):
-		assert("ERROR: Attempting to remove the parent node %s that doesn't exist." % node_name)
+		assert(false, "Error: Parent node %s does not exist." % node_name)
 
-	# Using the node name, find all the scenes that are loaded under it and free them before
-	# removing the parent node itself.
-	for key in _loaded_scene_map.keys():
-		if _loaded_scene_map[key][_IDX_WRAPPER_NODE].name == node_name:
-			_loaded_scene_map[key][_IDX_SCENE_NODE].free()
-			_loaded_scene_map.erase(key)
+	# Use the node name to identify all scenes loaded under it.
+	# Release those scenes and remove from mapping before deleting the parent node itself.
+	for scene in _loaded_scene_map.keys():
+		var ent := _loaded_scene_map[scene]
+		if ent.container_node.name == node_name:
+			ent.scene_node.free()
+			_loaded_scene_map.erase(scene)
 
 	get_tree().root.get_node(node_name).free()
 
 
-## Frees all scene related nodes in the loaded scene map.[br]
-## Used mainly for Single scene loading which will unload all scenes.
+## Frees all nodes related to the loaded scene map.
 func _unload_all_nodes() -> void:
-	# Get a list of all unique parent nodes to remove
-	# Using the dictionary keys as a set.
-	var unique_nodes := {}
-	for key in _loaded_scene_map:
-		if not unique_nodes.has(_loaded_scene_map[key][_IDX_WRAPPER_NODE]):
-			unique_nodes[_loaded_scene_map[key][_IDX_WRAPPER_NODE]] = null
+	# Extract unique parent node names to prevent errors while modifying the map during iteration.
+	var node_names_to_unload: Array[String] = []
+	for entry in _loaded_scene_map.values():
+		var n_name: String = entry.container_node.name
+		if not n_name in node_names_to_unload:
+			node_names_to_unload.append(n_name)
 
-	# Go through each parent node and unload them
-	for node in unique_nodes:
-		_unload_node(node.name)
-
-
-## Loads a scene from the specified file path and returns the Node for it.[br]
-## Returns null if the scene doesn't exist.
-func _load_scene_node_from_path(path: String) -> Node:
-	var result: Node = null
-	if ResourceLoader.exists(path):
-		var scene: PackedScene = ResourceLoader.load(path)
-		if scene:
-			result = scene.instantiate()
-		if not result:
-			printerr("ERROR: %s scene path can't load" % path)
-
-	return result
+	# Delete extracted nodes in bulk.
+	for n_name in node_names_to_unload:
+		_unload_node(n_name)
 
 
-## Changes the scene to the previous.[br]
-## Note this assumes Single loading and will remove any additive scenes with default options.
+# ------------- [Public Method] -------------
+## Sets the history stack capacity (number of times you can go back).
+## @param input Allowed number of history entries (0 to disable).
+func set_back_limit(input: int) -> void:
+	input = maxi(input, 0)
+	_history_stack.set_capacity(input)
+
+
+## Clears the entire history stack.
+func clear_history() -> void:
+	_history_stack.clear()
+
+
+## Blocking generation of an instance from a scene ID.
+## @param scene Scene ID.
+## @return Generated node.
+func create_scene_instance_blocking(scene: Scenes.Id) -> Node:
+	var pack := get_scene_blocking(scene)
+	if pack:
+		return pack.instantiate()
+	return null
+
+
+## Blocking load of a PackedScene from a scene ID.
+## @param scene Scene ID.
+## @return Loaded PackedScene.
+func get_scene_blocking(scene: Scenes.Id) -> PackedScene:
+	if scene == Scenes.Id.NONE:
+		push_warning("Attempted to get PackedScene for a NONE scene. Skipping.")
+		return null
+
+	var address := _scene_db.get_scene_path_from_enum(scene)
+	assert(not address.is_empty())
+	return load(address)
+
+
+## Switches to a specified scene (replaces the existing scene by default).
+## @param scene Target scene ID.
+## @param load_options Loading configuration options.
+func switch_to_scene(scene: Scenes.Id, load_options := SceneLoadOptions.new()) -> void:
+	if scene == Scenes.Id.NONE:
+		push_warning("Attempted to get PackedScene for a NONE scene. Skipping.")
+		return
+
+	# Start fade-out.
+	_set_transition_started()
+	_set_clickable(load_options.clickable)
+	await _execute_fade_async(load_options.fade_out_time, true)
+
+	# Load new scene.
+	var new_scene_node: Node = create_scene_instance_blocking(scene)
+	var parent_node: Node = _attach_scene_to_tree(new_scene_node, load_options)
+	# Track the relationship between the loaded scene ID and its parent node.
+	_loaded_scene_map[scene] = _SceneEntry.new(parent_node, new_scene_node)
+	_current_scene_enum = scene
+	scene_loaded.emit()
+
+	# Start fade-in.
+	await _execute_fade_async(load_options.fade_in_time, false)
+	_set_clickable(true)
+	_set_transition_finished()
+
+
+## Goes back to the previous scene from history.
+## @return True if the transition started successfully.
 func load_previous_scene() -> bool:
-	var pop: Scenes.SceneName = _pop_stack()
-	if pop != Scenes.SceneName.NONE and _current_scene_enum != Scenes.SceneName.NONE:
+	var target_scene: Scenes.Id = _pop_history()
+	if target_scene != Scenes.Id.NONE and _current_scene_enum != Scenes.Id.NONE:
 		# Use the same parent node the scene currently has to keep it consistent.
 		var load_options := SceneLoadOptions.new()
-		load_options.node_name = _loaded_scene_map[_current_scene_enum][_IDX_WRAPPER_NODE].name
+		load_options.node_name = _loaded_scene_map[_current_scene_enum].container_node.name
 		load_options.add_to_back = false
-		load_scene(pop, load_options)
+		switch_to_scene(target_scene, load_options)
 		return true
 	return false
 
 
-## Reload the currently loaded scene.
-func reload_current_scene() -> void:
-	_reload_current_scene()
+## Reloads the current scene.
+## @return True if executed.
+func reload_current_scene() -> bool:
+	# Use the same parent node the scene currently has to keep it consistent.
+	if _current_scene_enum == Scenes.Id.NONE:
+		push_warning("Attempted to reload current scene, but current scene is NONE.")
+		return false
+
+	var load_options := SceneLoadOptions.new()
+	load_options.node_name = _loaded_scene_map[_current_scene_enum].container_node.name
+	load_options.add_to_back = false
+	switch_to_scene(_current_scene_enum, load_options)
+	return true
 
 
-# Exits the game completely.
-func exit_game() -> void:
+## Quits the game after a fade-out effect.
+## @param fade_time Duration of the fade-out (seconds).
+func exit_game(fade_time: float = 1.0) -> void:
+	# Set transition flag to block input.
+	_set_transition_started()
+	_set_clickable(false)
+
+	# Execute and wait for fade-out.
+	await _execute_fade_async(fade_time, true)
+
+	# Exit.
 	get_tree().quit(0)
 
 
-## Imports loaded scene into the scene tree but doesn't change the scene.
-## Mainly used when your new loaded scene has a loading phase when added to scene tree
-## so to use this, first has to call `load_scene_interactive` to load your scene
-## and then have to listen on `load_finished` signal. After the signal emits,
-## you call this function and this function adds the loaded scene to the scene
-## tree but exactly behind the current scene so that you still can not see the new scene.[br]
-## This uses the reserved load options that was saved when loading the scene with
-## an transition/loading scene except it loads as a SINGLE_NODE if SINGLE is specified
-## in order not to conflict with unloading the transition scene.
-func instantiate_loaded_scene() -> void:
+## Instantiates the loaded scene into the tree (initially hidden).
+## Should be called after load_finished following a preload_scene_async call.
+func instantiate_async_result() -> void:
 	if _loading_scene_path != "":
 		var scene_resource := ResourceLoader.load_threaded_get(_loading_scene_path) as PackedScene
 		if scene_resource:
 			var scene_node := scene_resource.instantiate()
 			scene_node.scene_file_path = _loading_scene_path
 
-			var temp_options := _reserved_load_options.copy()
-			if temp_options.mode == C.SceneLoadingMode.SINGLE:
-				temp_options.mode = C.SceneLoadingMode.SINGLE_NODE
-			var parent_node: Node = _add_scene_node(scene_node, temp_options)
+			var temp_options := _reserved_options.copy()
+			if temp_options.mode == _C.SceneLoadingMode.SINGLE:
+				temp_options.mode = _C.SceneLoadingMode.SINGLE_NODE
+			var parent_node: Node = _attach_scene_to_tree(scene_node, temp_options)
 
-			# Make sure the parent_node is not the last node in order to make sure
-			# the transition scene is on top.
+			# Ensure the parent_node is not the last node to keep the transition scene on top.
 			var root := get_tree().get_root()
 			root.move_child(parent_node, root.get_child_count() - 2)
 
 			_loading_scene_path = ""
-			_load_scene_enum = Scenes.SceneName.NONE
+			_load_scene_id = Scenes.Id.NONE
 
-			# Keep track of the loaded scene enum to the node it's a child of.
-			_loaded_scene_map[_reserved_scene] = [parent_node, scene_node]
+			_loaded_scene_map[_reserved_scene_id] = _SceneEntry.new(parent_node, scene_node)
 
 
-## When you added the loaded scene to the scene tree by `instantiate_loaded_scene`
+## When you added the loaded scene to the scene tree by `instantiate_async_result`
 ## function, you call this function after you are sure that the added scene to scene tree
 ## is completely ready and functional to change the active scene.[br]
 ## This is used in the `load_scene_with_transition` flow and uses the reserved information for
 ## switching scenes.
-func activate_loaded_scene() -> void:
-	_set_in_transition()
-	_set_clickable(_reserved_load_options.clickable)
+func activate_prepared_scene() -> void:
+	_set_transition_started()
+	_set_clickable(_reserved_options.clickable)
 
-	await _execute_fade(_reserved_load_options.fade_out_time, true)
+	await _execute_fade_async(_reserved_options.fade_out_time, true)
 
-	# Unload the transition/loading scene, which should be at the end
-	_unload_node(C.DEFAULT_LOADING_NODE_NAME)
+	# Unload the transition/loading scene, which should be at the end.
+	_unload_node(_C.DEFAULT_LOADING_NODE_NAME)
 
 	# If the original load options was SINGLE loading mode, then also remove any other
 	# node that isn't part of the load option node name.
-	if _reserved_load_options.mode == C.SceneLoadingMode.SINGLE:
+	if _reserved_options.mode == _C.SceneLoadingMode.SINGLE:
 		var remove_nodes := {}
-		for key in _loaded_scene_map:
+		for scene in _loaded_scene_map:
 			if (
-				_loaded_scene_map[key][_IDX_WRAPPER_NODE].name != _reserved_load_options.node_name
-				and not remove_nodes.has(_loaded_scene_map[key][_IDX_WRAPPER_NODE])
+				_loaded_scene_map[scene].container_node.name != _reserved_options.node_name
+				and not remove_nodes.has(_loaded_scene_map[scene].container_node)
 			):
-				remove_nodes[_loaded_scene_map[key][_IDX_WRAPPER_NODE]] = null
+				remove_nodes[_loaded_scene_map[scene].container_node] = null
 
-		# Go through each parent node and unload them
+		# Go through each parent node and unload them.
 		for node in remove_nodes:
 			_unload_node(node.name)
 
-	# Get the reserved scene to switch to from the loaded scene map
-	#get_tree().set_current_scene(_loaded_scene_map[_reserved_scene][_IDX_SCENE_NODE])
-	_current_scene_enum = _reserved_scene
+	# Get the reserved scene to switch to from the loaded scene map.
+	_current_scene_enum = _reserved_scene_id
 
-	await _execute_fade(_reserved_load_options.fade_in_time, false)
+	await _execute_fade_async(_reserved_options.fade_in_time, false)
 
 	_set_clickable(true)
-	_set_out_transition()
+	_set_transition_finished()
 
-	# Reset the reserved scene information now that the scene has fully loaded and is
-	# the active scene.
-	_reserved_scene = Scenes.SceneName.NONE
-	_reserved_load_options = null
+	# Reset the reserved scene information now that the scene has fully loaded.
+	_reserved_scene_id = Scenes.Id.NONE
+	_reserved_options = null
 
 
-## Loads scene interactive[br]
-##
-## Connect to `load_percent_changed(value: int)` and `load_finished` signals
-## to listen to updates on your scene loading status.[br]
-##
-## Note: You can activate `use_sub_threads` but just know that in the newest
-## versions of Godot there seems to be a bug that can cause a threadlock in
-## the resource loader that will result in infinite loading of the scene
-## without any error.[br]
-##
-## Related Github Issues About `use_sub_threads`:[br]
-##
-## https://github.com/godotengine/godot/issues/85255[br]
-## https://github.com/godotengine/godot/issues/84012
-func load_scene_interactive(key: Scenes.SceneName, use_sub_threads = false) -> void:
+## Starts interactive (asynchronous) scene loading.
+## @param scene Target scene ID.
+## @param use_sub_threads Whether to use sub-threads.
+func preload_scene_async(scene: Scenes.Id, use_sub_threads = false) -> void:
+	if scene == Scenes.Id.NONE:
+		push_warning("Attempted to preload_scene_async a NONE scene. Skipping.")
+		return
+
 	set_process(true)
-	_loading_scene_path = _get_scene_value(key)
-	_load_scene_enum = key
+	_loading_scene_path = _scene_db.get_scene_path_from_enum(scene)
+	_load_scene_id = scene
 	ResourceLoader.load_threaded_request(
-		_loading_scene_path, "", use_sub_threads, ResourceLoader.CACHE_MODE_IGNORE
+		_loading_scene_path, "", use_sub_threads, ResourceLoader.CACHE_MODE_REUSE
 	)
 
 
-## Loads a scene with a loading/transition scene.[br]
-##
-## This sets the reserved scene to the specified next_scene and loads the transition_scene.
-## The transition_scene is the loading scene that should subscribe to the `load_finished` signal
+## Executes scene transition via a loading/transition scene.
+## @param next_scene Final destination scene ID.
+## @param transition_scene Scene to display during loading.
+## @param load_options Load options for the final scene.
 func load_scene_with_transition(
-	next_scene: Scenes.SceneName,
-	transition_scene: Scenes.SceneName,
-	load_options := SceneLoadOptions.new()
+	next_scene: Scenes.Id, transition_scene: Scenes.Id, load_options := SceneLoadOptions.new()
 ) -> void:
-	reserve_next_scene(next_scene, load_options)
+	_reserve_next_scene(next_scene, load_options)
 
-	# The load scene will be on it's own node that will be on top of everything else
-	load_options.node_name = C.DEFAULT_LOADING_NODE_NAME
-	load_options.mode = C.SceneLoadingMode.ADDITIVE
+	# The transition scene will be on its own node on top of everything else.
+	load_options.node_name = _C.DEFAULT_LOADING_NODE_NAME
+	load_options.mode = _C.SceneLoadingMode.ADDITIVE
 	load_options.add_to_back = false
-	load_scene(transition_scene, load_options)
+	switch_to_scene(transition_scene, load_options)
 
 
-## Returns the loaded scene.[br]
-##
-## If scene is not loaded, blocks and waits until scene is ready (acts blocking in code
-## and may freeze your game, make sure scene is ready to get).
-func get_loaded_scene() -> PackedScene:
-	if _loading_scene_path != "":
-		return ResourceLoader.load_threaded_get(_loading_scene_path) as PackedScene
-	return null
+## Pre-reserves the next scene and its options.
+## @param scene ID of the scene to reserve.
+## @param load_options Load options to apply.
+func _reserve_next_scene(scene: Scenes.Id, load_options := SceneLoadOptions.new()) -> void:
+	if scene == Scenes.Id.NONE:
+		push_warning("Attempted to reserve a NONE scene. Skipping.")
+		return
 
-
-## Pops from the back stack and returns previous scene (scene before current scene)
-func pop_previous_scene() -> Scenes.SceneName:
-	return _pop_stack()
-
-
-## Returns how many scenes there are in list of previous scenes.
-func get_history_count() -> int:
-	return _back_buffer.size()
-
-
-## Reserves a scene key to be used for loading scenes to know where to go after getting loaded
-## into loading scene or just for next scene to know where to go next.
-func reserve_next_scene(key: Scenes.SceneName, load_options := SceneLoadOptions.new()) -> void:
-	_reserved_scene = key
-	# Make sure to make a copy of the load options so it doesn't get affected by changes outside.
-	_reserved_load_options = load_options.copy()
-
-
-## Returns the reserved scene.
-func get_reserved_scene() -> Scenes.SceneName:
-	return _reserved_scene
-
-
-## Returns the reserved load options for the reserved scene.
-func get_reserved_load_option() -> SceneLoadOptions:
-	return _reserved_load_options
-
-
-## Pause (fadeout). You can resume afterwards.
-func pause(fade_out_time: float, general_options := SceneLoadOptions.new()) -> void:
-	_set_in_transition()
-	_set_clickable(general_options.clickable)
-	await _execute_fade(fade_out_time, true)
-
-
-## Resume (fadein) after pause
-func resume(fade_in_time: float, general_options := SceneLoadOptions.new()) -> void:
-	_set_clickable(general_options.clickable)
-	await _execute_fade(fade_in_time, false)
-	_set_out_transition()
-	_set_clickable(true)
+	_reserved_scene_id = scene
+	# Store a copy of the options so external changes don't affect the reservation.
+	_reserved_options = load_options.copy()

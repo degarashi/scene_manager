@@ -2,6 +2,7 @@
 extends EditorProperty
 
 const DUPLICATE_LINE_EDIT: StyleBox = preload("res://addons/scene_manager/themes/line_edit_duplicate.tres")
+const EBUS_I = preload("uid://bnwpfojr6e0dh")
 
 # The main control for editing the property.
 var property_control: SceneLineEdit = preload("res://addons/scene_manager/property_editor/scene_line_edit.tscn").instantiate()
@@ -64,7 +65,7 @@ func _refresh_control_text() -> void:
 
 
 func _update_theme() -> void:
-	if current_value == null or current_value.scene_value == Scenes.SceneName.NONE:
+	if current_value == null or current_value.scene_value == Scenes.Id.NONE:
 		property_control.add_theme_stylebox_override("normal", DUPLICATE_LINE_EDIT)
 	else:
 		property_control.remove_theme_stylebox_override("normal")

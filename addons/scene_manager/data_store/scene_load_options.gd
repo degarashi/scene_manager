@@ -2,23 +2,24 @@
 class_name SceneLoadOptions
 extends Resource
 
-const C = preload("./scene_manager_constants.gd")
+const _C = preload("uid://c3vvdktou45u")
+static var _ps := preload("uid://dn6eh4s0h8jhi")
 
 ## Default fade out time retrieved from ProjectSettings
 static var default_fade_out: float:
 	get:
-		return SMgrProjectSettings.fade_out_time
+		return _ps.fade_out_time
 
 ## Default fade in time retrieved from ProjectSettings
 static var default_fade_in: float:
 	get:
-		return SMgrProjectSettings.fade_in_time
+		return _ps.fade_in_time
 
 @export_group("Hierarchy")
 ## Where in the node structure the new scene will load.
-@export var node_name: String = C.DEFAULT_TREE_NODE_NAME
+@export var node_name: String = _C.DEFAULT_TREE_NODE_NAME
 ## Whether to only have a single scene or an additive load. Defaults to SINGLE.
-@export var mode: C.SceneLoadingMode = C.SceneLoadingMode.SINGLE
+@export var mode: _C.SceneLoadingMode = _C.SceneLoadingMode.SINGLE
 
 @export_group("Visuals")
 ## Duration of the fade out effect.
@@ -44,8 +45,8 @@ static var default_fade_in: float:
 ## [param fade_in_time]: Custom fade in duration.
 ## [param add_to_back]: If true, enables navigation back to this scene.
 func _init(
-	node: String = C.DEFAULT_TREE_NODE_NAME,
-	mode: C.SceneLoadingMode = C.SceneLoadingMode.SINGLE,
+	node: String = _C.DEFAULT_TREE_NODE_NAME,
+	mode: _C.SceneLoadingMode = _C.SceneLoadingMode.SINGLE,
 	clickable: bool = true,
 	fade_out_time: float = default_fade_out,
 	fade_in_time: float = default_fade_in,

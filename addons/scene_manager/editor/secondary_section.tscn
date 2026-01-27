@@ -1,0 +1,7 @@
+[gd_scene load_steps=3 format=3 uid="uid://y7ksk521w5au"]
+
+[ext_resource type="PackedScene" uid="uid://b75ms1lprcrgd" path="res://addons/scene_manager/editor/base_section.tscn" id="1_n840l"]
+[ext_resource type="Script" uid="uid://bhl4noqukt5gv" path="res://addons/scene_manager/editor/secondary_section.gd" id="2_3u1h8"]
+
+[node name="secondary_section" instance=ExtResource("1_n840l")]
+script = ExtResource("2_3u1h8")

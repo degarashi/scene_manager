@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="SMgrProjectSettings" load_steps=2 format=3 uid="uid://dn6eh4s0h8jhi"]
+
+[ext_resource type="Script" uid="uid://brrwqr4fwpe02" path="res://addons/scene_manager/project_settings.gd" id="1_bfv76"]
+
+[resource]
+script = ExtResource("1_bfv76")
+metadata/_custom_type_script = "uid://brrwqr4fwpe02"

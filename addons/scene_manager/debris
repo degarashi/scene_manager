@@ -1,0 +1,76 @@
+
+## Returns the loaded scene.[br]
+##
+## If scene is not loaded, blocks and waits until scene is ready (acts blocking in code
+## and may freeze your game, make sure scene is ready to get).
+# func get_loaded_scene() -> PackedScene:
+# 	if _loading_scene_path != "":
+# 		return ResourceLoader.load_threaded_get(_loading_scene_path) as PackedScene
+# 	return null
+
+
+## ツリーから指定したシーンをアンロード
+## @param scene 対象のシーンEnum
+# func unload_scene(scene: Scenes.Id) -> void:
+# 	# Get the node from the map, free it, and cleans up the map
+# 	if scene == Scenes.Id.NONE:
+# 		push_warning("Attempted to unload a NONE scene. Skipping.")
+# 		return
+#
+# 	if not _loaded_scene_map.has(scene):
+# 		assert(
+# 			false,
+# 			(
+# 				"ERROR: Attempting to remove a scene %s that has not been loaded."
+# 				% SceneManagerUtils.get_enum_string_from_enum(scene)
+# 			)
+# 		)
+#
+# 	_loaded_scene_map[scene].scene_node.free()
+# 	_loaded_scene_map.erase(scene)
+#
+
+
+## Pops from the back stack and returns previous scene (scene before current scene)
+func pop_previous_scene() -> Scenes.Id:
+	return _pop_history()
+
+
+## Returns how many scenes there are in list of previous scenes.
+func get_history_count() -> int:
+	return _history_stack.size()
+
+
+## Returns the reserved load options for the reserved scene.
+func get_reserved_load_option() -> SceneLoadOptions:
+	return _reserved_options
+
+
+## Pause (fadeout). You can resume afterwards.
+func pause(fade_out_time: float, general_options := SceneLoadOptions.new()) -> void:
+	_set_transition_started()
+	_set_clickable(general_options.clickable)
+	await _execute_fade_async(fade_out_time, true)
+
+
+## Resume (fadein) after pause
+func resume(fade_in_time: float, general_options := SceneLoadOptions.new()) -> void:
+	_set_clickable(general_options.clickable)
+	await _execute_fade_async(fade_in_time, false)
+	_set_transition_finished()
+	_set_clickable(true)
+
+
+## 現在予約されているシーンEnumの取得
+## @return 予約済みシーンEnum
+func get_reserved_scene() -> Scenes.Id:
+	return _reserved_scene_id
+
+## シーンパスがインクルードリストに含まれているかの判定
+## @param scene_file_path 対象のシーンパス
+## @return 含まれている場合はtrue
+func _current_scene_is_included(scene_file_path: String) -> bool:
+	for include_path: String in Scenes.scenes._include_list:
+		if scene_file_path.begins_with(include_path):
+			return true
+	return false

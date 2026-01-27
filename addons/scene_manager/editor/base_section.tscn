@@ -1,15 +1,15 @@
-[gd_scene load_steps=3 format=3 uid="uid://7r0ywsv3ga6g"]
+[gd_scene load_steps=3 format=3 uid="uid://b75ms1lprcrgd"]
 
-[ext_resource type="Script" uid="uid://kopmv06wlc1d" path="res://addons/scene_manager/editor/scene_list.gd" id="2"]
-[ext_resource type="Texture2D" uid="uid://36xdho566h28" path="res://addons/scene_manager/icons/ImportFail.svg" id="3"]
+[ext_resource type="Script" uid="uid://dano25hhw3wol" path="res://addons/scene_manager/editor/section.gd" id="1_homsn"]
+[ext_resource type="Texture2D" uid="uid://36xdho566h28" path="res://addons/scene_manager/icons/ImportFail.svg" id="2_61flc"]
 
-[node name="scene_list" type="VBoxContainer"]
+[node name="section" type="VBoxContainer"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("2")
+script = ExtResource("1_homsn")
 
 [node name="_title" type="HBoxContainer" parent="."]
 layout_mode = 2
@@ -18,13 +18,13 @@ layout_mode = 2
 unique_name_in_owner = true
 custom_minimum_size = Vector2(28, 28)
 layout_mode = 2
-icon = ExtResource("3")
+icon = ExtResource("2_61flc")
 
 [node name="padding" type="Control" parent="_title"]
 custom_minimum_size = Vector2(28, 28)
 layout_mode = 2
 
-[node name="save_label" type="Label" parent="_title"]
+[node name="unsaved_label" type="Label" parent="_title"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2

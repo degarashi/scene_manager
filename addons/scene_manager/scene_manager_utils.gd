@@ -4,25 +4,25 @@ extends Node
 ## Helper class for the scene manager
 
 
-## Returns the string form of the Scenes.SceneName enum.
+## Returns the string form of the Scenes.Id enum.
 ##
 ## Note that this only works for unique enum values. If there are duplicate values
 ## assigned to the enums, then this won't work. However, since we control how the
-## SceneName is created, this won't be an issue.
-static func get_enum_string_from_enum(scene: Scenes.SceneName) -> String:
-	var index := Scenes.SceneName.values().find(scene)
-	return Scenes.SceneName.keys()[index]
+## Id is created, this won't be an issue.
+static func get_enum_string_from_enum(scene: Scenes.Id) -> String:
+	var index := Scenes.Id.values().find(scene)
+	return Scenes.Id.keys()[index]
 
 
-## Returns the Scenes.SceneName enum from the provided string.
+## Returns the Scenes.Id enum from the provided string.
 ##
-## Returns Scenes.SceneName.NONE if the string doesn't match anything.
-static func get_enum_from_scene_name(scene_name: String) -> Scenes.SceneName:
+## Returns Scenes.Id.NONE if the string doesn't match anything.
+static func get_enum_from_scene_name(scene_name: String) -> Scenes.Id:
 	var sanitized := sanitize_as_enum_string(scene_name)
-	if sanitized in Scenes.SceneName.keys():
-		return Scenes.SceneName.get(sanitized) as Scenes.SceneName
+	if sanitized in Scenes.Id.keys():
+		return Scenes.Id.get(sanitized) as Scenes.Id
 
-	return Scenes.SceneName.NONE
+	return Scenes.Id.NONE
 
 
 ## Returns a string that is all caps with spaces replaced with underscores.

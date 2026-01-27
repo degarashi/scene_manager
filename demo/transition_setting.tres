@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="SceneLoadOptions" load_steps=2 format=3 uid="uid://0j37pjg3x7cj"]
+
+[ext_resource type="Script" uid="uid://cnwtgrgtiwo2n" path="res://addons/scene_manager/data_store/scene_load_options.gd" id="1_d86jb"]
+
+[resource]
+script = ExtResource("1_d86jb")
+fade_out_time = 0.5
+fade_in_time = 0.5
+clickable = false
+metadata/_custom_type_script = "uid://cnwtgrgtiwo2n"

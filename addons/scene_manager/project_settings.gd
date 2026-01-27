@@ -1,7 +1,11 @@
+@tool
 class_name SMgrProjectSettings
-extends RefCounted
+extends SMgrResource
 
+signal on_auto_save_changed(enable: bool)
 const DEFAULT_SCENES_FILENAME = "scenes.gd"
+const DEFAULT_FADE_OUT_TIME: float = 1
+const DEFAULT_FADE_IN_TIME: float = 1
 
 
 # Setting Paths
@@ -25,49 +29,62 @@ class Key:
 
 
 # Runtime Properties linked to ProjectSettings
-static var scene_path: String:
+var scene_path: String:
 	get:
 		return ProjectSettings.get_setting(
 			Property.SCENE_PATH, SMgrConstants.DEFAULT_PATH_TO_SCENES
 		)
 	set(value):
-		ProjectSettings.set_setting(Property.SCENE_PATH, value)
-		ProjectSettings.save()
+		if scene_path != value:
+			ProjectSettings.set_setting(Property.SCENE_PATH, value)
+			_save()
 
-static var fade_out_time: float:
+var fade_out_time: float:
 	get:
 		return ProjectSettings.get_setting(
-			Property.FADE_OUT_TIME, SMgrConstants.DEFAULT_FADE_OUT_TIME
+			Property.FADE_OUT_TIME, DEFAULT_FADE_OUT_TIME
 		)
 	set(value):
-		ProjectSettings.set_setting(Property.FADE_OUT_TIME, value)
-		ProjectSettings.save()
+		if fade_out_time != value:
+			ProjectSettings.set_setting(Property.FADE_OUT_TIME, value)
+			_save()
 
-static var fade_in_time: float:
+var fade_in_time: float:
 	get:
 		return ProjectSettings.get_setting(
-			Property.FADE_IN_TIME, SMgrConstants.DEFAULT_FADE_IN_TIME
+			Property.FADE_IN_TIME, DEFAULT_FADE_IN_TIME
 		)
 	set(value):
-		ProjectSettings.set_setting(Property.FADE_IN_TIME, value)
-		ProjectSettings.save()
+		if fade_in_time != value:
+			ProjectSettings.set_setting(Property.FADE_IN_TIME, value)
+			_save()
 
-static var auto_save: bool:
+var auto_save: bool:
 	get:
 		return ProjectSettings.get_setting(Property.AUTO_SAVE, false)
 	set(value):
-		ProjectSettings.set_setting(Property.AUTO_SAVE, value)
-		ProjectSettings.save()
+		if auto_save != value:
+			ProjectSettings.set_setting(Property.AUTO_SAVE, value)
+			# force _save only the "auto _save" value
+			_save()
+			on_auto_save_changed.emit.call_deferred(value)
 
-static var includes_visible: bool:
+var includes_visible: bool:
 	get:
 		return ProjectSettings.get_setting(Property.INCLUDES_VISIBLE, true)
 	set(value):
-		ProjectSettings.set_setting(Property.INCLUDES_VISIBLE, value)
-		ProjectSettings.save()
+		if includes_visible != value:
+			ProjectSettings.set_setting(Property.INCLUDES_VISIBLE, value)
+			_save()
 
 
-static func setup_project_settings() -> void:
+func _save() -> void:
+	var error: Error = ProjectSettings.save()
+	if error != OK:
+		push_error("SceneManager: Failed to _save ProjectSettings (Error code: %d)" % error)
+
+
+func setup_project_settings() -> void:
 	# Structured configuration using constant keys
 	var settings: Dictionary[String, Dictionary] = {
 		Property.SCENE_PATH:
@@ -81,13 +98,13 @@ static func setup_project_settings() -> void:
 		},
 		Property.FADE_OUT_TIME:
 		{
-			Key.DEFAULT: SMgrConstants.DEFAULT_FADE_OUT_TIME,
+			Key.DEFAULT: DEFAULT_FADE_OUT_TIME,
 			Key.TYPE: TYPE_FLOAT,
 			Key.BASIC: true,
 		},
 		Property.FADE_IN_TIME:
 		{
-			Key.DEFAULT: SMgrConstants.DEFAULT_FADE_IN_TIME,
+			Key.DEFAULT: DEFAULT_FADE_IN_TIME,
 			Key.TYPE: TYPE_FLOAT,
 			Key.BASIC: true,
 		},
@@ -105,6 +122,8 @@ static func setup_project_settings() -> void:
 		}
 	}
 
+	var needs_save: bool = false
+
 	for path: String in settings:
 		var s: Dictionary = settings[path]
 		var default_val: Variant = s[Key.DEFAULT]
@@ -113,6 +132,7 @@ static func setup_project_settings() -> void:
 		# Initialize setting if missing
 		if not ProjectSettings.has_setting(path):
 			ProjectSettings.set_setting(path, default_val)
+			needs_save = true
 
 		# Prepare property info for editor display (Explicit Dictionary typing)
 		var info: Dictionary[String, Variant] = {"name": path, "type": type}
@@ -133,7 +153,6 @@ static func setup_project_settings() -> void:
 		if s.get(Key.RESTART, false) as bool:
 			ProjectSettings.set_restart_if_changed(path, true)
 
-	# Persist changes to project.godot
-	var error: Error = ProjectSettings.save()
-	if error != OK:
-		push_error("SceneManager: Failed to save ProjectSettings (Error code: %d)" % error)
+	# Persist changes to project.godot only if needed
+	if needs_save:
+		_save()

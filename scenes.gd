@@ -6,57 +6,16 @@
 extends Node
 
 # [Scene Enum]
-enum SceneName \
+enum Id \
 { 
-	NONE = -1, 
-	LOADING, 
-	LOADING_WITH_INITIALIZATION, 
-	SCENE1, 
-	SCENE2, 
-	SCENE3, 
-	SCENE_WITH_LOADING_PHASE, 
+	NONE = -1,
+	LOADING_SCREEN,
+	SCENE_1,
+	SCENE_0,
+	SCENE_2,
+	FAKE_LOADING_SCREEN,
 }
 
-# [Scene Dictionary]
-var scenes: Dictionary = \
-{
-	"_include_list": [
-		"res://demo"
-	],
-	"_scenes": {
-		"loading": {
-			"sections": [],
-			"value": "res://demo/loading.tscn"
-		},
-		"loading_with_initialization": {
-			"sections": [],
-			"value": "res://demo/loading_with_initialization.tscn"
-		},
-		"scene1": {
-			"sections": [
-				"Level"
-			],
-			"value": "res://demo/scene1.tscn"
-		},
-		"scene2": {
-			"sections": [
-				"Level"
-			],
-			"value": "res://demo/scene2.tscn"
-		},
-		"scene3": {
-			"sections": [
-				"Level"
-			],
-			"value": "res://demo/scene3.tscn"
-		},
-		"scene_with_loading_phase": {
-			"sections": [],
-			"value": "res://demo/scene_with_loading_phase.tscn"
-		}
-	},
-	"_sections": [
-		"Level"
-	]
-}
-# [End Scene Dictionary]
+# [Scene Data Block]
+"{\n\"_include_list\": Array[String]([\"res://demo\"]),\n\"_scenes\": [{\n\"name\": \"loading_screen\",\n\"path\": \"res://demo/loading_screen.tscn\",\n\"sections\": Array[String]([]),\n\"uid\": 3205915700789431932\n}, {\n\"name\": \"scene_1\",\n\"path\": \"res://demo/scene_1.tscn\",\n\"sections\": Array[String]([]),\n\"uid\": 7784575442615425582\n}, {\n\"name\": \"scene_0\",\n\"path\": \"res://demo/scene_0.tscn\",\n\"sections\": Array[String]([]),\n\"uid\": 3167048368848614594\n}, {\n\"name\": \"scene_2\",\n\"path\": \"res://demo/scene_2.tscn\",\n\"sections\": Array[String]([]),\n\"uid\": 5390443888696816947\n}, {\n\"name\": \"fake_loading_screen\",\n\"path\": \"res://demo/fake_loading_screen.tscn\",\n\"sections\": Array[String]([]),\n\"uid\": 5495634729037908381\n}],\n\"_sections\": Array[String]([])\n}"
+# [End Scene Data Block]

@@ -1,20 +1,25 @@
 @tool
 extends EditorInspectorPlugin
 
-var SceneEditorProperty = preload("res://addons/scene_manager/property_editor/scene_editor_property.gd")
+const SceneEditorProperty = preload("uid://bxv22ti18tesc")
 
 
-func _can_handle(object):
+func _can_handle(_object: Object) -> bool:
 	# We support all objects.
 	return true
 
 
-func _parse_property(object, type, name, hint_type, hint_string, usage_flags, wide):
-	# We handle properties of SceneResource
-	if hint_string == "SceneResource":
-		# Create an instance of the custom property editor and register
-		# it to a specific property path.
+func _parse_property(
+	_object: Object,
+	type: Variant.Type,
+	name: String,
+	_hint_type: PropertyHint,
+	hint_string: String,
+	_usage_flags: int,
+	_wide: bool
+) -> bool:
+	if type == TYPE_OBJECT and hint_string == "SceneResource":
 		add_property_editor(name, SceneEditorProperty.new())
 		return true
-	
+
 	return false

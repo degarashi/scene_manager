@@ -1,0 +1,40 @@
+[gd_scene load_steps=2 format=3 uid="uid://di5525fdxb6mc"]
+
+[ext_resource type="Script" uid="uid://d4kgnvujmxe6r" path="res://demo/scene_1.gd" id="1_j8d63"]
+
+[node name="Scene1" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_j8d63")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.28192267, 0.43124992, 0.10324424, 1)
+
+[node name="LoadScene2Button" type="Button" parent="."]
+layout_mode = 0
+offset_left = 62.0
+offset_top = 79.0
+offset_right = 232.0
+offset_bottom = 110.0
+text = "Load Scene2"
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 0
+offset_left = 22.0
+offset_top = 13.0
+offset_right = 198.0
+offset_bottom = 76.0
+theme_override_font_sizes/font_size = 45
+text = "SCENE 1"
+
+[connection signal="button_up" from="LoadScene2Button" to="." method="_on_load_scene_2_button_button_up"]

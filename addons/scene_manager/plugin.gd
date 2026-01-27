@@ -3,13 +3,14 @@ extends EditorPlugin
 
 const MAIN_PANEL_SCENE = preload("uid://crnf0w0s44hxx")
 const MAIN_PANEL_NAME = "Scene Manager"
+var _ps := preload("uid://dn6eh4s0h8jhi")
 var _main_panel: SMgrMainPanel
 var _inspector: EditorInspectorPlugin
 
 
 # Plugin installation
 func _enter_tree():
-	SMgrProjectSettings.setup_project_settings()
+	_ps.setup_project_settings()
 
 	add_custom_type(
 		"Auto Complete Assistant",
@@ -23,6 +24,7 @@ func _enter_tree():
 	# --- main panel ---
 	_main_panel = MAIN_PANEL_SCENE.instantiate()
 	_main_panel.name = MAIN_PANEL_NAME
+	_main_panel.connect_ebus()
 	add_control_to_dock(EditorPlugin.DOCK_SLOT_RIGHT_UL, _main_panel)
 
 	_inspector = (

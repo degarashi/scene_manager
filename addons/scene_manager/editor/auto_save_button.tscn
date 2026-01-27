@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3 uid="uid://lx7kbuk7ui2m"]
+
+[ext_resource type="Texture2D" uid="uid://c1ps4ed6wrx51" path="res://addons/scene_manager/icons/GuiChecked.svg" id="1_alg8w"]
+[ext_resource type="Script" uid="uid://5dphs2iokh7p" path="res://addons/scene_manager/editor/auto_save_button.gd" id="2_ufapa"]
+
+[node name="auto_save_button" type="Button"]
+size_flags_horizontal = 3
+tooltip_text = "If some scene properties update (edit, remove, change list, etc.), save happens automatically."
+focus_mode = 0
+text = "Auto Save"
+icon = ExtResource("1_alg8w")
+script = ExtResource("2_ufapa")
+metadata/enabled = true
+
+[connection signal="button_up" from="." to="." method="_on_button_up"]

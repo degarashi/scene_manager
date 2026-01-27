@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3 uid="uid://ckkekibb7wbh2"]
+
+[ext_resource type="PackedScene" uid="uid://blw770pxky5d5" path="res://demo/loading_screen.tscn" id="1_5s7hw"]
+[ext_resource type="Script" uid="uid://ddfabjrbsw43r" path="res://demo/fake_loading_screen.gd" id="2_l7n74"]
+
+[node name="FakeLoadingScreen" instance=ExtResource("1_5s7hw")]
+script = ExtResource("2_l7n74")
+loading_speed = 1.0
+wait_after_full = 1.0
+random_stutter = true
+
+[node name="LoadingInfo" type="Label" parent="CenterContainer/VBoxContainer" index="2"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Loading Info..."
+horizontal_alignment = 1

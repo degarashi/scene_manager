@@ -49,4 +49,4 @@ unique_name_in_owner = true
 visible = false
 layout_mode = 2
 
-[connection signal="button_up" from="HBoxContainer/Button" to="." method="_on_button_up"]
+[connection signal="button_up" from="HBoxContainer/Button" to="." method="toggle_expand"]

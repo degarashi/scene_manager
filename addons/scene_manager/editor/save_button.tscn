@@ -1,0 +1,12 @@
+[gd_scene load_steps=3 format=3 uid="uid://bur1hh1ahy063"]
+
+[ext_resource type="Texture2D" uid="uid://dym61e8lwgplt" path="res://addons/scene_manager/icons/Save.svg" id="1_ff6us"]
+[ext_resource type="Script" uid="uid://nd5psfrpo4l" path="res://addons/scene_manager/editor/save_button.gd" id="2_cf6fy"]
+
+[node name="save_button" type="Button"]
+size_flags_horizontal = 3
+size_flags_vertical = 2
+tooltip_text = "Stores all data to the generated scenes.gd file."
+text = "Save"
+icon = ExtResource("1_ff6us")
+script = ExtResource("2_cf6fy")

@@ -1,0 +1,2 @@
+class_name SMgrResource
+extends Resource

@@ -1,0 +1,68 @@
+[gd_scene load_steps=3 format=3 uid="uid://blee3apqqctiw"]
+
+[ext_resource type="Script" uid="uid://d1xx54acvvxow" path="res://demo/scene_0.gd" id="1_leh0y"]
+[ext_resource type="Resource" uid="uid://0j37pjg3x7cj" path="res://demo/transition_setting.tres" id="2_okcq6"]
+
+[node name="Scene0" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_leh0y")
+opt = ExtResource("2_okcq6")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.36479998, 0.36864, 0.48, 1)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 51
+text = "SCENE 0"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Scene1Button" type="Button" parent="CenterContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "Load Scene1
+"
+
+[node name="BeginLoadingButton" type="Button" parent="CenterContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "Load Scene1 (with Loading)"
+
+[node name="BeginFakeLoadingButton" type="Button" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+text = "Load Scene1 (with Fake Loading)"
+
+[node name="QuitButton" type="Button" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+text = "QUIT"
+
+[connection signal="button_up" from="CenterContainer/VBoxContainer/HBoxContainer/Scene1Button" to="." method="_on_scene_1_button_button_up"]
+[connection signal="pressed" from="CenterContainer/VBoxContainer/HBoxContainer/BeginLoadingButton" to="." method="_on_begin_loading_button_pressed"]
+[connection signal="pressed" from="CenterContainer/VBoxContainer/BeginFakeLoadingButton" to="." method="_on_begin_fake_loading_button_pressed"]
+[connection signal="pressed" from="CenterContainer/VBoxContainer/QuitButton" to="." method="_on_quit_button_pressed"]
