@@ -250,7 +250,7 @@ func _remove_include_item(address: String) -> void:
 
 
 # Clears all tabs, UI lists and include list
-func _clear_all() -> void:
+func _clear_ui_elements() -> void:
 	_delete_all_tabs()
 	_clear_all_lists()
 	_clear_include_ui_list()
@@ -298,7 +298,7 @@ func _refresh_save_changes() -> void:
 # Refresh button
 func _refresh_ui() -> void:
 	_data.load()
-	_clear_all()
+	_clear_ui_elements()
 	_reload_ui_tabs()
 	_reload_ui_scenes()
 	_reload_ui_includes()
