@@ -11,7 +11,7 @@ signal include_child_deleted(node: Node, address: String)
 signal item_renamed(node: Node, previous_name: String, new_name: String)
 signal item_added_to_list(node: Node, list_name: String)
 signal item_removed_from_list(node: Node, list_name: String)
-signal section_removed(node: Node, section_name: String)
+signal section_removed(section_name: String)
 
 # Scene item, include item prefabs
 const SCENE_INCLUDE_ITEM = preload("res://addons/scene_manager/editor/deletable_item.tscn")
@@ -86,7 +86,7 @@ func _handle_data_modification() -> void:
 	_refresh_save_changes()
 
 
-func _on_section_removed(_node: Node, section_name: String) -> void:
+func _on_section_removed(section_name: String) -> void:
 	_manager_data.remove_section(section_name)
 
 	# Loop through the scenes and update the categorized for the "All" list
