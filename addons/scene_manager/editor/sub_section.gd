@@ -46,7 +46,7 @@ func get_item(key: String) -> Node:
 	for child in _list.get_children():
 		if child.get_key() == key:
 			return child
-	
+
 	return null
 
 
@@ -131,7 +131,7 @@ func set_header_visible(visible: bool) -> void:
 	_button_header.visible = _header_visible
 
 
-# Button Delete 
+# Button Delete
 func _on_delete_button_up():
 	queue_free()
 	await self.tree_exited
