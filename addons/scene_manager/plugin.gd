@@ -4,7 +4,7 @@ extends EditorPlugin
 const MAIN_PANEL_SCENE = preload("uid://crnf0w0s44hxx")
 const MAIN_PANEL_NAME = "Scene Manager"
 var _main_panel: SMgrMainPanel
-var _plugin: Object
+var _inspector: EditorInspectorPlugin
 
 
 func set_properties_for_setting() -> void:
@@ -114,8 +114,10 @@ func _enter_tree():
 	_main_panel.name = MAIN_PANEL_NAME
 	add_control_to_dock(EditorPlugin.DOCK_SLOT_RIGHT_UL, _main_panel)
 
-	_plugin = preload("res://addons/scene_manager/property_editor/scene_inspector_plugin.gd").new()
-	add_inspector_plugin(_plugin)
+	_inspector = (
+		preload("res://addons/scene_manager/property_editor/scene_inspector_plugin.gd").new()
+	)
+	add_inspector_plugin(_inspector)
 
 
 # Plugin uninstallation
@@ -133,7 +135,7 @@ func _exit_tree() -> void:
 	remove_control_from_docks(_main_panel)
 	_main_panel.free()
 
-	remove_inspector_plugin(_plugin)
+	remove_inspector_plugin(_inspector)
 
 
 func _enable_plugin() -> void:
