@@ -5,6 +5,7 @@ extends HBoxContainer
 signal key_changed(key: String)
 signal key_reset
 
+const CATEGORY_ID = 0
 const F = preload("uid://cpxe18s2130m8")
 const DUPLICATE_LINE_EDIT: StyleBox = preload(
 	"res://addons/scene_manager/themes/line_edit_duplicate.tres"
@@ -91,12 +92,12 @@ func _on_popup_button_button_up() -> void:
 	_popup_menu.add_separator("Categories")
 	i += 1
 
-	# Categories have id of 0
+	# Categories have id of CATEGORY_ID
 	for section in sections:
 		if section == "All":
 			continue
 		_popup_menu.add_check_item(section)
-		_popup_menu.set_item_id(i, 0)
+		_popup_menu.set_item_id(i, CATEGORY_ID)
 		_popup_menu.set_item_checked(i, section in _root.get_sections(get_value()))
 		i += 1
 
@@ -147,7 +148,7 @@ func _on_popup_menu_index_pressed(index: int) -> void:
 	var text := _popup_menu.get_item_text(index)
 	_popup_menu.set_item_checked(index, !checked)
 
-	if id == 0:
+	if id == CATEGORY_ID:
 		if !checked:
 			_root.add_scene_to_list(text, get_key(), get_value())
 			_root.item_added_to_list.emit(self, text)
