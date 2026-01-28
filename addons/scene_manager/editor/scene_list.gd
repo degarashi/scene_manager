@@ -124,7 +124,7 @@ func update_item_categorized(key: String, categorized: bool) -> void:
 
 
 ## Updates the item key with the new key.
-func update_item_key(key: String, new_key: String) -> void:
+func update_item_key(old_key: String, new_key: String) -> void:
 	# Find the item in the different subsections and update them
 	for section in _container.get_children():
 		# We want to get the list, which will be the second child in the sub section
@@ -134,7 +134,7 @@ func update_item_key(key: String, new_key: String) -> void:
 		# Find the node we're looking for to replace
 		# The node is a scene_item.
 		for node in nodes:
-			if node.get_key() == key:
+			if node.get_key() == old_key:
 				node.set_key(new_key)
 				_sort_node_list(list)
 				break
