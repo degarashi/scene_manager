@@ -10,7 +10,7 @@ var _plugin: Object
 func set_properties_for_setting() -> void:
 	ProjectSettings.add_property_info(
 		{
-			"name": SceneManagerConstants.SETTINGS_SCENE_PROPERTY_NAME,
+			"name": SMgrConstants.SETTINGS_SCENE_PROPERTY_NAME,
 			"type": TYPE_STRING,
 			"hint": PROPERTY_HINT_FILE,
 			"hint_string": "scenes.gd"
@@ -21,7 +21,7 @@ func set_properties_for_setting() -> void:
 		ProjectSettings
 		. add_property_info(
 			{
-				"name": SceneManagerConstants.SETTINGS_FADE_OUT_PROPERTY_NAME,
+				"name": SMgrConstants.SETTINGS_FADE_OUT_PROPERTY_NAME,
 				"type": TYPE_FLOAT,
 			}
 		)
@@ -31,7 +31,7 @@ func set_properties_for_setting() -> void:
 		ProjectSettings
 		. add_property_info(
 			{
-				"name": SceneManagerConstants.SETTINGS_FADE_IN_PROPERTY_NAME,
+				"name": SMgrConstants.SETTINGS_FADE_IN_PROPERTY_NAME,
 				"type": TYPE_FLOAT,
 			}
 		)
@@ -41,42 +41,35 @@ func set_properties_for_setting() -> void:
 		ProjectSettings
 		. add_property_info(
 			{
-				"name": SceneManagerConstants.SETTINGS_AUTO_SAVE_PROPERTY_NAME,
+				"name": SMgrConstants.SETTINGS_AUTO_SAVE_PROPERTY_NAME,
 				"type": TYPE_BOOL,
 			}
 		)
 	)
 
 	ProjectSettings.set_initial_value(
-		SceneManagerConstants.SETTINGS_SCENE_PROPERTY_NAME,
-		SceneManagerConstants.DEFAULT_PATH_TO_SCENES
+		SMgrConstants.SETTINGS_SCENE_PROPERTY_NAME, SMgrConstants.DEFAULT_PATH_TO_SCENES
 	)
-	ProjectSettings.set_as_basic(SceneManagerConstants.SETTINGS_SCENE_PROPERTY_NAME, true)
+	ProjectSettings.set_as_basic(SMgrConstants.SETTINGS_SCENE_PROPERTY_NAME, true)
 
 	ProjectSettings.set_initial_value(
-		SceneManagerConstants.SETTINGS_FADE_OUT_PROPERTY_NAME,
-		SceneManagerConstants.DEFAULT_FADE_OUT_TIME
+		SMgrConstants.SETTINGS_FADE_OUT_PROPERTY_NAME, SMgrConstants.DEFAULT_FADE_OUT_TIME
 	)
-	ProjectSettings.set_as_basic(SceneManagerConstants.SETTINGS_FADE_OUT_PROPERTY_NAME, true)
+	ProjectSettings.set_as_basic(SMgrConstants.SETTINGS_FADE_OUT_PROPERTY_NAME, true)
 
 	ProjectSettings.set_initial_value(
-		SceneManagerConstants.SETTINGS_FADE_IN_PROPERTY_NAME,
-		SceneManagerConstants.DEFAULT_FADE_IN_TIME
+		SMgrConstants.SETTINGS_FADE_IN_PROPERTY_NAME, SMgrConstants.DEFAULT_FADE_IN_TIME
 	)
-	ProjectSettings.set_as_basic(SceneManagerConstants.SETTINGS_FADE_IN_PROPERTY_NAME, true)
+	ProjectSettings.set_as_basic(SMgrConstants.SETTINGS_FADE_IN_PROPERTY_NAME, true)
 
-	ProjectSettings.set_initial_value(SceneManagerConstants.SETTINGS_AUTO_SAVE_PROPERTY_NAME, false)
-	ProjectSettings.set_as_internal(SceneManagerConstants.SETTINGS_AUTO_SAVE_PROPERTY_NAME, true)
+	ProjectSettings.set_initial_value(SMgrConstants.SETTINGS_AUTO_SAVE_PROPERTY_NAME, false)
+	ProjectSettings.set_as_internal(SMgrConstants.SETTINGS_AUTO_SAVE_PROPERTY_NAME, true)
 
-	ProjectSettings.set_initial_value(
-		SceneManagerConstants.SETTINGS_INCLUDES_VISIBLE_PROPERTY_NAME, true
-	)
-	ProjectSettings.set_as_internal(
-		SceneManagerConstants.SETTINGS_INCLUDES_VISIBLE_PROPERTY_NAME, true
-	)
+	ProjectSettings.set_initial_value(SMgrConstants.SETTINGS_INCLUDES_VISIBLE_PROPERTY_NAME, true)
+	ProjectSettings.set_as_internal(SMgrConstants.SETTINGS_INCLUDES_VISIBLE_PROPERTY_NAME, true)
 
 	# Restart is required as path to Scenes singleton has changed
-	ProjectSettings.set_restart_if_changed(SceneManagerConstants.SETTINGS_SCENE_PROPERTY_NAME, true)
+	ProjectSettings.set_restart_if_changed(SMgrConstants.SETTINGS_SCENE_PROPERTY_NAME, true)
 
 	ProjectSettings.save()
 
@@ -84,33 +77,26 @@ func set_properties_for_setting() -> void:
 # Plugin installation
 func _enter_tree():
 	# Adding settings property to Project/Settings & loading
-	if not ProjectSettings.has_setting(SceneManagerConstants.SETTINGS_SCENE_PROPERTY_NAME):
+	if not ProjectSettings.has_setting(SMgrConstants.SETTINGS_SCENE_PROPERTY_NAME):
 		ProjectSettings.set_setting(
-			SceneManagerConstants.SETTINGS_SCENE_PROPERTY_NAME,
-			SceneManagerConstants.DEFAULT_PATH_TO_SCENES
+			SMgrConstants.SETTINGS_SCENE_PROPERTY_NAME, SMgrConstants.DEFAULT_PATH_TO_SCENES
 		)
 
-	if not ProjectSettings.has_setting(SceneManagerConstants.SETTINGS_FADE_OUT_PROPERTY_NAME):
+	if not ProjectSettings.has_setting(SMgrConstants.SETTINGS_FADE_OUT_PROPERTY_NAME):
 		ProjectSettings.set_setting(
-			SceneManagerConstants.SETTINGS_FADE_OUT_PROPERTY_NAME,
-			SceneManagerConstants.DEFAULT_FADE_OUT_TIME
+			SMgrConstants.SETTINGS_FADE_OUT_PROPERTY_NAME, SMgrConstants.DEFAULT_FADE_OUT_TIME
 		)
 
-	if not ProjectSettings.has_setting(SceneManagerConstants.SETTINGS_FADE_IN_PROPERTY_NAME):
+	if not ProjectSettings.has_setting(SMgrConstants.SETTINGS_FADE_IN_PROPERTY_NAME):
 		ProjectSettings.set_setting(
-			SceneManagerConstants.SETTINGS_FADE_IN_PROPERTY_NAME,
-			SceneManagerConstants.DEFAULT_FADE_IN_TIME
+			SMgrConstants.SETTINGS_FADE_IN_PROPERTY_NAME, SMgrConstants.DEFAULT_FADE_IN_TIME
 		)
 
-	if not ProjectSettings.has_setting(SceneManagerConstants.SETTINGS_AUTO_SAVE_PROPERTY_NAME):
-		ProjectSettings.set_setting(SceneManagerConstants.SETTINGS_AUTO_SAVE_PROPERTY_NAME, false)
+	if not ProjectSettings.has_setting(SMgrConstants.SETTINGS_AUTO_SAVE_PROPERTY_NAME):
+		ProjectSettings.set_setting(SMgrConstants.SETTINGS_AUTO_SAVE_PROPERTY_NAME, false)
 
-	if not ProjectSettings.has_setting(
-		SceneManagerConstants.SETTINGS_INCLUDES_VISIBLE_PROPERTY_NAME
-	):
-		ProjectSettings.set_setting(
-			SceneManagerConstants.SETTINGS_INCLUDES_VISIBLE_PROPERTY_NAME, true
-		)
+	if not ProjectSettings.has_setting(SMgrConstants.SETTINGS_INCLUDES_VISIBLE_PROPERTY_NAME):
+		ProjectSettings.set_setting(SMgrConstants.SETTINGS_INCLUDES_VISIBLE_PROPERTY_NAME, true)
 
 	set_properties_for_setting()
 
@@ -151,11 +137,9 @@ func _exit_tree() -> void:
 
 
 func _enable_plugin() -> void:
-	var path_to_scenes := SceneManagerConstants.DEFAULT_PATH_TO_SCENES
-	if ProjectSettings.has_setting(SceneManagerConstants.SETTINGS_SCENE_PROPERTY_NAME):
-		path_to_scenes = ProjectSettings.get_setting(
-			SceneManagerConstants.SETTINGS_SCENE_PROPERTY_NAME
-		)
+	var path_to_scenes := SMgrConstants.DEFAULT_PATH_TO_SCENES
+	if ProjectSettings.has_setting(SMgrConstants.SETTINGS_SCENE_PROPERTY_NAME):
+		path_to_scenes = ProjectSettings.get_setting(SMgrConstants.SETTINGS_SCENE_PROPERTY_NAME)
 
 	add_autoload_singleton("SceneManager", "res://addons/scene_manager/scene_manager.tscn")
 	add_autoload_singleton("Scenes", path_to_scenes)

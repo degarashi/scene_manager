@@ -1,4 +1,4 @@
-class_name SceneManagerConstants
+class_name SMgrConstants
 ## Constants used by the editor and the scene manager in the game
 
 ## Enums for how to load the scene.[br]

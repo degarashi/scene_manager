@@ -1,7 +1,7 @@
 extends Button
 
 @export var scene: SceneResource
-@export var mode: SceneManagerConstants.SceneLoadingMode
+@export var mode: SMgrConstants.SceneLoadingMode
 @export var fade_out_speed: float = 1.0
 @export var fade_in_speed: float = 1.0
 @export var clickable: bool = false
@@ -20,8 +20,8 @@ func _on_button_additive_up():
 		return
 
 	var options := SceneLoadOptions.new(
-		SceneManagerConstants.DEFAULT_TREE_NODE_NAME,
-		SceneManagerConstants.SceneLoadingMode.ADDITIVE,
+		SMgrConstants.DEFAULT_TREE_NODE_NAME,
+		SMgrConstants.SceneLoadingMode.ADDITIVE,
 		true,
 		0.0,
 		0.0,
@@ -35,7 +35,7 @@ func _on_button_additive_node_up():
 		return
 
 	var options := SceneLoadOptions.new(
-		"SAMPLE_NODE", SceneManagerConstants.SceneLoadingMode.ADDITIVE, true, 0.0, 0.0, true
+		"SAMPLE_NODE", SMgrConstants.SceneLoadingMode.ADDITIVE, true, 0.0, 0.0, true
 	)
 	SceneManager.load_scene(scene.scene_value, options)
 
@@ -45,7 +45,7 @@ func _on_button_single_node_up():
 		return
 
 	var options := SceneLoadOptions.new(
-		"SAMPLE_NODE", SceneManagerConstants.SceneLoadingMode.SINGLE_NODE, true, 0.0, 0.0, true
+		"SAMPLE_NODE", SMgrConstants.SceneLoadingMode.SINGLE_NODE, true, 0.0, 0.0, true
 	)
 	SceneManager.load_scene(scene.scene_value, options)
 
