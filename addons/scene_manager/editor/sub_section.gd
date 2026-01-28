@@ -3,9 +3,9 @@ class_name SMgrSubSection
 extends Control
 
 # Nodes
-@onready var _button_header: Button = find_child("Button")
-@onready var _delete_button: Button = find_child("Delete")
-@onready var _list: VBoxContainer = find_child("List")
+@onready var _button_header: Button = %Button
+@onready var _delete_button: Button = %Delete
+@onready var _list: VBoxContainer = %List
 
 const SUBSECTION_OPEN_ICON = preload("res://addons/scene_manager/icons/GuiOptionArrowDown.svg")
 const SUBSECTION_CLOSE_ICON = preload("res://addons/scene_manager/icons/GuiOptionArrowRight.svg")

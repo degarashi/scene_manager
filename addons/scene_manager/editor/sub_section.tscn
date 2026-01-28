@@ -5,25 +5,25 @@
 [ext_resource type="Script" uid="uid://bwj6yigjptjbq" path="res://addons/scene_manager/editor/sub_section_button.gd" id="3_smgrs"]
 [ext_resource type="Texture2D" uid="uid://36xdho566h28" path="res://addons/scene_manager/icons/ImportFail.svg" id="4_chjuj"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_uvnds"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_u6qci"]
 content_margin_left = 5.0
 content_margin_right = 5.0
-bg_color = Color(0.6, 0.6, 0.6, 0)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_yqp47"]
-content_margin_left = 5.0
-content_margin_right = 5.0
-bg_color = Color(0.219608, 0.239216, 0.266667, 1)
+bg_color = Color(0.156863, 0.176471, 0.207843, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kx1we"]
 content_margin_left = 5.0
 content_margin_right = 5.0
 bg_color = Color(0.129412, 0.14902, 0.180392, 1)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_u6qci"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_yqp47"]
 content_margin_left = 5.0
 content_margin_right = 5.0
-bg_color = Color(0.156863, 0.176471, 0.207843, 1)
+bg_color = Color(0.219608, 0.239216, 0.266667, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_uvnds"]
+content_margin_left = 5.0
+content_margin_right = 5.0
+bg_color = Color(0.6, 0.6, 0.6, 0)
 
 [node name="All" type="VBoxContainer"]
 offset_right = 1024.0
@@ -34,25 +34,28 @@ script = ExtResource("1_kgwwp")
 layout_mode = 2
 
 [node name="Button" type="Button" parent="HBoxContainer"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_styles/focus = SubResource("StyleBoxFlat_uvnds")
-theme_override_styles/hover = SubResource("StyleBoxFlat_yqp47")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_kx1we")
 theme_override_styles/normal = SubResource("StyleBoxFlat_u6qci")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_kx1we")
+theme_override_styles/hover = SubResource("StyleBoxFlat_yqp47")
+theme_override_styles/focus = SubResource("StyleBoxFlat_uvnds")
 text = "All"
 icon = ExtResource("1_yyg5g")
 alignment = 0
 script = ExtResource("3_smgrs")
 
 [node name="Delete" type="Button" parent="HBoxContainer"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(28, 28)
 layout_mode = 2
 icon = ExtResource("4_chjuj")
 alignment = 0
 
 [node name="List" type="VBoxContainer" parent="."]
+unique_name_in_owner = true
 visible = false
 layout_mode = 2
 
