@@ -218,7 +218,7 @@ func save() -> void:
 	# Keep track of invalid enums so there aren't blank names that make the generated enum invalid
 	var invalid_name := "INVALID"
 	var num_invalid: int = 0
-	for key: String in _data.scenes.keys():
+	for key: String in self.scenes.keys():
 		if key == "":
 			write_data += "\n\t%s%d, " % [invalid_name, num_invalid]
 			num_invalid += 1
@@ -355,9 +355,9 @@ func _get_scenes_helper(root_path: String) -> Dictionary:
 
 # Removes all scenes in the data that is part of the path.
 func _remove_scenes(path: String) -> void:
-	for scene in _data.scenes.keys():
-		if _data.scenes[scene]["value"].begins_with(path):
-			_data.scenes.erase(scene)
+	for scene in self.scenes.keys():
+		if self.scenes[scene]["value"].begins_with(path):
+			self.scenes.erase(scene)
 
 
 # Refreshes the scene dictionary with the latest includes when the include path changes.
@@ -368,14 +368,14 @@ func _refresh_scenes() -> void:
 	# The address is the key as this will be used for lookup. The scene name was the key
 	# will be useful for the removal as the data uses that as the key.
 	var data_files := {}
-	for key in _data.scenes:
-		data_files[_data.scenes[key]["value"]] = key
+	for key in self.scenes:
+		data_files[self.scenes[key]["value"]] = key
 
 	# Loops through the scene addresses in the data to see if there's any scenes that should be
 	# removed due to not being in the include paths.
 	for address in data_files:
 		if not address in include_scenes:
-			_data.scenes.erase(data_files[address])
+			self.scenes.erase(data_files[address])
 	
 	# Subtract the included_scenes with the data_files to find the paths that are not currently
 	# in the data. These will be added to the data.
@@ -389,7 +389,7 @@ func _refresh_scenes() -> void:
 	for address in scenes_to_add:
 		var new_data := {"sections": [], "value": address}
 
-		_data.scenes[scenes_to_add[address]] = new_data
+		self.scenes[scenes_to_add[address]] = new_data
 
 
 # Subtracts two dictionaries and returns the result.
