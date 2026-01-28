@@ -6,9 +6,6 @@ extends MarginContainer
 ## Handles UI callbacks for modifying data and writes the scene.gd file which
 ## stores all the scene information in the project.
 
-# UI signal callbacks
-signal include_child_deleted(node: Node, address: String)
-
 # Scene item, include item prefabs
 const SCENE_INCLUDE_ITEM = preload("res://addons/scene_manager/editor/deletable_item.tscn")
 const SCENE_LIST_ITEM = preload("res://addons/scene_manager/editor/scene_list.tscn")
@@ -62,8 +59,6 @@ func _ready() -> void:
 	_change_auto_save_state(_manager_data.auto_save)
 	_show_includes_list(_manager_data.includes_visible)
 
-	include_child_deleted.connect(_on_include_child_deleted)
-
 	_init_save_delay_timer()
 
 
@@ -109,7 +104,7 @@ func item_renamed(previous_name: String, new_name: String) -> void:
 
 
 # When an include item remove button clicks
-func _on_include_child_deleted(node: Node, address: String) -> void:
+func include_child_deleted(node: Node, address: String) -> void:
 	node.queue_free()
 	await node.tree_exited
 	_manager_data.remove_include_path(address)

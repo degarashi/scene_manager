@@ -25,4 +25,4 @@ func get_address() -> String:
 
 ## Notify the root manager to handle deletion via signal
 func _on_remove_button_up() -> void:
-	_root.include_child_deleted.emit(self, get_address())
+	_root.include_child_deleted(self, get_address())
