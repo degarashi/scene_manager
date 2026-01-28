@@ -135,4 +135,4 @@ func set_header_visible(visible: bool) -> void:
 func _on_delete_button_up():
 	queue_free()
 	await self.tree_exited
-	_root.sub_section_removed.emit(self)
+	# _root.sub_section_removed.emit(self)
