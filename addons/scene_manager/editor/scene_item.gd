@@ -151,10 +151,10 @@ func _on_popup_menu_index_pressed(index: int) -> void:
 	if id == CATEGORY_ID:
 		if !checked:
 			_root.add_scene_to_list(text, get_key(), get_value())
-			_root.item_added_to_list.emit(self, text)
+			_root.item_added_to_list(self, text)
 		else:
 			_root.remove_scene_from_list(text, get_key(), get_value())
-			_root.item_removed_from_list.emit(self, text)
+			_root.item_removed_from_list(self, text)
 
 
 ## Updates the key internal value and normalizes the UI text
@@ -189,7 +189,7 @@ func _submit_key() -> void:
 		if is_valid and valid_name:
 			# Successfully renamed
 			_update_key(normalized_key)
-			_root.item_renamed.emit(_previous_key, _key)
+			_root.item_renamed(_previous_key, _key)
 			_previous_key = _key
 		else:
 			# Revert to previous valid key if invalid or duplicate

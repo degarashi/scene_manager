@@ -8,9 +8,6 @@ extends MarginContainer
 
 # UI signal callbacks
 signal include_child_deleted(node: Node, address: String)
-signal item_renamed(previous_name: String, new_name: String)
-signal item_added_to_list(node: Node, list_name: String)
-signal item_removed_from_list(node: Node, list_name: String)
 signal section_removed(section_name: String)
 
 # Scene item, include item prefabs
@@ -67,12 +64,21 @@ func _ready() -> void:
 	_show_includes_list(_manager_data.includes_visible)
 
 	include_child_deleted.connect(_on_include_child_deleted)
-	item_renamed.connect(_on_item_renamed)
-	item_added_to_list.connect(_on_added_to_list)
-	item_removed_from_list.connect(_on_item_removed_from_list)
 	section_removed.connect(_on_section_removed)
 
 	_init_save_delay_timer()
+
+
+func item_added_to_list(node: Node, list_name: String) -> void:
+	_manager_data.add_scene_to_section(node.get_value(), list_name)
+	_update_categorized(node.get_key())
+	_handle_data_modification()
+
+
+func item_removed_from_list(node: Node, list_name: String) -> void:
+	_manager_data.remove_scene_from_section(node.get_value(), list_name)
+	_update_categorized(node.get_key())
+	_handle_data_modification()
 
 
 #region Signal Callbacks
@@ -96,24 +102,12 @@ func _on_section_removed(section_name: String) -> void:
 	_handle_data_modification()
 
 
-func _on_item_renamed(previous_name: String, new_name: String) -> void:
+func item_renamed(previous_name: String, new_name: String) -> void:
 	_manager_data.change_name(previous_name, new_name)
 	_rename_scene_in_lists(previous_name, new_name)
 
 	if _manager_data.auto_save:
 		_save_delay_timer.start()
-
-
-func _on_added_to_list(node: Node, list_name: String) -> void:
-	_manager_data.add_scene_to_section(node.get_value(), list_name)
-	_update_categorized(node.get_key())
-	_handle_data_modification()
-
-
-func _on_item_removed_from_list(node: Node, list_name: String) -> void:
-	_manager_data.remove_scene_from_section(node.get_value(), list_name)
-	_update_categorized(node.get_key())
-	_handle_data_modification()
 
 
 # When an include item remove button clicks
