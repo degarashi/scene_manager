@@ -38,7 +38,7 @@ func _ready() -> void:
 		_delete_list_button.focus_mode = Control.FOCUS_NONE
 
 		var sub: SMgrSubSection = SUB_SECTION.instantiate()
-		sub.setup(_main_panel, SectionName.UNCATEGORIZED)
+		sub.setup(SectionName.UNCATEGORIZED)
 		_container.add_child(sub)
 		sub.open()
 		sub.enable_delete_button(false)
@@ -46,14 +46,14 @@ func _ready() -> void:
 		_main_subsection = sub
 
 		var sub2: SMgrSubSection = SUB_SECTION.instantiate()
-		sub2.setup(_main_panel, SectionName.CATEGORIZED)
+		sub2.setup(SectionName.CATEGORIZED)
 		_container.add_child(sub2)
 		sub2.enable_delete_button(false)
 		sub2.set_delete_visible(false)
 		_secondary_subsection = sub2
 	else:
 		var sub: SMgrSubSection = SUB_SECTION.instantiate()
-		sub.setup(_main_panel, ALL_LIST_NAME)
+		sub.setup(ALL_LIST_NAME)
 		sub.visible = false
 		_container.add_child(sub)
 		sub.open()
@@ -267,8 +267,8 @@ func get_all_sublists() -> Array:
 
 ## Adds a subsection
 func add_subsection(text: String) -> Control:
-	var sub := SUB_SECTION.instantiate()
-	sub.setup(_main_panel, text.capitalize())
+	var sub: SMgrSubSection = SUB_SECTION.instantiate()
+	sub.setup(text.capitalize())
 	_container.add_child(sub)
 	return sub
 

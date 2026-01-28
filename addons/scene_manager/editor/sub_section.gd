@@ -6,7 +6,6 @@ const SUBSECTION_OPEN_ICON = preload("res://addons/scene_manager/icons/GuiOption
 const SUBSECTION_CLOSE_ICON = preload("res://addons/scene_manager/icons/GuiOptionArrowRight.svg")
 const SCENE_ITEM = preload("res://addons/scene_manager/editor/scene_item.tscn")
 
-var _main_panel: SMgrMainPanel
 var _is_closable: bool = true
 var _header_visible: bool = true
 
@@ -21,8 +20,7 @@ func _ready() -> void:
 	visible = true
 
 
-func setup(main_panel: SMgrMainPanel, name_a: String) -> void:
-	_main_panel = main_panel
+func setup(name_a: String) -> void:
 	name = name_a
 
 
@@ -134,4 +132,4 @@ func set_header_visible(visible: bool) -> void:
 func _on_delete_button_up():
 	queue_free()
 	await self.tree_exited
-	# _main_panel.sub_section_removed.emit(self)
+	# Notify "sub_section_removed" to MainPanel
