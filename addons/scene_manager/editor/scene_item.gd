@@ -189,7 +189,7 @@ func _submit_key() -> void:
 		if is_valid and valid_name:
 			# Successfully renamed
 			_update_key(normalized_key)
-			_main_panel.item_renamed(_previous_key, _key)
+			_main_panel.scene_renamed(_previous_key, _key)
 			_previous_key = _key
 		else:
 			# Revert to previous valid key if invalid or duplicate

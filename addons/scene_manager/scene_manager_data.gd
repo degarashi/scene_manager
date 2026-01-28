@@ -106,7 +106,7 @@ func remove_from_subsection(
 
 
 ## Changes the scene key name in the data
-func change_name(old_scene_name: String, new_scene_name: String) -> void:
+func change_scene_name(old_scene_name: String, new_scene_name: String) -> void:
 	scenes[new_scene_name] = scenes[old_scene_name]
 	scenes.erase(old_scene_name)
 

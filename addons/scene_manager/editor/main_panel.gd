@@ -95,9 +95,9 @@ func section_removed(section_name: String) -> void:
 	_handle_data_modification()
 
 
-func item_renamed(previous_name: String, new_name: String) -> void:
-	_manager_data.change_name(previous_name, new_name)
-	_rename_scene_in_lists(previous_name, new_name)
+func scene_renamed(old_scene_name: String, new_scene_name: String) -> void:
+	_manager_data.change_scene_name(old_scene_name, new_scene_name)
+	_rename_scene_in_lists(old_scene_name, new_scene_name)
 
 	if _manager_data.auto_save:
 		_save_delay_timer.start()
