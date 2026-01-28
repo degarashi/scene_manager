@@ -14,7 +14,7 @@ class SectionName:
 	const CATEGORIZED = "Categorized"
 
 
-var _root: SMgrMainPanel
+var _main_panel: SMgrMainPanel
 # "All" subsection by default. In the "All" list, this is "Uncategorized" items
 var _main_subsection: SMgrSubSection
 # Mainly used for the default "All" list for "Categorized" items
@@ -25,11 +25,11 @@ var _secondary_subsection: SMgrSubSection
 @onready var _save_label: Label = %save_label
 
 
-# Finds and fills `_root` variable properly
+# Finds and fills `_main_panel` variable properly
 #
 # Start up of `All` list
 func _ready() -> void:
-	_root = F.find_manager_root(self)
+	_main_panel = F.find_manager_root(self)
 
 	if name == ALL_LIST_NAME:
 		_delete_list_button.icon = null
@@ -38,7 +38,7 @@ func _ready() -> void:
 		_delete_list_button.focus_mode = Control.FOCUS_NONE
 
 		var sub: SMgrSubSection = SUB_SECTION.instantiate()
-		sub.setup(_root, SectionName.UNCATEGORIZED)
+		sub.setup(_main_panel, SectionName.UNCATEGORIZED)
 		_container.add_child(sub)
 		sub.open()
 		sub.enable_delete_button(false)
@@ -46,14 +46,14 @@ func _ready() -> void:
 		_main_subsection = sub
 
 		var sub2: SMgrSubSection = SUB_SECTION.instantiate()
-		sub2.setup(_root, SectionName.CATEGORIZED)
+		sub2.setup(_main_panel, SectionName.CATEGORIZED)
 		_container.add_child(sub2)
 		sub2.enable_delete_button(false)
 		sub2.set_delete_visible(false)
 		_secondary_subsection = sub2
 	else:
 		var sub: SMgrSubSection = SUB_SECTION.instantiate()
-		sub.setup(_root, ALL_LIST_NAME)
+		sub.setup(_main_panel, ALL_LIST_NAME)
 		sub.visible = false
 		_container.add_child(sub)
 		sub.open()
@@ -268,7 +268,7 @@ func get_all_sublists() -> Array:
 ## Adds a subsection
 func add_subsection(text: String) -> Control:
 	var sub := SUB_SECTION.instantiate()
-	sub.setup(_root, text.capitalize())
+	sub.setup(_main_panel, text.capitalize())
 	_container.add_child(sub)
 	return sub
 
@@ -280,9 +280,9 @@ func _on_delete_list_button_up() -> void:
 		return
 	queue_free()
 	await tree_exited
-	_root.section_removed(section_name)
+	_main_panel.section_removed(section_name)
 
 
 # Callback from the key_changed signal in the scene_item
 func _on_item_key_changed(key: String) -> void:
-	_root.check_duplication(key, self)
+	_main_panel.check_duplication(key, self)
