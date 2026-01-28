@@ -2,6 +2,9 @@
 class_name SMgrSceneList
 extends Control
 
+signal section_removed(section_name: String)
+signal req_check_duplication(key: String, node: Node)
+
 const F = preload("uid://cpxe18s2130m8")
 # Scene item and sub_section to instance and add in list
 const SCENE_ITEM = preload("res://addons/scene_manager/editor/scene_item.tscn")
@@ -14,7 +17,6 @@ class SectionName:
 	const CATEGORIZED = "Categorized"
 
 
-var _main_panel: SMgrMainPanel
 # "All" subsection by default. In the "All" list, this is "Uncategorized" items
 var _main_subsection: SMgrSubSection
 # Mainly used for the default "All" list for "Categorized" items
@@ -25,12 +27,8 @@ var _secondary_subsection: SMgrSubSection
 @onready var _save_label: Label = %save_label
 
 
-# Finds and fills `_main_panel` variable properly
-#
 # Start up of `All` list
 func _ready() -> void:
-	_main_panel = F.find_manager_root(self)
-
 	if name == ALL_LIST_NAME:
 		_delete_list_button.icon = null
 		_delete_list_button.disabled = true
@@ -280,9 +278,9 @@ func _on_delete_list_button_up() -> void:
 		return
 	queue_free()
 	await tree_exited
-	_main_panel.section_removed(section_name)
+	section_removed.emit(section_name)
 
 
 # Callback from the key_changed signal in the scene_item
 func _on_item_key_changed(key: String) -> void:
-	_main_panel.check_duplication(key, self)
+	req_check_duplication.emit(key, self)

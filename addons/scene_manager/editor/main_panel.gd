@@ -364,6 +364,8 @@ func _on_address_text_changed(new_text: String) -> void:
 func _add_section_tab(text: String) -> void:
 	var sc_list: SMgrSceneList = SCENE_LIST_ITEM.instantiate()
 	sc_list.name = text.capitalize()
+	sc_list.section_removed.connect(self.section_removed)
+	sc_list.req_check_duplication.connect(self.check_duplication)
 	_section_tab_container.add_child(sc_list)
 
 
