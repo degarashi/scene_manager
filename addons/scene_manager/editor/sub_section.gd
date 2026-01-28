@@ -22,6 +22,11 @@ func _ready() -> void:
 	visible = true
 
 
+func setup(root_node: Node, name_a: String) -> void:
+	_root = root_node
+	name = name_a
+
+
 ## Add child to the sub section list
 func add_item(item: Node) -> void:
 	item.set_subsection(self)
