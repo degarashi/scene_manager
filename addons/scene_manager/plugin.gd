@@ -74,7 +74,7 @@ func _enter_tree():
 			preload("res://addons/scene_manager/auto_complete_menu_node/scripts/auto_complete_assistant.gd"),
 			preload("res://addons/scene_manager/icons/line-edit-complete-icon.svg"))
 
-	_menu = preload("res://addons/scene_manager/editor/menu.tscn").instantiate()
+	_menu = preload("uid://crnf0w0s44hxx").instantiate()
 	_menu.name = "Scene Manager"
 	add_control_to_dock(EditorPlugin.DOCK_SLOT_RIGHT_UL, _menu)
 
