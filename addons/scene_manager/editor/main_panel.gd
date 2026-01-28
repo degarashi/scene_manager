@@ -55,7 +55,7 @@ func _init_save_delay_timer() -> void:
 	_save_delay_timer.wait_time = 0.5
 	_save_delay_timer.one_shot = true
 	add_child(_save_delay_timer)
-	_save_delay_timer.timeout.connect(_on_save_delay_timeout)
+	_save_delay_timer.timeout.connect(func() -> void: _handle_data_modification())
 
 
 func _ready() -> void:
@@ -93,10 +93,6 @@ func _on_section_removed(section_name: String) -> void:
 	for scene in _manager_data.scenes:
 		_update_categorized(scene)
 
-	_handle_data_modification()
-
-
-func _on_save_delay_timeout() -> void:
 	_handle_data_modification()
 
 
