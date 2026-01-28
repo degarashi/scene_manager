@@ -270,9 +270,8 @@ func get_all_sublists() -> Array:
 
 ## Adds a subsection
 func add_subsection(text: String) -> Control:
-	var sub = SUB_SECTION.instantiate()
-	sub._root = _root
-	sub.name = text.capitalize()
+	var sub := SUB_SECTION.instantiate()
+	sub.setup(_root, text.capitalize())
 	_container.add_child(sub)
 	return sub
 
