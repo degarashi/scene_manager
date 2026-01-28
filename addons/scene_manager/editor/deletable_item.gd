@@ -2,14 +2,8 @@
 class_name SMgrDeletableItem
 extends HBoxContainer
 
+signal on_remove_request(node: Node, addr: String)
 const F = preload("uid://cpxe18s2130m8")
-
-## Reference to the manager root node
-var _main_panel: SMgrMainPanel
-
-
-func _ready() -> void:
-	_main_panel = F.find_manager_root(self)
 
 
 ## Set address and update node name
@@ -25,4 +19,4 @@ func get_address() -> String:
 
 ## Notify the root manager to handle deletion via signal
 func _on_remove_button_up() -> void:
-	_main_panel.include_child_deleted(self, get_address())
+	on_remove_request.emit(self, get_address())

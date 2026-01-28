@@ -104,7 +104,7 @@ func item_renamed(previous_name: String, new_name: String) -> void:
 
 
 # When an include item remove button clicks
-func include_child_deleted(node: Node, address: String) -> void:
+func _include_child_deleted(node: Node, address: String) -> void:
 	node.queue_free()
 	await node.tree_exited
 	_manager_data.remove_include_path(address)
@@ -212,6 +212,7 @@ func add_scene_to_list(
 func _add_include_item(address: String) -> void:
 	var item: SMgrDeletableItem = SCENE_INCLUDE_ITEM.instantiate()
 	item.set_address(address)
+	item.on_remove_request.connect(_include_child_deleted)
 	_include_path_list.add_child(item)
 
 
