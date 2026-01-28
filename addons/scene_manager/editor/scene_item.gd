@@ -87,7 +87,7 @@ func remove_custom_theme() -> void:
 # Popup Button
 func _on_popup_button_button_up() -> void:
 	var i: int = 0
-	var sections: Array = _main_panel.get_all_lists_names_except()
+	var sections: Array = _main_panel.get_section_names()
 	_popup_menu.clear()
 	_popup_menu.add_separator("Categories")
 	i += 1

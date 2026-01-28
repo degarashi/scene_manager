@@ -120,9 +120,8 @@ func get_sections(address: String) -> Array:
 	return _manager_data.get_scene_sections(address)
 
 
-# Returns names of all lists from UI
-func get_all_lists_names_except(excepts: Array = [""]) -> Array:
-	var arr: Array = []
+func get_section_names(excepts: Array[String] = [""]) -> Array[String]:
+	var arr: Array[String] = []
 	for i in range(len(excepts)):
 		excepts[i] = excepts[i].capitalize()
 	for node in _get_section_lists():
@@ -382,7 +381,7 @@ func _on_add_section_button_up() -> void:
 
 
 func _on_section_name_text_changed(new_text: String) -> void:
-	if new_text != "" && !(new_text.capitalize() in get_all_lists_names_except()):
+	if new_text != "" && !(new_text.capitalize() in get_section_names()):
 		_add_section_button.disabled = false
 	else:
 		_add_section_button.disabled = true
