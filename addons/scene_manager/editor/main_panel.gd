@@ -29,14 +29,14 @@ var _manager_data: SceneManagerData = SceneManagerData.new()
 var _save_delay_timer: Timer = null  ## Timer for autosave when the key changes
 
 # UI nodes and items
-@onready var _include_list: Node = %include_list
-# add save, refresh
+@onready var _include_path_list: Control = %include_list
+# -- buttons (of bottom) ---
 @onready var _save_button: Button = %save
 @onready var _refresh_button: Button = %refresh
 @onready var _auto_save_button: Button = %auto_save
 # add list
-@onready var _add_section_button: Button = %add_section
-@onready var _section_name_line_edit: LineEdit = %section_name
+@onready var _add_section_button: Button = %add_section_button
+@onready var _section_name_line_edit: LineEdit = %section_name_to_add
 # add include
 @onready var _address_line_edit: LineEdit = %address
 @onready var _file_dialog: FileDialog = %file_dialog
@@ -44,9 +44,9 @@ var _save_delay_timer: Timer = null  ## Timer for autosave when the key changes
 @onready var _hide_unhide_button: Button = %hide_unhide
 @onready var _add_button: Button = %add
 # containers
-@onready var _tab_container: TabContainer = %tab_container
-@onready var _include_container: Node = %includes
-@onready var _include_panel_container: Node = %include_panel
+@onready var _section_tab_container: TabContainer = %section_tab_container
+@onready var _include_container: Container = %includes
+@onready var _include_add_panel_container: Container = %include_add_panel
 
 
 ## Create a new Timer node to write to the scenes.gd file when the timer ends
@@ -133,11 +133,6 @@ func get_sections(address: String) -> Array:
 	return _manager_data.get_scene_sections(address)
 
 
-# Returns absolute current working directory
-func _absolute_current_working_directory() -> String:
-	return ProjectSettings.globalize_path(EditorPlugin.new().get_current_directory())
-
-
 # Returns names of all lists from UI
 func get_all_lists_names_except(excepts: Array = [""]) -> Array:
 	var arr: Array = []
@@ -152,48 +147,47 @@ func get_all_lists_names_except(excepts: Array = [""]) -> Array:
 
 # Clears scenes inside a UI list
 func _clear_scenes_list(name: String) -> void:
-	var list: Node = _get_scene_list_node_by_name(name)
-	if list != null:
-		list.clear_list()
+	var sc_list := _get_scene_list_by_section_name(name)
+	if sc_list != null:
+		sc_list.clear_list()
 
 
 # Clears scenes inside all UI lists
-func _clear_all_lists() -> void:
-	for list in _get_section_lists():
-		list.clear_list()
-
-
 # Removes all tabs in scene manager
-func _delete_all_tabs() -> void:
-	for node in _get_section_lists():
-		node.free()
+func _clear_all_section_lists() -> void:
+	for sc_list in _get_section_lists():
+		sc_list.clear_list()
+		sc_list.free()
 
 
 # Returns nodes of all section lists from UI in `Scene Manager` tool
-func _get_section_lists() -> Array:
-	return _tab_container.get_children()
+func _get_section_lists() -> Array[SMgrSceneList]:
+	var ret: Array[SMgrSceneList] = []
+	for c: SMgrSceneList in _section_tab_container.get_children():
+		ret.append(c)
+	return ret
 
 
 # Returns node of a specific list in UI.
 # Note that the Node is part of `scene_list.gd` and has access to those functions.
-func _get_scene_list_node_by_name(name: String) -> Node:
-	for node in _get_section_lists():
-		if name.capitalize() == node.name:
-			return node
+func _get_scene_list_by_section_name(section_name: String) -> SMgrSceneList:
+	for sc_list in _get_section_lists():
+		if section_name.capitalize() == sc_list.name:
+			return sc_list
 	return null
 
 
 # Sorts all the lists in the UI based on the key name.
 func _sort_scenes_in_lists() -> void:
-	for list_node in _get_section_lists():
-		list_node.sort_scenes()
+	for sc_list in _get_section_lists():
+		sc_list.sort_scenes()
 
 
 # Renames a scene in all the lists.
-func _rename_scene_in_lists(key: String, new_key: String) -> void:
-	for list_node in _get_section_lists():
-		list_node.update_item_key(key, new_key)
-		list_node.sort_scenes()
+func _rename_scene_in_lists(old_key: String, new_key: String) -> void:
+	for sc_list in _get_section_lists():
+		sc_list.update_item_key(old_key, new_key)
+		sc_list.sort_scenes()
 
 
 # Updates the categorized/uncategorized sub section in the "All" list for the scene.
@@ -201,16 +195,16 @@ func _update_categorized(key: String) -> void:
 	# Get the scene information from the data
 	var categorized := _manager_data.has_sections(_manager_data.scenes[key]["value"])
 
-	var list: Node = _get_scene_list_node_by_name(ALL_LIST_NAME)
-	list.update_item_categorized(key, categorized)
+	var sc_list := _get_scene_list_by_section_name(ALL_LIST_NAME)
+	sc_list.update_item_categorized(key, categorized)
 
 
 ## Removes a scene from a specific list.
 func remove_scene_from_list(
 	section_name: String, scene_name: String, scene_address: String
 ) -> void:
-	var list: Node = _get_scene_list_node_by_name(section_name)
-	list.remove_item(scene_name, scene_address)
+	var sc_list := _get_scene_list_by_section_name(section_name)
+	sc_list.remove_item(scene_name, scene_address)
 
 
 ## Adds an item to a list
@@ -221,37 +215,23 @@ func remove_scene_from_list(
 func add_scene_to_list(
 	list_name: String, scene_name: String, scene_address: String, categorized: bool = false
 ) -> void:
-	var list: Node = _get_scene_list_node_by_name(list_name)
-	if list == null:
+	var sc_list := _get_scene_list_by_section_name(list_name)
+	if sc_list == null:
 		return
-	await list.add_item(scene_name, scene_address, categorized)
+	await sc_list.add_item(scene_name, scene_address, categorized)
 
 
 # Adds an address to the include list
-func _add_include_ui_item(address: String) -> void:
-	var item := SCENE_INCLUDE_ITEM.instantiate()
+func _add_include_item(address: String) -> void:
+	var item: SMgrDeletableItem = SCENE_INCLUDE_ITEM.instantiate()
 	item.set_address(address)
-	_include_list.add_child(item)
-
-
-# Removes the UI element with the address from the include list
-func _remove_include_item(address: String) -> void:
-	var remove_item: Node = null
-	for node in _include_list.get_children():
-		if node.get_address() == address:
-			remove_item = node
-			break
-
-	if remove_item:
-		_include_list.remove_child(remove_item)
-		remove_item.free()
+	_include_path_list.add_child(item)
 
 
 # Clears all tabs, UI lists and include list
 func _clear_ui_elements() -> void:
-	_delete_all_tabs()
-	_clear_all_lists()
-	_clear_include_ui_list()
+	_clear_all_section_lists()
+	_clear_include_list()
 
 
 # Reloads all scenes in UI and in this script
@@ -270,29 +250,22 @@ func _reload_ui_scenes() -> void:
 
 # Reloads include list in UI
 func _reload_ui_includes() -> void:
-	_clear_include_ui_list()
+	_clear_include_list()
 	for text in _manager_data.includes:
-		_add_include_ui_item(text)
+		_add_include_item(text)
 
 
 # Reloads tabs in UI
 func _reload_ui_tabs() -> void:
-	if _get_scene_list_node_by_name(ALL_LIST_NAME) == null:
-		_add_scene_ui_list(ALL_LIST_NAME)
+	if _get_scene_list_by_section_name(ALL_LIST_NAME) == null:
+		_add_section_tab(ALL_LIST_NAME)
 	for section in _manager_data.sections:
 		var found = false
-		for list in _get_section_lists():
-			if list.name == section:
+		for sc_list in _get_section_lists():
+			if sc_list.name == section:
 				found = true
 		if not found:
-			_add_scene_ui_list(section)
-
-
-# Loops through the UI lists and updates them with the "unsaved changes"
-#   visibility if the data has changed.
-func _refresh_save_changes() -> void:
-	for list in _get_section_lists():
-		list.set_changes_unsaved(_manager_data.has_changes)
+			_add_section_tab(section)
 
 
 # Refresh button
@@ -310,15 +283,15 @@ func _refresh_ui() -> void:
 func update_all_scene_with_key(
 	scene_key: String, scene_new_key: String, value: String, except_list: Array = []
 ) -> void:
-	for list in _get_section_lists():
-		if list not in except_list:
-			list.update_scene_with_key(scene_key, scene_new_key, value)
+	for sc_list in _get_section_lists():
+		if sc_list not in except_list:
+			sc_list.update_scene_with_key(scene_key, scene_new_key, value)
 
 
 ## Checks for duplications in the scene data.[br]
 ## key is the new key to check against the current scene data to see if there's a duplicate.[br]
 ## scene_list is the list the item being changed is located.
-func check_duplication(key: String, scene_list: Node) -> void:
+func check_duplication(key: String, scene_list: SMgrSceneList) -> void:
 	if key in _manager_data.scenes:
 		scene_list.update_validity(key)
 
@@ -329,29 +302,31 @@ func _on_save_button_up() -> void:
 	_refresh_save_changes()
 
 
+# Loops through the UI lists and updates them with the "unsaved changes"
+#   visibility if the data has changed.
+func _refresh_save_changes() -> void:
+	for list in _get_section_lists():
+		list.set_changes_unsaved(_manager_data.has_changes)
+
+
 # Returns array of include nodes from UI view
-func _get_nodes_in_include_ui() -> Array:
-	return _include_list.get_children()
-
-
-# Returns array of addresses to include
-func _get_includes_in_include_ui() -> Array:
-	var arr: Array = []
-	for node in _include_list.get_children():
-		arr.append(node.get_address())
-	return arr
+func _get_includes_list() -> Array[SMgrDeletableItem]:
+	var ret: Array[SMgrDeletableItem] = []
+	for c: SMgrDeletableItem in _include_path_list.get_children():
+		ret.append(c)
+	return ret
 
 
 # Clears includes from UI
-func _clear_include_ui_list() -> void:
-	for node in _include_list.get_children():
+func _clear_include_list() -> void:
+	for node in _get_includes_list():
 		node.free()
 
 
 # Returns true if passed address exists in include list
 func _include_exists_in_list(address: String) -> bool:
-	for node in _get_nodes_in_include_ui():
-		if node.get_address() == address or address.begins_with(node.get_address()):
+	for ent in _get_includes_list():
+		if ent.get_address() == address or address.begins_with(ent.get_address()):
 			return true
 	return false
 
@@ -362,7 +337,7 @@ func _on_add_button_up():
 		_address_line_edit.text = ""
 		return
 
-	_add_include_ui_item(_address_line_edit.text)
+	_add_include_item(_address_line_edit.text)
 	_manager_data.add_include_path(_address_line_edit.text)
 
 	_address_line_edit.text = ""
@@ -373,12 +348,12 @@ func _on_add_button_up():
 
 
 # Pops up file dialog to select a folder to include
-func _on_file_dialog_button_button_up():
+func _on_file_dialog_button_button_up() -> void:
 	_file_dialog.popup_centered(Vector2(600, 600))
 
 
 # When a file or a dir selects by file dialog
-func _on_file_dialog_dir_file_selected(path):
+func _on_file_dialog_dir_file_selected(path) -> void:
 	_address_line_edit.text = path
 	_on_address_text_changed(path)
 
@@ -397,17 +372,17 @@ func _on_address_text_changed(new_text: String) -> void:
 		_add_button.disabled = true
 
 
-# Adds a new list to the tab container
-func _add_scene_ui_list(text: String) -> void:
-	var list = SCENE_LIST_ITEM.instantiate()
-	list.name = text.capitalize()
-	_tab_container.add_child(list)
+# Adds a new list to the section-tab container
+func _add_section_tab(text: String) -> void:
+	var sc_list: SMgrSceneList = SCENE_LIST_ITEM.instantiate()
+	sc_list.name = text.capitalize()
+	_section_tab_container.add_child(sc_list)
 
 
 # Adds the new section to the tab container and to the manager data
-func _on_add_section_button_up():
-	if _section_name_line_edit.text != "":
-		_add_scene_ui_list(_section_name_line_edit.text)
+func _on_add_section_button_up() -> void:
+	if not _section_name_line_edit.text.is_empty():
+		_add_section_tab(_section_name_line_edit.text)
 		_manager_data.add_section(_section_name_line_edit.text)
 
 		_section_name_line_edit.text = ""
@@ -416,8 +391,7 @@ func _on_add_section_button_up():
 		_handle_data_modification()
 
 
-# When section name text changes
-func _on_section_name_text_changed(new_text):
+func _on_section_name_text_changed(new_text: String) -> void:
 	if new_text != "" && !(new_text.capitalize() in get_all_lists_names_except()):
 		_add_section_button.disabled = false
 	else:
@@ -430,25 +404,24 @@ func _show_includes_list(value: bool) -> void:
 		_hide_button.icon = ICON_COLLAPSE_BUTTON
 		_hide_unhide_button.icon = ICON_COLLAPSE_BUTTON
 		_include_container.visible = true
-		_include_panel_container.visible = true
+		_include_add_panel_container.visible = true
 		_hide_unhide_button.visible = false
 	else:
 		_hide_button.icon = ICON_EXPAND_BUTTON
 		_hide_unhide_button.icon = ICON_EXPAND_BUTTON
 		_include_container.visible = false
-		_include_panel_container.visible = false
+		_include_add_panel_container.visible = false
 		_hide_unhide_button.visible = true
 
 
-# Hide Button
-func _on_hide_button_up():
+func _on_hide_button_up() -> void:
 	_manager_data.includes_visible = not _manager_data.includes_visible
 	_show_includes_list(_manager_data.includes_visible)
 	_handle_data_modification()
 
 
 # Tab changes
-func _on_tab_container_tab_changed(_tab: int):
+func _on_section_tab_changed(_tab: int) -> void:
 	_on_section_name_text_changed(_section_name_line_edit.text)
 
 
@@ -463,7 +436,7 @@ func _change_auto_save_state(value: bool) -> void:
 	_save_button.disabled = _auto_save_button.get_meta("enabled", true)
 
 
-func _on_auto_save_button_up():
+func _on_auto_save_button_up() -> void:
 	_manager_data.auto_save = not _manager_data.auto_save
 	_change_auto_save_state(_manager_data.auto_save)
 	_handle_data_modification()

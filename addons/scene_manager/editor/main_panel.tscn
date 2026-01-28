@@ -23,7 +23,7 @@ layout_mode = 2
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="tab_container" type="TabContainer" parent="main_container/scenes"]
+[node name="section_tab_container" type="TabContainer" parent="main_container/scenes"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -38,13 +38,13 @@ size_flags_vertical = 8
 [node name="add_category_container" type="HBoxContainer" parent="main_container/add_category_container"]
 layout_mode = 2
 
-[node name="section_name" type="LineEdit" parent="main_container/add_category_container/add_category_container"]
+[node name="section_name_to_add" type="LineEdit" parent="main_container/add_category_container/add_category_container"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 3.0
 
-[node name="add_section" type="Button" parent="main_container/add_category_container/add_category_container"]
+[node name="add_section_button" type="Button" parent="main_container/add_category_container/add_category_container"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -87,22 +87,22 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="include_panel" type="VBoxContainer" parent="main_container/includes"]
+[node name="include_add_panel" type="VBoxContainer" parent="main_container/includes"]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="include_interactive_section_container" type="MarginContainer" parent="main_container/includes/include_panel"]
+[node name="include_interactive_section_container" type="MarginContainer" parent="main_container/includes/include_add_panel"]
 layout_mode = 2
 size_flags_vertical = 8
 
-[node name="add_include_container" type="HBoxContainer" parent="main_container/includes/include_panel/include_interactive_section_container"]
+[node name="add_include_container" type="HBoxContainer" parent="main_container/includes/include_add_panel/include_interactive_section_container"]
 layout_mode = 2
 
-[node name="dialog_add_include_container" type="HBoxContainer" parent="main_container/includes/include_panel/include_interactive_section_container/add_include_container"]
+[node name="dialog_add_include_container" type="HBoxContainer" parent="main_container/includes/include_add_panel/include_interactive_section_container/add_include_container"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="file_dialog" type="FileDialog" parent="main_container/includes/include_panel/include_interactive_section_container/add_include_container/dialog_add_include_container"]
+[node name="file_dialog" type="FileDialog" parent="main_container/includes/include_add_panel/include_interactive_section_container/add_include_container/dialog_add_include_container"]
 unique_name_in_owner = true
 title = "Open a File or Directory"
 size = Vector2i(348, 180)
@@ -110,21 +110,21 @@ ok_button_text = "Open"
 file_mode = 3
 filters = PackedStringArray("*.tscn")
 
-[node name="file_dialog_button" type="Button" parent="main_container/includes/include_panel/include_interactive_section_container/add_include_container/dialog_add_include_container"]
+[node name="file_dialog_button" type="Button" parent="main_container/includes/include_add_panel/include_interactive_section_container/add_include_container/dialog_add_include_container"]
 custom_minimum_size = Vector2(28, 28)
 layout_mode = 2
 icon = ExtResource("3")
 
-[node name="address" type="LineEdit" parent="main_container/includes/include_panel/include_interactive_section_container/add_include_container/dialog_add_include_container"]
+[node name="address" type="LineEdit" parent="main_container/includes/include_add_panel/include_interactive_section_container/add_include_container/dialog_add_include_container"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="dialog_add_include_container2" type="HBoxContainer" parent="main_container/includes/include_panel/include_interactive_section_container/add_include_container"]
+[node name="dialog_add_include_container2" type="HBoxContainer" parent="main_container/includes/include_add_panel/include_interactive_section_container/add_include_container"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="add" type="Button" parent="main_container/includes/include_panel/include_interactive_section_container/add_include_container/dialog_add_include_container2"]
+[node name="add" type="Button" parent="main_container/includes/include_add_panel/include_interactive_section_container/add_include_container/dialog_add_include_container2"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -132,7 +132,7 @@ tooltip_text = "Adds folder/file to include in the scene data."
 disabled = true
 text = "Add"
 
-[node name="hide" type="Button" parent="main_container/includes/include_panel/include_interactive_section_container/add_include_container/dialog_add_include_container2"]
+[node name="hide" type="Button" parent="main_container/includes/include_add_panel/include_interactive_section_container/add_include_container/dialog_add_include_container2"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(28, 28)
 layout_mode = 2
@@ -142,7 +142,7 @@ icon = ExtResource("4_vqnpn")
 icon_alignment = 1
 metadata/enabled = true
 
-[node name="separator" type="HSeparator" parent="main_container/includes/include_panel"]
+[node name="separator" type="HSeparator" parent="main_container/includes/include_add_panel"]
 layout_mode = 2
 
 [node name="interactive_section_container" type="VBoxContainer" parent="main_container"]
@@ -207,15 +207,15 @@ text = "Auto Save"
 icon = ExtResource("7_d04a5")
 metadata/enabled = true
 
-[connection signal="tab_changed" from="main_container/scenes/tab_container" to="." method="_on_tab_container_tab_changed"]
-[connection signal="text_changed" from="main_container/add_category_container/add_category_container/section_name" to="." method="_on_section_name_text_changed"]
-[connection signal="button_up" from="main_container/add_category_container/add_category_container/add_section" to="." method="_on_add_section_button_up"]
-[connection signal="dir_selected" from="main_container/includes/include_panel/include_interactive_section_container/add_include_container/dialog_add_include_container/file_dialog" to="." method="_on_file_dialog_dir_file_selected"]
-[connection signal="file_selected" from="main_container/includes/include_panel/include_interactive_section_container/add_include_container/dialog_add_include_container/file_dialog" to="." method="_on_file_dialog_dir_file_selected"]
-[connection signal="button_up" from="main_container/includes/include_panel/include_interactive_section_container/add_include_container/dialog_add_include_container/file_dialog_button" to="." method="_on_file_dialog_button_button_up"]
-[connection signal="text_changed" from="main_container/includes/include_panel/include_interactive_section_container/add_include_container/dialog_add_include_container/address" to="." method="_on_address_text_changed"]
-[connection signal="button_up" from="main_container/includes/include_panel/include_interactive_section_container/add_include_container/dialog_add_include_container2/add" to="." method="_on_add_button_up"]
-[connection signal="button_up" from="main_container/includes/include_panel/include_interactive_section_container/add_include_container/dialog_add_include_container2/hide" to="." method="_on_hide_button_up"]
+[connection signal="tab_changed" from="main_container/scenes/section_tab_container" to="." method="_on_section_tab_changed"]
+[connection signal="text_changed" from="main_container/add_category_container/add_category_container/section_name_to_add" to="." method="_on_section_name_text_changed"]
+[connection signal="button_up" from="main_container/add_category_container/add_category_container/add_section_button" to="." method="_on_add_section_button_up"]
+[connection signal="dir_selected" from="main_container/includes/include_add_panel/include_interactive_section_container/add_include_container/dialog_add_include_container/file_dialog" to="." method="_on_file_dialog_dir_file_selected"]
+[connection signal="file_selected" from="main_container/includes/include_add_panel/include_interactive_section_container/add_include_container/dialog_add_include_container/file_dialog" to="." method="_on_file_dialog_dir_file_selected"]
+[connection signal="button_up" from="main_container/includes/include_add_panel/include_interactive_section_container/add_include_container/dialog_add_include_container/file_dialog_button" to="." method="_on_file_dialog_button_button_up"]
+[connection signal="text_changed" from="main_container/includes/include_add_panel/include_interactive_section_container/add_include_container/dialog_add_include_container/address" to="." method="_on_address_text_changed"]
+[connection signal="button_up" from="main_container/includes/include_add_panel/include_interactive_section_container/add_include_container/dialog_add_include_container2/add" to="." method="_on_add_button_up"]
+[connection signal="button_up" from="main_container/includes/include_add_panel/include_interactive_section_container/add_include_container/dialog_add_include_container2/hide" to="." method="_on_hide_button_up"]
 [connection signal="button_up" from="main_container/interactive_section_container/margin_refresh_save_container/refresh_save_container/save_refresh_container/refresh" to="." method="_refresh_ui"]
 [connection signal="button_up" from="main_container/interactive_section_container/margin_refresh_save_container/refresh_save_container/save_refresh_container/save_container/save" to="." method="_on_save_button_up"]
 [connection signal="button_up" from="main_container/interactive_section_container/margin_refresh_save_container/refresh_save_container/save_refresh_container/save_container/hide_unhide" to="." method="_on_hide_button_up"]
