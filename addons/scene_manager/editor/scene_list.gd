@@ -283,7 +283,7 @@ func _on_delete_list_button_up() -> void:
 		return
 	queue_free()
 	await tree_exited
-	_root.section_removed.emit(section_name)
+	_root.section_removed(section_name)
 
 
 # Callback from the key_changed signal in the scene_item

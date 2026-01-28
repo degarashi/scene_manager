@@ -8,7 +8,6 @@ extends MarginContainer
 
 # UI signal callbacks
 signal include_child_deleted(node: Node, address: String)
-signal section_removed(section_name: String)
 
 # Scene item, include item prefabs
 const SCENE_INCLUDE_ITEM = preload("res://addons/scene_manager/editor/deletable_item.tscn")
@@ -64,7 +63,6 @@ func _ready() -> void:
 	_show_includes_list(_manager_data.includes_visible)
 
 	include_child_deleted.connect(_on_include_child_deleted)
-	section_removed.connect(_on_section_removed)
 
 	_init_save_delay_timer()
 
@@ -92,7 +90,7 @@ func _handle_data_modification() -> void:
 	_refresh_save_changes()
 
 
-func _on_section_removed(section_name: String) -> void:
+func section_removed(section_name: String) -> void:
 	_manager_data.remove_section(section_name)
 
 	# Loop through the scenes and update the categorized for the "All" list
