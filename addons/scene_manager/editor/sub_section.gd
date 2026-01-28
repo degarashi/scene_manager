@@ -2,11 +2,6 @@
 class_name SMgrSubSection
 extends Control
 
-# Nodes
-@onready var _button_header: Button = %Button
-@onready var _delete_button: Button = %Delete
-@onready var _list: VBoxContainer = %List
-
 const SUBSECTION_OPEN_ICON = preload("res://addons/scene_manager/icons/GuiOptionArrowDown.svg")
 const SUBSECTION_CLOSE_ICON = preload("res://addons/scene_manager/icons/GuiOptionArrowRight.svg")
 const SCENE_ITEM = preload("res://addons/scene_manager/editor/scene_item.tscn")
@@ -14,6 +9,10 @@ const SCENE_ITEM = preload("res://addons/scene_manager/editor/scene_item.tscn")
 var _main_panel: SMgrMainPanel
 var _is_closable: bool = true
 var _header_visible: bool = true
+
+@onready var _button_header: Button = %Button
+@onready var _delete_button: Button = %Delete
+@onready var _list: VBoxContainer = %List
 
 
 func _ready() -> void:
