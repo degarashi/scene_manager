@@ -25,7 +25,7 @@ var _sub_section: Control
 var _list: Control
 var _mouse_is_over_value: bool
 
-# Used when comparing the user typed key
+## Used when comparing the user typed key to detect changes
 var _previous_key: String
 
 # Nodes
@@ -35,7 +35,6 @@ var _previous_key: String
 @onready var _key: String = %key.text
 
 
-# Finds and fills `_root` variable properly
 func _ready() -> void:
 	_previous_key = _key
 	_root = F.find_manager_root(self)
@@ -46,7 +45,7 @@ func _ready() -> void:
 func set_key(text: String) -> void:
 	_previous_key = text
 	_key = text
-	%key.text = text
+	get_key_node().text = text
 
 
 ## Sets value of `value`
@@ -56,7 +55,7 @@ func set_value(text: String) -> void:
 
 ## Return `key` string value
 func get_key() -> String:
-	return %key.text
+	return get_key_node().text
 
 
 ## Return `value` string value
@@ -157,54 +156,42 @@ func _on_popup_menu_index_pressed(index: int):
 			_root.item_removed_from_list.emit(self, text)
 
 
-# Updates the value of `key` when the user is typing it in.
+## Updates the key internal value and normalizes the UI text
 func _update_key(text: String) -> void:
 	# Normalize the key to be lower case without symbols and replacing spaces with underscores
 	text = SceneManagerUtils.normalize_key_string(text)
-	%key.text = text
+	get_key_node().text = text
 	name = text
 	_key = text
 
 
-# Runs by hand in `_on_key_gui_input` function when text of key LineEdit
-# changes and key event of it was released
-func _on_key_value_text_changed() -> void:
-	_root.update_all_scene_with_key(_key, get_key(), get_value(), [get_parent().get_parent()])
-
-
-# Called by the UI when the text changes
+# Triggered when LineEdit text changes
 func _on_key_text_changed(new_text: String) -> void:
-	_update_key(new_text)
-	_key_edit.caret_column = _key.length()
-
-
-# Called by the UI when focus is off of the line edit
-func _on_key_focus_exited() -> void:
-	_submit_key()
+	# Store current text and notify manager for real-time validation (e.g., duplicate check)
+	_key = new_text
+	key_changed.emit(new_text)
 
 
 func _on_key_text_submitted(_new_text: String) -> void:
 	_submit_key()
 
 
-# When a gui_input happens on LineEdit, this function triggers
-func _on_key_gui_input(event: InputEvent) -> void:
-	if event is InputEventKey:
-		if event.is_pressed():
-			return
-
-		# Runs when InputEventKey is released
-		if _previous_key != _key:
-			key_changed.emit(_key)
-		is_valid = is_valid and not _key.is_empty() and _key != INVALID_KEY_NAME
-
-
-# Emits a signal if the key value is different than it was at the start
+## Finalizes the key change and notifies the root manager
 func _submit_key() -> void:
-	if _previous_key != _key:
-		if is_valid:
-			_root.item_renamed.emit(self, _previous_key, _key)
+	# Normalize key only on submission to avoid cursor jumping issues
+	var normalized_key := SceneManagerUtils.normalize_key_string(get_key())
+
+	# Basic validation
+	var valid_name := not normalized_key.is_empty() and normalized_key != INVALID_KEY_NAME
+
+	if _previous_key != normalized_key:
+		if is_valid and valid_name:
+			# Successfully renamed
+			_update_key(normalized_key)
+			_root.item_renamed.emit(_previous_key, _key)
 			_previous_key = _key
 		else:
+			# Revert to previous valid key if invalid or duplicate
 			set_key(_previous_key)
+			is_valid = true
 			key_reset.emit()

@@ -8,7 +8,7 @@ extends MarginContainer
 
 # UI signal callbacks
 signal include_child_deleted(node: Node, address: String)
-signal item_renamed(node: Node, previous_name: String, new_name: String)
+signal item_renamed(previous_name: String, new_name: String)
 signal item_added_to_list(node: Node, list_name: String)
 signal item_removed_from_list(node: Node, list_name: String)
 signal section_removed(section_name: String)
@@ -96,7 +96,7 @@ func _on_section_removed(section_name: String) -> void:
 	_handle_data_modification()
 
 
-func _on_item_renamed(_node: Node, previous_name: String, new_name: String) -> void:
+func _on_item_renamed(previous_name: String, new_name: String) -> void:
 	_manager_data.change_name(previous_name, new_name)
 	_rename_scene_in_lists(previous_name, new_name)
 
