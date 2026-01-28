@@ -1,5 +1,5 @@
 @tool
-class_name SMgrManager
+class_name SMgrMainPanel
 extends MarginContainer
 ## Editor manager for generating necessary files and getting scene information.
 ##
