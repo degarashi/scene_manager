@@ -30,7 +30,7 @@ var _mouse_is_over_value: bool
 var _previous_key: String
 
 # Nodes
-@onready var _root: SMgrMainPanel
+@onready var _main_panel: SMgrMainPanel
 @onready var _popup_menu: PopupMenu = %popup_menu
 @onready var _key_edit: LineEdit = %key
 @onready var _key: String = %key.text
@@ -38,7 +38,7 @@ var _previous_key: String
 
 func _ready() -> void:
 	_previous_key = _key
-	_root = F.find_manager_root(self)
+	_main_panel = F.find_manager_root(self)
 
 
 ## Directly set the key. Called by other UI elements
@@ -87,7 +87,7 @@ func remove_custom_theme() -> void:
 # Popup Button
 func _on_popup_button_button_up() -> void:
 	var i: int = 0
-	var sections: Array = _root.get_all_lists_names_except()
+	var sections: Array = _main_panel.get_all_lists_names_except()
 	_popup_menu.clear()
 	_popup_menu.add_separator("Categories")
 	i += 1
@@ -98,7 +98,7 @@ func _on_popup_button_button_up() -> void:
 			continue
 		_popup_menu.add_check_item(section)
 		_popup_menu.set_item_id(i, CATEGORY_ID)
-		_popup_menu.set_item_checked(i, section in _root.get_sections(get_value()))
+		_popup_menu.set_item_checked(i, section in _main_panel.get_sections(get_value()))
 		i += 1
 
 	# Recalculate size since menu content changed
@@ -150,11 +150,11 @@ func _on_popup_menu_index_pressed(index: int) -> void:
 
 	if id == CATEGORY_ID:
 		if !checked:
-			_root.add_scene_to_list(text, get_key(), get_value())
-			_root.item_added_to_list(self, text)
+			_main_panel.add_scene_to_list(text, get_key(), get_value())
+			_main_panel.item_added_to_list(self, text)
 		else:
-			_root.remove_scene_from_list(text, get_key(), get_value())
-			_root.item_removed_from_list(self, text)
+			_main_panel.remove_scene_from_list(text, get_key(), get_value())
+			_main_panel.item_removed_from_list(self, text)
 
 
 ## Updates the key internal value and normalizes the UI text
@@ -189,7 +189,7 @@ func _submit_key() -> void:
 		if is_valid and valid_name:
 			# Successfully renamed
 			_update_key(normalized_key)
-			_root.item_renamed(_previous_key, _key)
+			_main_panel.item_renamed(_previous_key, _key)
 			_previous_key = _key
 		else:
 			# Revert to previous valid key if invalid or duplicate
