@@ -1,6 +1,6 @@
 @tool
 class_name SMgrSceneList
-extends Node
+extends Control
 
 const F = preload("uid://cpxe18s2130m8")
 # Scene item and sub_section to instance and add in list
@@ -16,9 +16,9 @@ class SectionName:
 
 var _root: SMgrMainPanel
 # "All" subsection by default. In the "All" list, this is "Uncategorized" items
-var _main_subsection: Node = null
+var _main_subsection: SMgrSubSection
 # Mainly used for the default "All" list for "Categorized" items
-var _secondary_subsection: Node = null
+var _secondary_subsection: SMgrSubSection
 
 @onready var _container: VBoxContainer = %container
 @onready var _delete_list_button: Button = %delete_list
@@ -37,7 +37,7 @@ func _ready() -> void:
 		_delete_list_button.visible = false
 		_delete_list_button.focus_mode = Control.FOCUS_NONE
 
-		var sub := SUB_SECTION.instantiate()
+		var sub: SMgrSubSection = SUB_SECTION.instantiate()
 		sub._root = _root
 		sub.name = SectionName.UNCATEGORIZED
 		_container.add_child(sub)
@@ -46,7 +46,7 @@ func _ready() -> void:
 		sub.set_delete_visible(false)
 		_main_subsection = sub
 
-		var sub2 := SUB_SECTION.instantiate()
+		var sub2: SMgrSubSection = SUB_SECTION.instantiate()
 		sub2._root = _root
 		sub2.name = SectionName.CATEGORIZED
 		_container.add_child(sub2)
@@ -54,7 +54,7 @@ func _ready() -> void:
 		sub2.set_delete_visible(false)
 		_secondary_subsection = sub2
 	else:
-		var sub = SUB_SECTION.instantiate()
+		var sub: SMgrSubSection = SUB_SECTION.instantiate()
 		sub._root = _root
 		sub.name = ALL_LIST_NAME
 		sub.visible = false
@@ -73,7 +73,7 @@ func add_item(key: String, value: String, categorized: bool = false) -> void:
 	if not is_node_ready():
 		await ready
 
-	var item = SCENE_ITEM.instantiate()
+	var item: SMgrSceneItem = SCENE_ITEM.instantiate()
 	item.set_key(key)
 	item.set_value(value)
 	item.key_changed.connect(_on_item_key_changed)
@@ -98,7 +98,7 @@ func update_item_categorized(key: String, categorized: bool) -> void:
 		return
 
 	# Find the item in the sub sections.
-	var item = _main_subsection.get_item(key)
+	var item := _main_subsection.get_item(key)
 	if item:
 		# If the item is already not categorized, then nothing needs to be done
 		if not categorized:
