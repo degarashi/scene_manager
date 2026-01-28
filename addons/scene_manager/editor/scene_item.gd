@@ -64,7 +64,7 @@ func get_value() -> String:
 
 
 ## Returns `key` node
-func get_key_node() -> Node:
+func get_key_node() -> LineEdit:
 	return %key
 
 
@@ -84,7 +84,7 @@ func remove_custom_theme() -> void:
 
 
 # Popup Button
-func _on_popup_button_button_up():
+func _on_popup_button_button_up() -> void:
 	var i: int = 0
 	var sections: Array = _root.get_all_lists_names_except()
 	_popup_menu.clear()
@@ -112,7 +112,7 @@ func _on_popup_button_button_up():
 
 
 # Happens when open scene button clicks
-func _on_open_scene_button_up():
+func _on_open_scene_button_up() -> void:
 	# Open it
 	EditorInterface.open_scene_from_path(get_value())
 	# Show in FileSystem
@@ -120,7 +120,7 @@ func _on_open_scene_button_up():
 
 
 # Happens on input on the value element
-func _on_value_gui_input(event: InputEvent):
+func _on_value_gui_input(event: InputEvent) -> void:
 	if (
 		event is InputEventMouseButton
 		and event.is_released()
@@ -131,20 +131,20 @@ func _on_value_gui_input(event: InputEvent):
 
 
 # Happens when mouse is over value input
-func _on_value_mouse_entered():
+func _on_value_mouse_entered() -> void:
 	_mouse_is_over_value = true
 
 
 # Happens when mouse is out of value input
-func _on_value_mouse_exited():
+func _on_value_mouse_exited() -> void:
 	_mouse_is_over_value = false
 
 
 # Happens when an item is selected
-func _on_popup_menu_index_pressed(index: int):
-	var id = _popup_menu.get_item_id(index)
-	var checked = _popup_menu.is_item_checked(index)
-	var text = _popup_menu.get_item_text(index)
+func _on_popup_menu_index_pressed(index: int) -> void:
+	var id := _popup_menu.get_item_id(index)
+	var checked := _popup_menu.is_item_checked(index)
+	var text := _popup_menu.get_item_text(index)
 	_popup_menu.set_item_checked(index, !checked)
 
 	if id == 0:
