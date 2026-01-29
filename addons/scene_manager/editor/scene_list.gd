@@ -168,7 +168,7 @@ func update_item_categorized(key: String, categorized: bool) -> void:
 ## Updates the item key with the new key.
 func update_item_key(old_key: String, new_key: String) -> void:
 	# Find the item in the different subsections and update them
-	for section in _container.get_children():
+	for section in _get_subsections():
 		# We want to get the list, which will be the second child in the sub section
 		var list := section.get_child(1)
 		var nodes := list.get_children()
@@ -184,16 +184,16 @@ func update_item_key(old_key: String, new_key: String) -> void:
 
 ## Finds and returns a sub_section in the list
 func find_subsection(key: String) -> Node:
-	for element in _container.get_children():
-		if element.name == key:
-			return element
+	for sec in _get_subsections():
+		if sec.name == key:
+			return sec
 	return null
 
 
 ## Removes an item from list
 func remove_item(key: String, value: String) -> void:
-	for scene_item in _container.get_children():
-		for item in scene_item.get_items():
+	for sec in _get_subsections():
+		for item in sec.get_items():
 			if item.get_key() == key && item.get_value() == value:
 				item.queue_free()
 				return
@@ -210,8 +210,8 @@ func remove_items_begins_with(value: String) -> void:
 
 ## Clear all scene records from UI list
 func clear_list() -> void:
-	for scene_item in _container.get_children():
-		scene_item.queue_free()
+	for sec in _get_subsections():
+		sec.queue_free()
 
 
 ## Appends all scenes into UI list[br]
@@ -228,9 +228,9 @@ func append_scenes(nodes: Dictionary) -> void:
 
 ## Sort the scenes in all the subsections alphabetically based on the scene key name.
 func sort_scenes() -> void:
-	for section in _container.get_children():
+	for sec in _get_subsections():
 		# We want to get the list, which will be the second child in the sub section
-		var list = section.get_list_container()
+		var list := sec.get_list_container()
 		_sort_node_list(list)
 
 
@@ -252,16 +252,16 @@ func get_list_nodes() -> Array:
 		_container = %container
 
 	var arr: Array[Node] = []
-	for scene_item in _container.get_children():
-		var nodes = scene_item.get_items()
+	for sec in _get_subsections():
+		var nodes := sec.get_items()
 		arr.append_array(nodes)
 	return arr
 
 
 ## Returns a specific node from passed scene name
 func get_node_by_scene_name(scene_name: String) -> Node:
-	for scene_item in _container.get_children():
-		for item in scene_item.get_items():
+	for sec in _get_subsections():
+		for item in sec.get_items():
 			if item.get_key() == scene_name:
 				return item
 	return null
@@ -269,8 +269,8 @@ func get_node_by_scene_name(scene_name: String) -> Node:
 
 ## Returns a specific node from passed scene address
 func get_node_by_scene_address(scene_address: String) -> Node:
-	for scene_item in _container.get_children():
-		for item in scene_item.get_items():
+	for sec in _get_subsections():
+		for item in sec.get_items():
 			if item.get_value() == scene_address:
 				return item
 	return null
@@ -279,22 +279,29 @@ func get_node_by_scene_address(scene_address: String) -> Node:
 ## Update a specific scene record with passed data in UI
 func update_scene_with_key(key: String, new_key: String, value: String) -> void:
 	for i in range(_container.get_child_count()):
-		for item in _container.get_children():
-			if item.get_key() == key && item.get_value() == value:
-				item.set_key(new_key)
+		for sec in _get_subsections():
+			if sec.get_key() == key && sec.get_value() == value:
+				sec.set_key(new_key)
 
 
 ## Reset theme for all children in UI
 func set_reset_theme_for_all() -> void:
-	for list_child in _container.get_children():
-		for c in list_child.get_items():
+	for sec in _get_subsections():
+		for c in sec.get_items():
 			c.remove_custom_theme()
 
 
 func check_duplication(key: String) -> void:
-	for list_child in _container.get_children():
-		for c in list_child.get_items():
+	for sec in _get_subsections():
+		for c in sec.get_items():
 			c.is_valid = c.get_key() != key
+
+
+func _get_subsections() -> Array[SMgrSubSection]:
+	var ret: Array[SMgrSubSection] = []
+	for c in _container.get_children():
+		ret.append(c)
+	return ret
 
 
 ## Sets whether or not to display there's unsaved changes.
@@ -305,8 +312,8 @@ func set_changes_unsaved(changes: bool) -> void:
 ## Returns all names of sublist
 func get_all_sublists() -> Array:
 	var arr: Array[String] = []
-	for list_child in _container.get_children():
-		arr.append(list_child.name)
+	for sec in _get_subsections():
+		arr.append(sec.name)
 	return arr
 
 
