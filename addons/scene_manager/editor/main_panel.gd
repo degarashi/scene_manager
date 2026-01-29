@@ -389,10 +389,12 @@ func _on_add_section_button_up() -> void:
 
 
 func _on_section_name_text_changed(new_text: String) -> void:
-	if new_text != "" && !(new_text.capitalize() in get_section_names()):
-		_add_section_button.disabled = false
-	else:
+	if new_text.is_empty():
 		_add_section_button.disabled = true
+		return
+
+	var is_duplicate: bool = new_text.capitalize() in get_section_names()
+	_add_section_button.disabled = is_duplicate
 
 
 # If set true, then the include list will be shown. If false, the list will be hidden.
