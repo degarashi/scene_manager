@@ -17,7 +17,7 @@ const DUPLICATE_LINE_EDIT: StyleBox = preload(
 	"res://addons/scene_manager/themes/line_edit_duplicate.tres"
 )
 const INVALID_KEY_NAME: String = "none"
-const SECTIONS_GETTER = preload("uid://bxcm04frfsjnx")
+const EBUS = preload("uid://ra25t5in8erp")
 
 ## Returns whether or not the key in the scene item is valid
 var is_valid: bool:
@@ -35,16 +35,11 @@ var _mouse_is_over_value: bool
 
 ## Used when comparing the user typed key to detect changes
 var _previous_key: String
-var _sections_getter: SECTIONS_GETTER
 
 # Nodes
 @onready var _popup_menu: PopupMenu = %popup_menu
 @onready var _key_edit: LineEdit = %key
 @onready var _key: String = %key.text
-
-
-func setup(section_getter: SECTIONS_GETTER) -> void:
-	_sections_getter = section_getter
 
 
 func _ready() -> void:
@@ -97,7 +92,8 @@ func remove_custom_theme() -> void:
 # Popup Button
 func _on_popup_button_button_up() -> void:
 	var i: int = 0
-	var sections: Array = _sections_getter.get_section_names()
+	var sections: Array
+	EBUS.get_section_names.emit(sections)
 	_popup_menu.clear()
 	_popup_menu.add_separator("Categories")
 	i += 1
@@ -108,7 +104,10 @@ func _on_popup_button_button_up() -> void:
 			continue
 		_popup_menu.add_check_item(section)
 		_popup_menu.set_item_id(i, CATEGORY_ID)
-		_popup_menu.set_item_checked(i, section in _sections_getter.get_sections(get_value()))
+
+		var sect: Array
+		EBUS.get_sections.emit(sect, get_value())
+		_popup_menu.set_item_checked(i, section in sect)
 		i += 1
 
 	# Recalculate size since menu content changed

@@ -9,7 +9,7 @@ extends MarginContainer
 # Scene item, include item prefabs
 const SCENE_INCLUDE_ITEM = preload("res://addons/scene_manager/editor/deletable_item.tscn")
 const SCENE_LIST_ITEM = preload("res://addons/scene_manager/editor/scene_list.tscn")
-const SECTIONS_GETTER = preload("uid://bxcm04frfsjnx")
+const EBUS := preload("uid://ra25t5in8erp")
 
 # Icons
 const ICON_CHECKBOX_ON = preload("res://addons/scene_manager/icons/GuiChecked.svg")
@@ -52,8 +52,22 @@ func _init_save_delay_timer() -> void:
 	_save_delay_timer.timeout.connect(func() -> void: _handle_data_modification())
 
 
+func _connect_ebus() -> void:
+	EBUS.get_section_names.connect(
+		func(recv: Array) -> void:
+			recv.clear()
+			recv.append_array(get_section_names())
+	)
+	EBUS.get_sections.connect(
+		func(recv: Array, scene_address: String) -> void:
+			recv.clear()
+			recv.append_array(get_sections(scene_address))
+	)
+
+
 func _ready() -> void:
 	_manager_data.load()
+	_connect_ebus()
 
 	# Refreshes the UI with the latest data
 	_refresh_ui()
@@ -117,8 +131,8 @@ func _include_child_deleted(node: Node, address: String) -> void:
 
 
 ## Retrieves the available sections from the data.
-func get_sections(address: String) -> Array:
-	return _manager_data.get_scene_sections(address)
+func get_sections(scene_address: String) -> Array:
+	return _manager_data.get_scene_sections(scene_address)
 
 
 func get_section_names(excepts: Array[String] = [""]) -> Array[String]:
@@ -363,7 +377,7 @@ func _on_address_text_changed(new_text: String) -> void:
 # Adds a new list to the section-tab container
 func _add_section_tab(text: String) -> void:
 	var sc_list: SMgrSceneList = SCENE_LIST_ITEM.instantiate()
-	sc_list.setup(text.capitalize(), SECTIONS_GETTER.new(self))
+	sc_list.setup(text.capitalize())
 	# --- signal connection ---
 	sc_list.section_removed.connect(self._section_removed)
 	sc_list.req_check_duplication.connect(self._check_duplication)
