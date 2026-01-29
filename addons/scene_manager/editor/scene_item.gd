@@ -9,7 +9,7 @@ const CATEGORY_ID = 0
 const DUPLICATE_LINE_EDIT: StyleBox = preload(
 	"res://addons/scene_manager/themes/line_edit_duplicate.tres"
 )
-const INVALID_KEY_NAME: String = "none"
+const INVALID_SCENE_NAME: String = "none"
 const EBUS = preload("uid://ra25t5in8erp")
 
 ## Returns whether or not the key in the scene item is valid
@@ -162,7 +162,7 @@ func _on_popup_menu_index_pressed(index: int) -> void:
 ## Updates the key internal value and normalizes the UI text
 func _update_key(text: String) -> void:
 	# Normalize the key to be lower case without symbols and replacing spaces with underscores
-	text = SceneManagerUtils.normalize_key_string(text)
+	text = SceneManagerUtils.sanitize_scene_name(text)
 	get_key_node().text = text
 	name = text
 	_key = text
@@ -181,16 +181,16 @@ func _on_key_text_submitted(_new_text: String) -> void:
 
 ## Finalizes the key change and notifies the root manager
 func _submit_key() -> void:
-	# Normalize key only on submission to avoid cursor jumping issues
-	var normalized_key := SceneManagerUtils.normalize_key_string(get_key())
+	# Sanitize key only on submission to avoid cursor jumping issues
+	var sanitized_name := SceneManagerUtils.sanitize_scene_name(get_key())
 
 	# Basic validation
-	var valid_name := not normalized_key.is_empty() and normalized_key != INVALID_KEY_NAME
+	var valid_name := not sanitized_name.is_empty() and sanitized_name != INVALID_SCENE_NAME
 
-	if _previous_key != normalized_key:
+	if _previous_key != sanitized_name:
 		if is_valid and valid_name:
 			# Successfully renamed
-			_update_key(normalized_key)
+			_update_key(sanitized_name)
 			EBUS.scene_renamed.emit(_previous_key, _key)
 			_previous_key = _key
 		else:

@@ -32,15 +32,15 @@ static func normalize_enum_string(text: String) -> String:
 
 
 ## Returns a string that has no symbols, is lower cases, and spaces are underscores.
-static func normalize_key_string(text: String) -> String:
-	if text.is_empty():
-		return text
-	
+static func sanitize_scene_name(scene_name: String) -> String:
+	if scene_name.is_empty():
+		return scene_name
+
 	var regex := RegEx.new()
 	regex.compile("[^a-zA-Z0-9_ -]")
-	var result := regex.search(text)
+	var result := regex.search(scene_name)
 	if result:
-		text = text.replace(result.get_string(), "")
-	
-	text = text.replace(" ", "_")
-	return text
+		scene_name = scene_name.replace(result.get_string(), "")
+
+	scene_name = scene_name.replace(" ", "_")
+	return scene_name
