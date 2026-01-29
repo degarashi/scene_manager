@@ -5,14 +5,6 @@ extends Control
 signal section_removed(section_name: String)
 signal req_check_duplication(key: String, node: Node)
 
-signal on_scene_renamed(old_name: String, new_name: String)
-signal remove_scene_from_list(section_name: String, scene_name: String, scene_address: String)
-signal item_added_to_list(node: Node, list_name: String)
-signal item_removed_from_list(node: Node, list_name: String)
-signal add_scene_to_list(
-	list_name: String, scene_name: String, scene_address: String, categorized: bool
-)
-
 # Scene item and sub_section to instance and add in list
 const SCENE_ITEM = preload("res://addons/scene_manager/editor/scene_item.tscn")
 const SUB_SECTION = preload("res://addons/scene_manager/editor/sub_section.tscn")
@@ -32,30 +24,6 @@ var _secondary_subsection: SMgrSubSection
 @onready var _container: VBoxContainer = %container
 @onready var _delete_list_button: Button = %delete_list
 @onready var _save_label: Label = %save_label
-
-
-func _on_scene_renamed(old_name: String, new_name: String) -> void:
-	on_scene_renamed.emit(old_name, new_name)
-
-
-func _on_remove_scene_from_list(
-	section_name: String, scene_name: String, scene_address: String
-) -> void:
-	remove_scene_from_list.emit(section_name, scene_name, scene_address)
-
-
-func _on_item_added_to_list(node: Node, list_name: String) -> void:
-	item_added_to_list.emit(node, list_name)
-
-
-func _on_item_removed_from_list(node: Node, list_name: String) -> void:
-	item_removed_from_list.emit(node, list_name)
-
-
-func _on_add_scene_to_list(
-	list_name: String, scene_name: String, scene_address: String, categorized: bool
-) -> void:
-	add_scene_to_list.emit(list_name, scene_name, scene_address, categorized)
 
 
 func setup(name_a: String) -> void:
@@ -109,11 +77,6 @@ func add_item(key: String, value: String, categorized: bool = false) -> void:
 	# --- connect signals ---
 	item.key_changed.connect(_on_item_key_changed)
 	item.key_reset.connect(set_reset_theme_for_all)
-	item.scene_renamed.connect(_on_scene_renamed)
-	item.remove_scene_from_list.connect(_on_remove_scene_from_list)
-	item.item_added_to_list.connect(_on_item_added_to_list)
-	item.item_removed_from_list.connect(_on_item_removed_from_list)
-	item.add_scene_to_list.connect(_on_add_scene_to_list)
 	# ---
 
 	item._list = self

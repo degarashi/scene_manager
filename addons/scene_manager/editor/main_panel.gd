@@ -63,6 +63,11 @@ func _connect_ebus() -> void:
 			recv.clear()
 			recv.append_array(get_sections(scene_address))
 	)
+	EBUS.scene_renamed.connect(_on_scene_renamed)
+	EBUS.remove_scene_from_list.connect(_remove_scene_from_list)
+	EBUS.item_added_to_list.connect(_item_added_to_list)
+	EBUS.item_removed_from_list.connect(_item_removed_from_list)
+	EBUS.add_scene_to_list.connect(_add_scene_to_list)
 
 
 func _ready() -> void:
@@ -381,11 +386,6 @@ func _add_section_tab(text: String) -> void:
 	# --- signal connection ---
 	sc_list.section_removed.connect(self._section_removed)
 	sc_list.req_check_duplication.connect(self._check_duplication)
-	sc_list.on_scene_renamed.connect(self._on_scene_renamed)
-	sc_list.remove_scene_from_list.connect(self._remove_scene_from_list)
-	sc_list.item_added_to_list.connect(self._item_added_to_list)
-	sc_list.item_removed_from_list.connect(self._item_removed_from_list)
-	sc_list.add_scene_to_list.connect(self._add_scene_to_list)
 	# ---
 	_section_tab_container.add_child(sc_list)
 
