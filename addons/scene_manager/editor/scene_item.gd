@@ -119,7 +119,7 @@ func _on_open_scene_button_up() -> void:
 	# Open it
 	EditorInterface.open_scene_from_path(get_value())
 	# Show in FileSystem
-	EditorInterface.get_file_system_dock().navigate_to_path(get_value())
+	EditorInterface.select_file(get_value())
 
 
 # Happens on input on the value element
@@ -130,7 +130,7 @@ func _on_value_gui_input(event: InputEvent) -> void:
 		and event.button_index == MOUSE_BUTTON_LEFT
 		and _mouse_is_over_value
 	):
-		EditorInterface.get_file_system_dock().navigate_to_path(get_value())
+		EditorInterface.select_file(get_value())
 
 
 # Happens when mouse is over value input
