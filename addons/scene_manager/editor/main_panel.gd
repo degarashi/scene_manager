@@ -396,18 +396,12 @@ func _on_section_name_text_changed(new_text: String) -> void:
 
 # If set true, then the include list will be shown. If false, the list will be hidden.
 func _show_includes_list(value: bool) -> void:
-	if value:
-		_hide_button.icon = ICON_COLLAPSE_BUTTON
-		_hide_unhide_button.icon = ICON_COLLAPSE_BUTTON
-		_include_container.visible = true
-		_include_add_panel_container.visible = true
-		_hide_unhide_button.visible = false
-	else:
-		_hide_button.icon = ICON_EXPAND_BUTTON
-		_hide_unhide_button.icon = ICON_EXPAND_BUTTON
-		_include_container.visible = false
-		_include_add_panel_container.visible = false
-		_hide_unhide_button.visible = true
+	var icon: Texture2D = ICON_COLLAPSE_BUTTON if value else ICON_EXPAND_BUTTON
+	_hide_button.icon = icon
+	_hide_unhide_button.icon = icon
+	_include_container.visible = value
+	_include_add_panel_container.visible = value
+	_hide_unhide_button.visible = !value
 
 
 func _on_hide_button_up() -> void:
