@@ -291,7 +291,7 @@ func set_reset_theme_for_all() -> void:
 			c.remove_custom_theme()
 
 
-func update_validity(key: String) -> void:
+func check_duplication(key: String) -> void:
 	for list_child in _container.get_children():
 		for c in list_child.get_items():
 			c.is_valid = c.get_key() != key

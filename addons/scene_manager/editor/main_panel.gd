@@ -281,7 +281,7 @@ func update_all_scene_with_key(
 ## scene_list is the list the item being changed is located.
 func _check_duplication(key: String, scene_list: SMgrSceneList) -> void:
 	if key in _manager_data.scenes:
-		scene_list.update_validity(key)
+		scene_list.check_duplication(key)
 
 
 # Save button
