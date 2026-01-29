@@ -4,7 +4,6 @@ extends Control
 
 const SUBSECTION_OPEN_ICON = preload("res://addons/scene_manager/icons/GuiOptionArrowDown.svg")
 const SUBSECTION_CLOSE_ICON = preload("res://addons/scene_manager/icons/GuiOptionArrowRight.svg")
-const SCENE_ITEM = preload("res://addons/scene_manager/editor/scene_item.tscn")
 
 var _is_closable: bool = true
 var _header_visible: bool = true
@@ -17,6 +16,7 @@ var _header_visible: bool = true
 func _ready() -> void:
 	_button_header.text = name
 	_button_header.visible = _header_visible
+	# Explicitly setting visibility to true on ready
 	visible = true
 
 
@@ -78,28 +78,23 @@ func _on_button_up():
 			open()
 
 
-# Action on child counting
-func _check_count():
-	if _list.get_child_count() == 0:
-		if name == "All":
-			visible = false
-		else:
-			enable_delete_button(true)
+# Updates UI state based on the presence of children
+func _update_visibility_and_state() -> void:
+	var has_children := _list.get_child_count() > 0
+	if name == "All":
+		visible = has_children
 	else:
-		if name == "All":
-			visible = true
-		else:
-			enable_delete_button(false)
+		enable_delete_button(!has_children)
 
 
 # When a node adds
 func child_entered():
-	_check_count()
+	_update_visibility_and_state()
 
 
 # When a node removes
 func child_exited():
-	_check_count()
+	_update_visibility_and_state()
 
 
 ## Enables/disables the delete button for deleting the sub section.
@@ -108,8 +103,8 @@ func enable_delete_button(enable: bool) -> void:
 
 
 ## Sets whether or not to make the delete button visible.
-func set_delete_visible(visible: bool) -> void:
-	_delete_button.visible = visible
+func set_delete_visible(visible_state: bool) -> void:
+	_delete_button.visible = visible_state
 
 
 ## Sets whether or not the subsection can close.
@@ -123,8 +118,8 @@ func set_closable(can_close: bool) -> void:
 
 
 ## Sets whether or not the button on top for the sub section is visible.
-func set_header_visible(visible: bool) -> void:
-	_header_visible = visible
+func set_header_visible(visible_state: bool) -> void:
+	_header_visible = visible_state
 	_button_header.visible = _header_visible
 
 
