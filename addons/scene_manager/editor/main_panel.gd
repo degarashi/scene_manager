@@ -416,14 +416,9 @@ func _on_section_tab_changed(_tab: int) -> void:
 
 
 func _change_auto_save_state(value: bool) -> void:
-	if !value:
-		_save_button.disabled = false
-		_auto_save_button.set_meta("enabled", false)
-		_auto_save_button.icon = ICON_CHECKBOX_OFF
-	else:
-		_auto_save_button.set_meta("enabled", true)
-		_auto_save_button.icon = ICON_CHECKBOX_ON
-	_save_button.disabled = _auto_save_button.get_meta("enabled", true)
+	_auto_save_button.set_meta("enabled", value)
+	_auto_save_button.icon = ICON_CHECKBOX_ON if value else ICON_CHECKBOX_OFF
+	_save_button.disabled = value
 
 
 func _on_auto_save_button_up() -> void:
