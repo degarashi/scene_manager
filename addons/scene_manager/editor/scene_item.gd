@@ -4,6 +4,13 @@ extends HBoxContainer
 
 signal key_changed(key: String)
 signal key_reset
+signal scene_renamed(old_name: String, new_name: String)
+signal remove_scene_from_list(section_name: String, scene_name: String, scene_address: String)
+signal item_added_to_list(node: Node, list_name: String)
+signal item_removed_from_list(node: Node, list_name: String)
+signal add_scene_to_list(
+	list_name: String, scene_name: String, scene_address: String, categorized: bool
+)
 
 const CATEGORY_ID = 0
 const F = preload("uid://cpxe18s2130m8")
@@ -150,11 +157,11 @@ func _on_popup_menu_index_pressed(index: int) -> void:
 
 	if id == CATEGORY_ID:
 		if !checked:
-			_main_panel.add_scene_to_list(text, get_key(), get_value())
-			_main_panel.item_added_to_list(self, text)
+			add_scene_to_list.emit(text, get_key(), get_value(), false)
+			item_added_to_list.emit(self, text)
 		else:
-			_main_panel.remove_scene_from_list(text, get_key(), get_value())
-			_main_panel.item_removed_from_list(self, text)
+			remove_scene_from_list.emit(text, get_key(), get_value())
+			item_removed_from_list.emit(self, text)
 
 
 ## Updates the key internal value and normalizes the UI text
@@ -189,7 +196,7 @@ func _submit_key() -> void:
 		if is_valid and valid_name:
 			# Successfully renamed
 			_update_key(normalized_key)
-			_main_panel.scene_renamed(_previous_key, _key)
+			scene_renamed.emit(_previous_key, _key)
 			_previous_key = _key
 		else:
 			# Revert to previous valid key if invalid or duplicate

@@ -5,6 +5,14 @@ extends Control
 signal section_removed(section_name: String)
 signal req_check_duplication(key: String, node: Node)
 
+signal on_scene_renamed(old_name: String, new_name: String)
+signal remove_scene_from_list(section_name: String, scene_name: String, scene_address: String)
+signal item_added_to_list(node: Node, list_name: String)
+signal item_removed_from_list(node: Node, list_name: String)
+signal add_scene_to_list(
+	list_name: String, scene_name: String, scene_address: String, categorized: bool
+)
+
 const F = preload("uid://cpxe18s2130m8")
 # Scene item and sub_section to instance and add in list
 const SCENE_ITEM = preload("res://addons/scene_manager/editor/scene_item.tscn")
@@ -25,6 +33,30 @@ var _secondary_subsection: SMgrSubSection
 @onready var _container: VBoxContainer = %container
 @onready var _delete_list_button: Button = %delete_list
 @onready var _save_label: Label = %save_label
+
+
+func _on_scene_renamed(old_name: String, new_name: String) -> void:
+	on_scene_renamed.emit(old_name, new_name)
+
+
+func _on_remove_scene_from_list(
+	section_name: String, scene_name: String, scene_address: String
+) -> void:
+	remove_scene_from_list.emit(section_name, scene_name, scene_address)
+
+
+func _on_item_added_to_list(node: Node, list_name: String) -> void:
+	item_added_to_list.emit(node, list_name)
+
+
+func _on_item_removed_from_list(node: Node, list_name: String) -> void:
+	item_removed_from_list.emit(node, list_name)
+
+
+func _on_add_scene_to_list(
+	list_name: String, scene_name: String, scene_address: String, categorized: bool
+) -> void:
+	add_scene_to_list.emit(list_name, scene_name, scene_address, categorized)
 
 
 # Start up of `All` list
@@ -71,8 +103,16 @@ func add_item(key: String, value: String, categorized: bool = false) -> void:
 	var item: SMgrSceneItem = SCENE_ITEM.instantiate()
 	item.set_key(key)
 	item.set_value(value)
+	# --- connect signals ---
 	item.key_changed.connect(_on_item_key_changed)
 	item.key_reset.connect(set_reset_theme_for_all)
+	item.scene_renamed.connect(_on_scene_renamed)
+	item.remove_scene_from_list.connect(_on_remove_scene_from_list)
+	item.item_added_to_list.connect(_on_item_added_to_list)
+	item.item_removed_from_list.connect(_on_item_removed_from_list)
+	item.add_scene_to_list.connect(_on_add_scene_to_list)
+	# ---
+
 	item._list = self
 
 	# For the default All case, determine which sub category it goes into

@@ -95,7 +95,7 @@ func section_removed(section_name: String) -> void:
 	_handle_data_modification()
 
 
-func scene_renamed(old_scene_name: String, new_scene_name: String) -> void:
+func _on_scene_renamed(old_scene_name: String, new_scene_name: String) -> void:
 	_manager_data.change_scene_name(old_scene_name, new_scene_name)
 	_rename_scene_in_lists(old_scene_name, new_scene_name)
 
@@ -363,8 +363,15 @@ func _on_address_text_changed(new_text: String) -> void:
 func _add_section_tab(text: String) -> void:
 	var sc_list: SMgrSceneList = SCENE_LIST_ITEM.instantiate()
 	sc_list.name = text.capitalize()
+	# --- signal connection ---
 	sc_list.section_removed.connect(self.section_removed)
 	sc_list.req_check_duplication.connect(self.check_duplication)
+	sc_list.on_scene_renamed.connect(self._on_scene_renamed)
+	sc_list.remove_scene_from_list.connect(self.remove_scene_from_list)
+	sc_list.item_added_to_list.connect(self.item_added_to_list)
+	sc_list.item_removed_from_list.connect(self.item_removed_from_list)
+	sc_list.add_scene_to_list.connect(self.add_scene_to_list)
+	# ---
 	_section_tab_container.add_child(sc_list)
 
 
