@@ -8,7 +8,7 @@ extends Resource
 ## Accessor to get the enum from the string value in this resource.
 var scene_value: Scenes.SceneName:
 	get:
-		return SceneManagerUtils.get_enum_from_string(string_value)
+		return SceneManagerUtils.get_enum_from_scene_name(string_value)
 
 
 ## Sets the text for the resource, which will automatically find the corresponding
