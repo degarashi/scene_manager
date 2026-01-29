@@ -18,6 +18,7 @@ const DUPLICATE_LINE_EDIT: StyleBox = preload(
 	"res://addons/scene_manager/themes/line_edit_duplicate.tres"
 )
 const INVALID_KEY_NAME: String = "none"
+const SECTIONS_GETTER = preload("uid://bxcm04frfsjnx")
 
 ## Returns whether or not the key in the scene item is valid
 var is_valid: bool:
@@ -35,17 +36,20 @@ var _mouse_is_over_value: bool
 
 ## Used when comparing the user typed key to detect changes
 var _previous_key: String
+var _sections_getter: SECTIONS_GETTER
 
 # Nodes
-@onready var _main_panel: SMgrMainPanel
 @onready var _popup_menu: PopupMenu = %popup_menu
 @onready var _key_edit: LineEdit = %key
 @onready var _key: String = %key.text
 
 
+func setup(section_getter: SECTIONS_GETTER) -> void:
+	_sections_getter = section_getter
+
+
 func _ready() -> void:
 	_previous_key = _key
-	_main_panel = F.find_manager_root(self)
 
 
 ## Directly set the key. Called by other UI elements
@@ -94,7 +98,7 @@ func remove_custom_theme() -> void:
 # Popup Button
 func _on_popup_button_button_up() -> void:
 	var i: int = 0
-	var sections: Array = _main_panel.get_section_names()
+	var sections: Array = _sections_getter.get_section_names()
 	_popup_menu.clear()
 	_popup_menu.add_separator("Categories")
 	i += 1
@@ -105,7 +109,7 @@ func _on_popup_button_button_up() -> void:
 			continue
 		_popup_menu.add_check_item(section)
 		_popup_menu.set_item_id(i, CATEGORY_ID)
-		_popup_menu.set_item_checked(i, section in _main_panel.get_sections(get_value()))
+		_popup_menu.set_item_checked(i, section in _sections_getter.get_sections(get_value()))
 		i += 1
 
 	# Recalculate size since menu content changed

@@ -9,6 +9,7 @@ extends MarginContainer
 # Scene item, include item prefabs
 const SCENE_INCLUDE_ITEM = preload("res://addons/scene_manager/editor/deletable_item.tscn")
 const SCENE_LIST_ITEM = preload("res://addons/scene_manager/editor/scene_list.tscn")
+const SECTIONS_GETTER = preload("uid://bxcm04frfsjnx")
 
 # Icons
 const ICON_CHECKBOX_ON = preload("res://addons/scene_manager/icons/GuiChecked.svg")
@@ -362,7 +363,7 @@ func _on_address_text_changed(new_text: String) -> void:
 # Adds a new list to the section-tab container
 func _add_section_tab(text: String) -> void:
 	var sc_list: SMgrSceneList = SCENE_LIST_ITEM.instantiate()
-	sc_list.name = text.capitalize()
+	sc_list.setup(text.capitalize(), SECTIONS_GETTER.new(self))
 	# --- signal connection ---
 	sc_list.section_removed.connect(self.section_removed)
 	sc_list.req_check_duplication.connect(self.check_duplication)

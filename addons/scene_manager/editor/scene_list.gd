@@ -18,6 +18,7 @@ const F = preload("uid://cpxe18s2130m8")
 const SCENE_ITEM = preload("res://addons/scene_manager/editor/scene_item.tscn")
 const SUB_SECTION = preload("res://addons/scene_manager/editor/sub_section.tscn")
 const ALL_LIST_NAME := "All"
+const SECTIONS_GETTER = preload("uid://bxcm04frfsjnx")
 
 
 class SectionName:
@@ -29,6 +30,7 @@ class SectionName:
 var _main_subsection: SMgrSubSection
 # Mainly used for the default "All" list for "Categorized" items
 var _secondary_subsection: SMgrSubSection
+var _sections_getter: SECTIONS_GETTER
 
 @onready var _container: VBoxContainer = %container
 @onready var _delete_list_button: Button = %delete_list
@@ -57,6 +59,11 @@ func _on_add_scene_to_list(
 	list_name: String, scene_name: String, scene_address: String, categorized: bool
 ) -> void:
 	add_scene_to_list.emit(list_name, scene_name, scene_address, categorized)
+
+
+func setup(name_a: String, sections_getter: SECTIONS_GETTER) -> void:
+	name = name_a
+	_sections_getter = sections_getter
 
 
 # Start up of `All` list
@@ -101,6 +108,7 @@ func add_item(key: String, value: String, categorized: bool = false) -> void:
 		await ready
 
 	var item: SMgrSceneItem = SCENE_ITEM.instantiate()
+	item.setup(_sections_getter)
 	item.set_key(key)
 	item.set_value(value)
 	# --- connect signals ---
