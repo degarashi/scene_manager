@@ -63,13 +63,13 @@ func _ready() -> void:
 	_init_save_delay_timer()
 
 
-func item_added_to_list(node: Node, list_name: String) -> void:
+func _item_added_to_list(node: Node, list_name: String) -> void:
 	_manager_data.add_scene_to_section(node.get_value(), list_name)
 	_update_categorized(node.get_key())
 	_handle_data_modification()
 
 
-func item_removed_from_list(node: Node, list_name: String) -> void:
+func _item_removed_from_list(node: Node, list_name: String) -> void:
 	_manager_data.remove_scene_from_section(node.get_value(), list_name)
 	_update_categorized(node.get_key())
 	_handle_data_modification()
@@ -86,7 +86,7 @@ func _handle_data_modification() -> void:
 	_refresh_save_changes()
 
 
-func section_removed(section_name: String) -> void:
+func _section_removed(section_name: String) -> void:
 	_manager_data.remove_section(section_name)
 
 	# Loop through the scenes and update the categorized for the "All" list
@@ -187,7 +187,7 @@ func _update_categorized(key: String) -> void:
 
 
 ## Removes a scene from a specific list.
-func remove_scene_from_list(
+func _remove_scene_from_list(
 	section_name: String, scene_name: String, scene_address: String
 ) -> void:
 	var sc_list := _get_scene_list_by_section_name(section_name)
@@ -199,7 +199,7 @@ func remove_scene_from_list(
 ## This function is used in `scene_item.gd` script and plus doing what it is supposed
 ## to do, removes and again adds the item in `All` section so that it can be placed
 ## in correct place in correct section.
-func add_scene_to_list(
+func _add_scene_to_list(
 	list_name: String, scene_name: String, scene_address: String, categorized: bool = false
 ) -> void:
 	var sc_list := _get_scene_list_by_section_name(list_name)
@@ -227,9 +227,9 @@ func _reload_ui_scenes() -> void:
 	for key in _manager_data.scenes:
 		var scene = _manager_data.scenes[key]
 		for section in scene["sections"]:
-			add_scene_to_list(section, key, scene["value"], true)
+			_add_scene_to_list(section, key, scene["value"], true)
 
-		add_scene_to_list(
+		_add_scene_to_list(
 			ALL_LIST_NAME, key, scene["value"], _manager_data.has_sections(scene["value"])
 		)
 
@@ -279,7 +279,7 @@ func update_all_scene_with_key(
 ## Checks for duplications in the scene data.[br]
 ## key is the new key to check against the current scene data to see if there's a duplicate.[br]
 ## scene_list is the list the item being changed is located.
-func check_duplication(key: String, scene_list: SMgrSceneList) -> void:
+func _check_duplication(key: String, scene_list: SMgrSceneList) -> void:
 	if key in _manager_data.scenes:
 		scene_list.update_validity(key)
 
@@ -365,13 +365,13 @@ func _add_section_tab(text: String) -> void:
 	var sc_list: SMgrSceneList = SCENE_LIST_ITEM.instantiate()
 	sc_list.setup(text.capitalize(), SECTIONS_GETTER.new(self))
 	# --- signal connection ---
-	sc_list.section_removed.connect(self.section_removed)
-	sc_list.req_check_duplication.connect(self.check_duplication)
+	sc_list.section_removed.connect(self._section_removed)
+	sc_list.req_check_duplication.connect(self._check_duplication)
 	sc_list.on_scene_renamed.connect(self._on_scene_renamed)
-	sc_list.remove_scene_from_list.connect(self.remove_scene_from_list)
-	sc_list.item_added_to_list.connect(self.item_added_to_list)
-	sc_list.item_removed_from_list.connect(self.item_removed_from_list)
-	sc_list.add_scene_to_list.connect(self.add_scene_to_list)
+	sc_list.remove_scene_from_list.connect(self._remove_scene_from_list)
+	sc_list.item_added_to_list.connect(self._item_added_to_list)
+	sc_list.item_removed_from_list.connect(self._item_removed_from_list)
+	sc_list.add_scene_to_list.connect(self._add_scene_to_list)
 	# ---
 	_section_tab_container.add_child(sc_list)
 
