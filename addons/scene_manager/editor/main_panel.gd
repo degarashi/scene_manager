@@ -124,10 +124,10 @@ func get_section_names(excepts: Array[String] = [""]) -> Array[String]:
 	var arr: Array[String] = []
 	for i in range(len(excepts)):
 		excepts[i] = excepts[i].capitalize()
-	for node in _get_section_lists():
-		if node.name in excepts:
+	for sc_list in _get_section_lists():
+		if sc_list.name in excepts:
 			continue
-		arr.append(node.name)
+		arr.append(sc_list.name)
 	return arr
 
 
