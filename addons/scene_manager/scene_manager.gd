@@ -4,7 +4,11 @@ extends Node
 const C = preload("./scene_manager_constants.gd")
 const RING_BUFFER = preload("uid://t3tlcswbndjo")
 
-const FADE: String = "fade"
+
+class AnimKey:
+	const FADE = &"fade"
+
+
 # Index to the loaded scene map for the parent node
 const _IDX_WRAPPER_NODE: int = 0
 # Index to the loaded scene map for the scene node
@@ -123,7 +127,7 @@ func _fade_in(speed: float) -> bool:
 		return false
 
 	fade_in_started.emit()
-	_animation_player.play(FADE, -1, -1 / speed, true)
+	_animation_player.play(AnimKey.FADE, -1, -1 / speed, true)
 	return true
 
 
@@ -133,7 +137,7 @@ func _fade_out(speed: float) -> bool:
 		return false
 
 	fade_out_started.emit()
-	_animation_player.play(FADE, -1, 1 / speed, false)
+	_animation_player.play(AnimKey.FADE, -1, 1 / speed, false)
 	return true
 
 
