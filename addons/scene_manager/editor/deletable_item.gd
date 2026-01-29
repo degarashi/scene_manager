@@ -3,7 +3,6 @@ class_name SMgrDeletableItem
 extends HBoxContainer
 
 signal on_remove_request(node: Node, addr: String)
-const F = preload("uid://cpxe18s2130m8")
 
 
 ## Set address and update node name

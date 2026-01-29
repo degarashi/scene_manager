@@ -13,7 +13,6 @@ signal add_scene_to_list(
 	list_name: String, scene_name: String, scene_address: String, categorized: bool
 )
 
-const F = preload("uid://cpxe18s2130m8")
 # Scene item and sub_section to instance and add in list
 const SCENE_ITEM = preload("res://addons/scene_manager/editor/scene_item.tscn")
 const SUB_SECTION = preload("res://addons/scene_manager/editor/sub_section.tscn")

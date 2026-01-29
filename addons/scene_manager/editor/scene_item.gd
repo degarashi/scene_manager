@@ -13,7 +13,6 @@ signal add_scene_to_list(
 )
 
 const CATEGORY_ID = 0
-const F = preload("uid://cpxe18s2130m8")
 const DUPLICATE_LINE_EDIT: StyleBox = preload(
 	"res://addons/scene_manager/themes/line_edit_duplicate.tres"
 )
