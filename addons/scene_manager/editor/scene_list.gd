@@ -8,7 +8,7 @@ signal req_check_duplication(scene_name: String, sc_list: Node)
 # Scene item and sub_section to instance and add in list
 const SCENE_ITEM = preload("res://addons/scene_manager/editor/scene_item.tscn")
 const SUB_SECTION = preload("res://addons/scene_manager/editor/sub_section.tscn")
-const ALL_LIST_NAME := "All"
+const C = preload("uid://c3vvdktou45u")
 
 
 class SectionName:
@@ -16,9 +16,10 @@ class SectionName:
 	const CATEGORIZED = "Categorized"
 
 
-# "All" subsection by default. In the "All" list, this is "Uncategorized" items
+# ALL_SECTION_NAME subsection by default.
+# In the ALL_SECTION_NAME list, this is "Uncategorized" items
 var _main_subsection: SMgrSubSection
-# Mainly used for the default "All" list for "Categorized" items
+# Mainly used for the default ALL_SECTION_NAME list for "Categorized" items
 var _secondary_subsection: SMgrSubSection
 
 # Container containing sub section
@@ -32,7 +33,7 @@ func setup(name_a: String) -> void:
 
 
 func _ready() -> void:
-	if name == ALL_LIST_NAME:
+	if name == C.ALL_SECTION_NAME:
 		_delete_list_button.icon = null
 		_delete_list_button.disabled = true
 		_delete_list_button.visible = false
@@ -51,7 +52,7 @@ func _ready() -> void:
 		_secondary_subsection = sub2
 	else:
 		var sub: SMgrSubSection = SUB_SECTION.instantiate()
-		sub.setup(ALL_LIST_NAME)
+		sub.setup(C.ALL_SECTION_NAME)
 		sub.visible = false
 		_subsection_cont.add_child(sub)
 		sub.open()
@@ -79,17 +80,17 @@ func add_item(scene_name: String, scene_path: String, categorized: bool = false)
 	# ---
 
 	# For the default All case, determine which sub category it goes into
-	if name == ALL_LIST_NAME and categorized:
+	if name == C.ALL_SECTION_NAME and categorized:
 		_secondary_subsection.add_item(item)
 	else:
 		_main_subsection.add_item(item)
 
 
 ## Updates whether or not the item is categorized and moves it to the correct subcategory.[br]
-## Used for the default "All" list.
+## Used for the default ALL_SECTION_NAME list.
 func update_item_categorized(key: String, categorized: bool) -> void:
 	# Make sure this is the correct list
-	if name != ALL_LIST_NAME:
+	if name != C.ALL_SECTION_NAME:
 		push_warning(
 			"Cannot set categorization in a list other than All (attempting to set in %s)" % name
 		)
@@ -201,7 +202,7 @@ func set_changes_unsaved(changes: bool) -> void:
 # List deletion
 func _on_delete_list_button_up() -> void:
 	var section_name := name
-	if name == "All":
+	if name == C.ALL_SECTION_NAME:
 		return
 	queue_free()
 	await tree_exited

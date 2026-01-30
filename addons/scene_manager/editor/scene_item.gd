@@ -11,6 +11,7 @@ const DUPLICATE_LINE_EDIT: StyleBox = preload(
 )
 const INVALID_SCENE_NAME: String = "none"
 const EBUS = preload("uid://ra25t5in8erp")
+const C = preload("uid://c3vvdktou45u")
 
 ## Returns whether or not the scene_name in the scene item is valid
 var is_valid: bool:
@@ -87,7 +88,7 @@ func _on_popup_button_button_up() -> void:
 
 	# Categories have id of CATEGORY_ID
 	for section_name in sections:
-		if section_name == "All":
+		if section_name == C.ALL_SECTION_NAME:
 			continue
 		_popup_menu.add_check_item(section_name)
 		_popup_menu.set_item_id(i, CATEGORY_ID)

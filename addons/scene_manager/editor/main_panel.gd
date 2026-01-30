@@ -17,7 +17,7 @@ const ICON_CHECKBOX_OFF = preload("res://addons/scene_manager/icons/GuiCheckedDi
 const ICON_EXPAND_BUTTON = preload("res://addons/scene_manager/icons/Expand.svg")
 const ICON_COLLAPSE_BUTTON = preload("res://addons/scene_manager/icons/Collapse.svg")
 
-const ALL_LIST_NAME := "All"  ## Default list that contains all scenes
+const C = preload("uid://c3vvdktou45u")
 
 var _manager_data: SceneManagerData = SceneManagerData.new()
 var _save_delay_timer: Timer = null
@@ -108,7 +108,7 @@ func _handle_data_modification() -> void:
 func _section_removed(section_name: String) -> void:
 	_manager_data.remove_section(section_name)
 
-	# Loop through the scenes and update the categorized for the "All" list
+	# Loop through the scenes and update the categorized for the ALL_SECTION_NAME list
 	for scene in _manager_data.scenes:
 		_update_categorized(scene)
 
@@ -195,12 +195,12 @@ func _rename_scene_in_lists(old_key: String, new_key: String) -> void:
 		sc_list.sort_scenes()
 
 
-# Updates the categorized/uncategorized sub section in the "All" list for the scene.
+# Updates the categorized/uncategorized sub section in the ALL_SECTION_NAME list for the scene.
 func _update_categorized(key: String) -> void:
 	# Get the scene information from the data
 	var categorized := _manager_data.has_sections(_manager_data.scenes[key]["value"])
 
-	var sc_list := _get_scene_list_by_section_name(ALL_LIST_NAME)
+	var sc_list := _get_scene_list_by_section_name(C.ALL_SECTION_NAME)
 	sc_list.update_item_categorized(key, categorized)
 
 
@@ -248,7 +248,7 @@ func _reload_ui_scenes() -> void:
 			_add_scene_to_section(section, sc_name, scene["value"], true)
 
 		_add_scene_to_section(
-			ALL_LIST_NAME, sc_name, scene["value"], _manager_data.has_sections(scene["value"])
+			C.ALL_SECTION_NAME, sc_name, scene["value"], _manager_data.has_sections(scene["value"])
 		)
 
 	_sort_scenes_in_lists()
@@ -263,8 +263,8 @@ func _reload_ui_includes() -> void:
 
 # Reloads tabs in UI
 func _reload_ui_tabs() -> void:
-	if _get_scene_list_by_section_name(ALL_LIST_NAME) == null:
-		_add_section_tab(ALL_LIST_NAME)
+	if _get_scene_list_by_section_name(C.ALL_SECTION_NAME) == null:
+		_add_section_tab(C.ALL_SECTION_NAME)
 	for section in _manager_data.sections:
 		var found = false
 		for sc_list in _get_section_lists():

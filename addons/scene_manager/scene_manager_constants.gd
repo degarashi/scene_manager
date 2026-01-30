@@ -23,3 +23,5 @@ const SETTINGS_FADE_OUT_PROPERTY_NAME := "scene_manager/scenes/default_fade_out_
 const SETTINGS_FADE_IN_PROPERTY_NAME := "scene_manager/scenes/default_fade_in_time"
 const SETTINGS_AUTO_SAVE_PROPERTY_NAME := "scene_manager/scenes/autosave"
 const SETTINGS_INCLUDES_VISIBLE_PROPERTY_NAME := "scene_manager/scenes/includes_visible"
+
+const ALL_SECTION_NAME = "All"

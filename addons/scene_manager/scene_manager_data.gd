@@ -142,7 +142,7 @@ func remove_section(section_name: String) -> void:
 
 ## Adds `section_name` to associate to `scene_address`.
 func add_scene_to_section(scene_address: String, section_name: String) -> void:
-	if section_name == "All":
+	if section_name == C.ALL_SECTION_NAME:
 		return
 
 	if not _sections.has(scene_address):
