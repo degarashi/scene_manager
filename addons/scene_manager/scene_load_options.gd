@@ -7,14 +7,12 @@ const C = preload("./scene_manager_constants.gd")
 ## Default fade out time retrieved from ProjectSettings
 static var default_fade_out: float:
 	get:
-		return ProjectSettings.get_setting(
-			C.SETTINGS_FADE_OUT_PROPERTY_NAME, C.DEFAULT_FADE_OUT_TIME
-		)
+		return SMgrProjectSettings.fade_out_time
 
 ## Default fade in time retrieved from ProjectSettings
 static var default_fade_in: float:
 	get:
-		return ProjectSettings.get_setting(C.SETTINGS_FADE_IN_PROPERTY_NAME, C.DEFAULT_FADE_IN_TIME)
+		return SMgrProjectSettings.fade_in_time
 
 @export_group("Hierarchy")
 ## Where in the node structure the new scene will load.

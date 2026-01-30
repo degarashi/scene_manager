@@ -34,22 +34,6 @@ extends Node
 
 """
 
-## Whether or not the editor plugin will auto save.
-var auto_save: bool:
-	get:
-		return ProjectSettings.get_setting(C.SETTINGS_AUTO_SAVE_PROPERTY_NAME, false)
-	set(value):
-		ProjectSettings.set_setting(C.SETTINGS_AUTO_SAVE_PROPERTY_NAME, value)
-		ProjectSettings.save()
-
-## Whether or not to show the includes directories in the editor plugin
-var includes_visible: bool:
-	get:
-		return ProjectSettings.get_setting(C.SETTINGS_INCLUDES_VISIBLE_PROPERTY_NAME, false)
-	set(value):
-		ProjectSettings.set_setting(C.SETTINGS_INCLUDES_VISIBLE_PROPERTY_NAME, value)
-		ProjectSettings.save()
-
 ## Returns the scenes from `scenes` variable of `scenes.gd` file
 var scenes: Dictionary:
 	get:
@@ -209,10 +193,7 @@ func save() -> void:
 		# File is the same as the current data, don't do any unneeded file writing
 		return
 
-	var file := FileAccess.open(
-		ProjectSettings.get_setting(C.SETTINGS_SCENE_PROPERTY_NAME, C.DEFAULT_PATH_TO_SCENES),
-		FileAccess.WRITE
-	)
+	var file := FileAccess.open(SMgrProjectSettings.scene_path, FileAccess.WRITE)
 
 	# Generates the scene.gd file with all the scene data
 	var write_data: String = SCENE_DATA_HEADER
@@ -269,9 +250,7 @@ func load() -> void:
 static func _load_file() -> Dictionary:
 	var data: Dictionary = {}
 
-	var file_path := ProjectSettings.get_setting(
-		C.SETTINGS_SCENE_PROPERTY_NAME, C.DEFAULT_PATH_TO_SCENES
-	)
+	var file_path := SMgrProjectSettings.scene_path
 	if FileAccess.file_exists(file_path):
 		var file := FileAccess.open(file_path, FileAccess.READ)
 		var dictionary := ""

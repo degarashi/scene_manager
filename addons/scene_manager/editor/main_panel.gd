@@ -76,8 +76,8 @@ func _ready() -> void:
 
 	# Refreshes the UI with the latest data
 	_refresh_ui()
-	_change_auto_save_state(_manager_data.auto_save)
-	_show_includes_list(_manager_data.includes_visible)
+	_change_auto_save_state(SMgrProjectSettings.auto_save)
+	_show_includes_list(SMgrProjectSettings.includes_visible)
 
 	_init_save_delay_timer()
 
@@ -98,7 +98,7 @@ func _item_removed_from_section(item: SMgrSceneItem, section_name: String) -> vo
 
 
 func _handle_data_modification() -> void:
-	if _manager_data.auto_save:
+	if SMgrProjectSettings.auto_save:
 		_manager_data.save()
 
 	# Update the lists to show "unsaved changes" if there's any changes from the scene file.
@@ -119,7 +119,7 @@ func _on_scene_renamed(old_scene_name: String, new_scene_name: String) -> void:
 	_manager_data.change_scene_name(old_scene_name, new_scene_name)
 	_rename_scene_in_lists(old_scene_name, new_scene_name)
 
-	if _manager_data.auto_save:
+	if SMgrProjectSettings.auto_save:
 		_save_delay_timer.start()
 
 
@@ -408,8 +408,8 @@ func _show_includes_list(value: bool) -> void:
 
 
 func _on_hide_button_up() -> void:
-	_manager_data.includes_visible = not _manager_data.includes_visible
-	_show_includes_list(_manager_data.includes_visible)
+	SMgrProjectSettings.includes_visible = not SMgrProjectSettings.includes_visible
+	_show_includes_list(SMgrProjectSettings.includes_visible)
 	_handle_data_modification()
 
 
@@ -425,6 +425,6 @@ func _change_auto_save_state(value: bool) -> void:
 
 
 func _on_auto_save_button_up() -> void:
-	_manager_data.auto_save = not _manager_data.auto_save
-	_change_auto_save_state(_manager_data.auto_save)
+	SMgrProjectSettings.auto_save = not SMgrProjectSettings.auto_save
+	_change_auto_save_state(SMgrProjectSettings.auto_save)
 	_handle_data_modification()
