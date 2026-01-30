@@ -3,7 +3,7 @@ class_name SMgrSceneList
 extends Control
 
 signal section_removed(section_name: String)
-signal req_check_duplication(key: String, node: Node)
+signal req_check_duplication(scene_name: String, sc_list: Node)
 
 # Scene item and sub_section to instance and add in list
 const SCENE_ITEM = preload("res://addons/scene_manager/editor/scene_item.tscn")
@@ -31,7 +31,6 @@ func setup(name_a: String) -> void:
 	name = name_a
 
 
-# Start up of `All` list
 func _ready() -> void:
 	if name == ALL_LIST_NAME:
 		_delete_list_button.icon = null
@@ -63,21 +62,20 @@ func _ready() -> void:
 
 
 # Callback from the on_changed(SceneItem) signal in the scene_item
-func _on_item_changed(key: String) -> void:
-	req_check_duplication.emit(key, self)
+func _on_item_changed(sc_name: String) -> void:
+	req_check_duplication.emit(sc_name, self)
 
 
-## Adds an item to list
-func add_item(key: String, value: String, categorized: bool = false) -> void:
+func add_item(scene_name: String, scene_path: String, categorized: bool = false) -> void:
 	if not is_node_ready():
 		await ready
 
 	var item: SMgrSceneItem = SCENE_ITEM.instantiate()
-	item.set_key(key)
-	item.set_value(value)
+	item.set_scene_name(scene_name)
+	item.set_scene_path(scene_path)
 	# --- connect signals ---
 	item.on_changed.connect(_on_item_changed)
-	item.on_reset.connect(_set_reset_theme_for_all)
+	item.on_reset.connect(_reset_theme_all)
 	# ---
 
 	# For the default All case, determine which sub category it goes into
@@ -133,9 +131,9 @@ func update_item_key(old_key: String, new_key: String) -> void:
 
 		# Find the node we're looking for to replace
 		# The node is a scene_item.
-		for node in nodes:
-			if node.get_key() == old_key:
-				node.set_key(new_key)
+		for node: SMgrSceneItem in nodes:
+			if node.get_scene_name() == old_key:
+				node.set_scene_name(new_key)
 				_sort_node_list(list)
 				break
 
@@ -144,7 +142,7 @@ func update_item_key(old_key: String, new_key: String) -> void:
 func remove_item(key: String, value: String) -> void:
 	for sec in _get_subsections():
 		for item in sec.get_items():
-			if item.get_key() == key && item.get_value() == value:
+			if item.get_scene_name() == key && item.get_scene_path() == value:
 				item.queue_free()
 				return
 
@@ -167,7 +165,8 @@ func sort_scenes() -> void:
 func _sort_node_list(parent: Node) -> void:
 	var sorted_nodes := parent.get_children()
 	sorted_nodes.sort_custom(
-		func(a: Node, b: Node): return a.get_key().naturalnocasecmp_to(b.get_key()) < 0
+		func(a: SMgrSceneItem, b: SMgrSceneItem):
+			return a.get_scene_name().naturalnocasecmp_to(b.get_scene_name()) < 0
 	)
 
 	for i in range(sorted_nodes.size()):
@@ -175,17 +174,16 @@ func _sort_node_list(parent: Node) -> void:
 			parent.move_child(sorted_nodes[i], i)
 
 
-## Reset theme for all children in UI
-func _set_reset_theme_for_all() -> void:
+func _reset_theme_all() -> void:
 	for sec in _get_subsections():
 		for c in sec.get_items():
 			c.remove_custom_theme()
 
 
-func check_duplication(key: String) -> void:
+func check_duplication(sc_name: String) -> void:
 	for sec in _get_subsections():
-		for c in sec.get_items():
-			c.is_valid = c.get_key() != key
+		for c: SMgrSceneItem in sec.get_items():
+			c.is_valid = c.get_scene_name() != sc_name
 
 
 func _get_subsections() -> Array[SMgrSubSection]:
@@ -202,7 +200,7 @@ func set_changes_unsaved(changes: bool) -> void:
 
 # List deletion
 func _on_delete_list_button_up() -> void:
-	var section_name = name
+	var section_name := name
 	if name == "All":
 		return
 	queue_free()

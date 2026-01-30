@@ -1,7 +1,7 @@
 [gd_scene load_steps=8 format=3 uid="uid://b4edho3whn67t"]
 
 [ext_resource type="Script" uid="uid://dookyr8uhx5wp" path="res://addons/scene_manager/editor/sub_section.gd" id="1_kgwwp"]
-[ext_resource type="Texture2D" uid="uid://dhsmjlnpmbcwm" path="res://addons/scene_manager/icons/GuiOptionArrowRight.svg" id="1_yyg5g"]
+[ext_resource type="Texture2D" uid="uid://c7o4wjygnjhjc" path="res://addons/scene_manager/icons/GuiOptionArrowDown.svg" id="2_2rtdo"]
 [ext_resource type="Script" uid="uid://bwj6yigjptjbq" path="res://addons/scene_manager/editor/sub_section_button.gd" id="3_smgrs"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_u6qci"]
@@ -42,11 +42,11 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_kx1we")
 theme_override_styles/hover = SubResource("StyleBoxFlat_yqp47")
 theme_override_styles/focus = SubResource("StyleBoxFlat_uvnds")
 text = "All"
-icon = ExtResource("1_yyg5g")
+icon = ExtResource("2_2rtdo")
 alignment = 0
 script = ExtResource("3_smgrs")
 
-[node name="List" type="VBoxContainer" parent="."]
+[node name="SceneItemContainer" type="VBoxContainer" parent="."]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2

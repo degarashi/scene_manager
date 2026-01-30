@@ -20,7 +20,7 @@ const ICON_COLLAPSE_BUTTON = preload("res://addons/scene_manager/icons/Collapse.
 const ALL_LIST_NAME := "All"  ## Default list that contains all scenes
 
 var _manager_data: SceneManagerData = SceneManagerData.new()
-var _save_delay_timer: Timer = null  ## Timer for autosave when the key changes
+var _save_delay_timer: Timer = null
 
 # UI nodes and items
 @onready var _include_path_list: Control = %include_list
@@ -64,10 +64,10 @@ func _connect_ebus() -> void:
 			recv.append_array(get_sections(scene_address))
 	)
 	EBUS.scene_renamed.connect(_on_scene_renamed)
-	EBUS.remove_scene_from_list.connect(_remove_scene_from_list)
-	EBUS.item_added_to_list.connect(_item_added_to_list)
-	EBUS.item_removed_from_list.connect(_item_removed_from_list)
-	EBUS.add_scene_to_list.connect(_add_scene_to_list)
+	EBUS.remove_scene_from_section.connect(_remove_scene_from_section)
+	EBUS.item_added_to_section.connect(_item_added_to_section)
+	EBUS.item_removed_from_section.connect(_item_removed_from_section)
+	EBUS.add_scene_to_section.connect(_add_scene_to_section)
 
 
 func _ready() -> void:
@@ -82,15 +82,15 @@ func _ready() -> void:
 	_init_save_delay_timer()
 
 
-func _item_added_to_list(node: Node, list_name: String) -> void:
-	_manager_data.add_scene_to_section(node.get_value(), list_name)
-	_update_categorized(node.get_key())
+func _item_added_to_section(item: SMgrSceneItem, section_name: String) -> void:
+	_manager_data.add_scene_to_section(item.get_scene_path(), section_name)
+	_update_categorized(item.get_scene_name())
 	_handle_data_modification()
 
 
-func _item_removed_from_list(node: Node, list_name: String) -> void:
-	_manager_data.remove_scene_from_section(node.get_value(), list_name)
-	_update_categorized(node.get_key())
+func _item_removed_from_section(item: SMgrSceneItem, section_name: String) -> void:
+	_manager_data.remove_scene_from_section(item.get_scene_path(), section_name)
+	_update_categorized(item.get_scene_name())
 	_handle_data_modification()
 
 
@@ -183,7 +183,6 @@ func _get_scene_list_by_section_name(section_name: String) -> SMgrSceneList:
 	return null
 
 
-# Sorts all the lists in the UI based on the key name.
 func _sort_scenes_in_lists() -> void:
 	for sc_list in _get_section_lists():
 		sc_list.sort_scenes()
@@ -206,7 +205,7 @@ func _update_categorized(key: String) -> void:
 
 
 ## Removes a scene from a specific list.
-func _remove_scene_from_list(
+func _remove_scene_from_section(
 	section_name: String, scene_name: String, scene_address: String
 ) -> void:
 	var sc_list := _get_scene_list_by_section_name(section_name)
@@ -218,7 +217,7 @@ func _remove_scene_from_list(
 ## This function is used in `scene_item.gd` script and plus doing what it is supposed
 ## to do, removes and again adds the item in `All` section so that it can be placed
 ## in correct place in correct section.
-func _add_scene_to_list(
+func _add_scene_to_section(
 	list_name: String, scene_name: String, scene_address: String, categorized: bool = false
 ) -> void:
 	var sc_list := _get_scene_list_by_section_name(list_name)
@@ -243,13 +242,13 @@ func _clear_ui_elements() -> void:
 
 # Reloads all scenes in UI and in this script
 func _reload_ui_scenes() -> void:
-	for key in _manager_data.scenes:
-		var scene = _manager_data.scenes[key]
+	for sc_name in _manager_data.scenes:
+		var scene = _manager_data.scenes[sc_name]
 		for section in scene["sections"]:
-			_add_scene_to_list(section, key, scene["value"], true)
+			_add_scene_to_section(section, sc_name, scene["value"], true)
 
-		_add_scene_to_list(
-			ALL_LIST_NAME, key, scene["value"], _manager_data.has_sections(scene["value"])
+		_add_scene_to_section(
+			ALL_LIST_NAME, sc_name, scene["value"], _manager_data.has_sections(scene["value"])
 		)
 
 	_sort_scenes_in_lists()
@@ -284,12 +283,10 @@ func _refresh_ui() -> void:
 	_reload_ui_includes()
 
 
-## Checks for duplications in the scene data.[br]
-## key is the new key to check against the current scene data to see if there's a duplicate.[br]
-## scene_list is the list the item being changed is located.
-func _check_duplication(key: String, scene_list: SMgrSceneList) -> void:
-	if key in _manager_data.scenes:
-		scene_list.check_duplication(key)
+## Checks for scene_name duplications in the scene data.
+func _check_duplication(sc_name: String, scene_list: SMgrSceneList) -> void:
+	if sc_name in _manager_data.scenes:
+		scene_list.check_duplication(sc_name)
 
 
 # Save button

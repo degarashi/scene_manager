@@ -10,7 +10,7 @@ var _header_visible: bool = true
 var _is_open: bool = true
 
 @onready var _button_header: Button = %Button
-@onready var _list: VBoxContainer = %List
+@onready var _scene_item_cont: VBoxContainer = %SceneItemContainer
 
 
 func _ready() -> void:
@@ -26,23 +26,20 @@ func setup(name_a: String) -> void:
 
 
 ## Add child to the sub section list
-func add_item(item: Node) -> void:
+func add_item(item: SMgrSceneItem) -> void:
 	item.set_subsection(self)
-	_list.add_child(item)
+	_scene_item_cont.add_child(item)
 
 
 ## Removes an item from sub section list
-func remove_item(item: Node) -> void:
+func remove_item(item: SMgrSceneItem) -> void:
 	item.set_subsection(null)
-	_list.remove_child(item)
+	_scene_item_cont.remove_child(item)
 
 
-## Retrieves an item from the sub section list that matches the key.[br]
-## Returns null if the item isn't found.[br]
-## The node returned is a scene_item.
-func get_item(key: String) -> Node:
-	for child in _list.get_children():
-		if child.get_key() == key:
+func get_item(scene_name: String) -> SMgrSceneItem:
+	for child: SMgrSceneItem in _scene_item_cont.get_children():
+		if child.get_scene_name() == scene_name:
 			return child
 
 	return null
@@ -50,24 +47,24 @@ func get_item(key: String) -> Node:
 
 ## Retrieves the raw list container.
 func get_list_container() -> VBoxContainer:
-	return _list
+	return _scene_item_cont
 
 
 func open() -> void:
 	_is_open = true
-	_list.visible = true
+	_scene_item_cont.visible = true
 	_update_header_icon()
 
 
 func close() -> void:
 	_is_open = false
-	_list.visible = false
+	_scene_item_cont.visible = false
 	_update_header_icon()
 
 
 # Returns list of items
 func get_items() -> Array:
-	return _list.get_children()
+	return _scene_item_cont.get_children()
 
 
 ## Bulk update icon display state based on internal flags
