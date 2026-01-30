@@ -37,32 +37,32 @@ extends Node
 ## Returns the scenes from `scenes` variable of `scenes.gd` file
 var scenes: Dictionary:
 	get:
-		return _data[DictKey.SCENE_DATA]
+		return _current_data[DictKey.SCENE_DATA]
 
 ## Returns the array value of `_include_list` key from `scenes` variable of `scenes.gd` file
 var includes: Array:
 	get:
-		return _data[DictKey.INCLUDE_LIST]
+		return _current_data[DictKey.INCLUDE_LIST]
 
 ## Returns the array value of `_sections` key from `scenes` variable of `scenes.gd` file
 var sections: Array:
 	get:
-		return _data[DictKey.SECTIONS]
+		return _current_data[DictKey.SECTIONS]
 
 ## Returns true if there's been changes that haven't been saved.[br]
 ## Note this only works in the editor. Does not function in a build.
 var has_changes: bool:
 	get:
-		return not _file_data.recursive_equal(_data, 3)
+		return not _saved_state.recursive_equal(_current_data, 3)
 
 #endregion Accessors
 # A dictionary cache which contains every scenes exact addresses as key and an array
 # assigned as values which categories every section name the scene is part of
 #
 # Example: { "res://demo/scene3.tscn": ["Character", "Menu"] }
-var _sections: Dictionary = {}
-var _data: Dictionary = {}  # Main data storage for all settings
-var _file_data: Dictionary = {}  # Current data in the file to use when comparing against the data
+var _section_cache: Dictionary = {}
+var _current_data: Dictionary = {}  # Main data storage for all settings
+var _saved_state: Dictionary = {}  # Current data in the file to use when comparing against the data
 
 
 ## Adds the include path to the data, which is where the scene manager will look for scenes.
@@ -106,23 +106,23 @@ func change_scene_name(old_scene_name: String, new_scene_name: String) -> void:
 
 ## Adds a new section
 func add_section(section_name: String) -> void:
-	_data[DictKey.SECTIONS].append(section_name)
+	_current_data[DictKey.SECTIONS].append(section_name)
 
 
 ## Removes the section from the list and updates the rest of the scenes.
 func remove_section(section_name: String) -> void:
-	_data[DictKey.SECTIONS].erase(section_name)
+	_current_data[DictKey.SECTIONS].erase(section_name)
 
-	# Loop through the _sections cache and remove sections associated with the addresses
+	# Loop through the _section_cache cache and remove sections associated with the addresses
 	var to_erase := []
-	for key in _sections:
-		if _sections[key].has(section_name):
-			_sections[key].erase(section_name)
-			if _sections[key].is_empty():
+	for key in _section_cache:
+		if _section_cache[key].has(section_name):
+			_section_cache[key].erase(section_name)
+			if _section_cache[key].is_empty():
 				to_erase.append(key)
 
 	for item in to_erase:
-		_sections.erase(item)
+		_section_cache.erase(item)
 
 	# Go through the data and also update the scenes there
 	for key in scenes:
@@ -135,11 +135,11 @@ func add_scene_to_section(scene_address: String, section_name: String) -> void:
 	if section_name == C.ALL_SECTION_NAME:
 		return
 
-	if not _sections.has(scene_address):
-		_sections[scene_address] = []
+	if not _section_cache.has(scene_address):
+		_section_cache[scene_address] = []
 
-	if not section_name in _sections[scene_address]:
-		_sections[scene_address].append(section_name)
+	if not section_name in _section_cache[scene_address]:
+		_section_cache[scene_address].append(section_name)
 
 	# Locate the scene in the data and also update it there if it's not already added
 	for key in scenes:
@@ -151,14 +151,14 @@ func add_scene_to_section(scene_address: String, section_name: String) -> void:
 
 ## Removes `section_name` association to `scene_address`.
 func remove_scene_from_section(scene_address: String, section_name: String) -> void:
-	if not _sections.has(scene_address):
+	if not _section_cache.has(scene_address):
 		return
 
-	if section_name in _sections[scene_address]:
-		_sections[scene_address].erase(section_name)
+	if section_name in _section_cache[scene_address]:
+		_section_cache[scene_address].erase(section_name)
 
-	if _sections[scene_address].is_empty():
-		_sections.erase(scene_address)
+	if _section_cache[scene_address].is_empty():
+		_section_cache.erase(scene_address)
 
 	# Locate the scene in the data and also update it there if it's not already added
 	for key in scenes:
@@ -170,14 +170,14 @@ func remove_scene_from_section(scene_address: String, section_name: String) -> v
 
 ## Returns all sections related to `scene_address`.
 func get_scene_sections(scene_address: String) -> Array:
-	if not _sections.has(scene_address):
+	if not _section_cache.has(scene_address):
 		return []
-	return _sections[scene_address]
+	return _section_cache[scene_address]
 
 
 ## Returns whether the `scene_address` has sections.
 func has_sections(scene_address: String) -> bool:
-	return scene_address in _sections and _sections[scene_address] != []
+	return scene_address in _section_cache and _section_cache[scene_address] != []
 
 
 #endregion Section Handler
@@ -216,11 +216,11 @@ func save() -> void:
 
 	write_data += SceneData.DICTIONARY + "\n"
 	write_data += "var scenes: Dictionary = \\\n"
-	write_data += JSON.new().stringify(_data, "\t") + "\n"
+	write_data += JSON.new().stringify(_current_data, "\t") + "\n"
 	write_data += SceneData.END_DICTIONARY + "\n"
 
 	file.store_string(write_data)
-	_file_data = _data.duplicate(true)
+	_saved_state = _current_data.duplicate(true)
 
 
 ## Loads all data in the `scenes.gd` file.
@@ -232,16 +232,16 @@ func load() -> void:
 	# If this is a build, then the _data will point to the `Scenes.scenes` dictionary
 	# directly and the `_data` can be used as normal.
 	if Engine.is_editor_hint():
-		_data = _load_file()
-		_file_data = _data.duplicate(true)
+		_current_data = _load_file()
+		_saved_state = _current_data.duplicate(true)
 
 		# Create the section cache based on the scene data
-		_sections.clear()
+		_section_cache.clear()
 		for key in scenes:
 			for section in scenes[key][SceneKey.SECTIONS]:
 				add_scene_to_section(scenes[key][SceneKey.PATH], section)
 	else:
-		_data = Scenes.scenes
+		_current_data = Scenes.scenes
 
 
 # Internal function for loading the data from the `scene.gd` file.
@@ -306,7 +306,6 @@ func _get_scenes_helper(root_path: String) -> Dictionary:
 	var files: Dictionary = {}
 	var folders: Array = []
 	var dir := DirAccess.open(root_path)
-	var original_root_path = root_path
 
 	if root_path[len(root_path) - 1] != "/":
 		root_path = root_path + "/"
