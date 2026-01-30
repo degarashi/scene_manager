@@ -21,7 +21,8 @@ var _main_subsection: SMgrSubSection
 # Mainly used for the default "All" list for "Categorized" items
 var _secondary_subsection: SMgrSubSection
 
-@onready var _container: VBoxContainer = %container
+# Container containing sub section
+@onready var _subsection_cont: VBoxContainer = %container
 @onready var _delete_list_button: Button = %delete_list
 @onready var _save_label: Label = %save_label
 
@@ -40,19 +41,20 @@ func _ready() -> void:
 
 		var sub: SMgrSubSection = SUB_SECTION.instantiate()
 		sub.setup(SectionName.UNCATEGORIZED)
-		_container.add_child(sub)
+		_subsection_cont.add_child(sub)
 		sub.open()
 		_main_subsection = sub
 
 		var sub2: SMgrSubSection = SUB_SECTION.instantiate()
 		sub2.setup(SectionName.CATEGORIZED)
-		_container.add_child(sub2)
+		_subsection_cont.add_child(sub2)
+		sub2.open()
 		_secondary_subsection = sub2
 	else:
 		var sub: SMgrSubSection = SUB_SECTION.instantiate()
 		sub.setup(ALL_LIST_NAME)
 		sub.visible = false
-		_container.add_child(sub)
+		_subsection_cont.add_child(sub)
 		sub.open()
 		sub.set_header_visible(false)
 		_main_subsection = sub
@@ -190,7 +192,7 @@ func check_duplication(key: String) -> void:
 
 func _get_subsections() -> Array[SMgrSubSection]:
 	var ret: Array[SMgrSubSection] = []
-	for c in _container.get_children():
+	for c in _subsection_cont.get_children():
 		ret.append(c)
 	return ret
 
