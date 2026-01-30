@@ -2,8 +2,8 @@
 class_name SMgrSceneItem
 extends HBoxContainer
 
-signal key_changed(key: String)
-signal key_reset
+signal on_changed(key: String)
+signal on_reset
 
 const CATEGORY_ID = 0
 const DUPLICATE_LINE_EDIT: StyleBox = preload(
@@ -172,7 +172,7 @@ func _update_key(text: String) -> void:
 func _on_key_text_changed(new_text: String) -> void:
 	# Store current text and notify manager for real-time validation (e.g., duplicate check)
 	_key = new_text
-	key_changed.emit(new_text)
+	on_changed.emit(new_text)
 
 
 func _on_key_text_submitted(_new_text: String) -> void:
@@ -197,4 +197,4 @@ func _submit_key() -> void:
 			# Revert to previous valid key if invalid or duplicate
 			set_key(_previous_key)
 			is_valid = true
-			key_reset.emit()
+			on_reset.emit()

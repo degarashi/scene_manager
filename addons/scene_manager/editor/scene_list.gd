@@ -66,6 +66,11 @@ func _ready() -> void:
 	_save_label.visible = false
 
 
+# Callback from the on_changed(SceneItem) signal in the scene_item
+func _on_item_changed(key: String) -> void:
+	req_check_duplication.emit(key, self)
+
+
 ## Adds an item to list
 func add_item(key: String, value: String, categorized: bool = false) -> void:
 	if not is_node_ready():
@@ -75,8 +80,8 @@ func add_item(key: String, value: String, categorized: bool = false) -> void:
 	item.set_key(key)
 	item.set_value(value)
 	# --- connect signals ---
-	item.key_changed.connect(_on_item_key_changed)
-	item.key_reset.connect(set_reset_theme_for_all)
+	item.on_changed.connect(_on_item_changed)
+	item.on_reset.connect(_set_reset_theme_for_all)
 	# ---
 
 	item._list = self
@@ -244,7 +249,7 @@ func update_scene_with_key(key: String, new_key: String, value: String) -> void:
 
 
 ## Reset theme for all children in UI
-func set_reset_theme_for_all() -> void:
+func _set_reset_theme_for_all() -> void:
 	for sec in _get_subsections():
 		for c in sec.get_items():
 			c.remove_custom_theme()
@@ -292,8 +297,3 @@ func _on_delete_list_button_up() -> void:
 	queue_free()
 	await tree_exited
 	section_removed.emit(section_name)
-
-
-# Callback from the key_changed signal in the scene_item
-func _on_item_key_changed(key: String) -> void:
-	req_check_duplication.emit(key, self)
