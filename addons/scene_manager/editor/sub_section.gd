@@ -2,11 +2,12 @@
 class_name SMgrSubSection
 extends Control
 
-const SUBSECTION_OPEN_ICON = preload("res://addons/scene_manager/icons/GuiOptionArrowDown.svg")
-const SUBSECTION_CLOSE_ICON = preload("res://addons/scene_manager/icons/GuiOptionArrowRight.svg")
+const OPEN_ICON = preload("res://addons/scene_manager/icons/GuiOptionArrowDown.svg")
+const CLOSE_ICON = preload("res://addons/scene_manager/icons/GuiOptionArrowRight.svg")
 
 var _is_closable: bool = true
 var _header_visible: bool = true
+var _is_open: bool = true
 
 @onready var _button_header: Button = %Button
 @onready var _list: VBoxContainer = %List
@@ -15,7 +16,8 @@ var _header_visible: bool = true
 func _ready() -> void:
 	_button_header.text = name
 	_button_header.visible = _header_visible
-	# Explicitly setting visibility to true on ready
+	# Update the icon according to the initial state
+	_update_header_icon()
 	visible = true
 
 
@@ -51,16 +53,16 @@ func get_list_container() -> VBoxContainer:
 	return _list
 
 
-# Open list
 func open() -> void:
+	_is_open = true
 	_list.visible = true
-	_button_header.icon = SUBSECTION_OPEN_ICON
+	_update_header_icon()
 
 
-# Close list
 func close() -> void:
+	_is_open = false
 	_list.visible = false
-	_button_header.icon = SUBSECTION_CLOSE_ICON
+	_update_header_icon()
 
 
 # Returns list of items
@@ -68,10 +70,23 @@ func get_items() -> Array:
 	return _list.get_children()
 
 
-# Close Open Functionality
-func _on_button_up():
+## Bulk update icon display state based on internal flags
+func _update_header_icon() -> void:
+	if not is_inside_tree():
+		# Prevent errors immediately after instantiation
+		return
+
+	if not _is_closable:
+		_button_header.icon = null
+		return
+
+	_button_header.icon = OPEN_ICON if _is_open else CLOSE_ICON
+
+
+# Handler when button is pressed
+func _on_button_up() -> void:
 	if _is_closable:
-		if _button_header.icon == SUBSECTION_OPEN_ICON:
+		if _is_open:
 			close()
 		else:
 			open()
@@ -80,11 +95,7 @@ func _on_button_up():
 ## Sets whether or not the subsection can close.
 func set_closable(can_close: bool) -> void:
 	_is_closable = can_close
-
-	if _is_closable:
-		_button_header.icon = SUBSECTION_OPEN_ICON if _list.visible else SUBSECTION_CLOSE_ICON
-	else:
-		_button_header.icon = null
+	_update_header_icon()
 
 
 ## Sets whether or not the button on top for the sub section is visible.
