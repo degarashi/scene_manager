@@ -1,6 +1,5 @@
-[gd_scene load_steps=8 format=3 uid="uid://crnf0w0s44hxx"]
+[gd_scene load_steps=7 format=3 uid="uid://crnf0w0s44hxx"]
 
-[ext_resource type="PackedScene" uid="uid://dn5j8ms67xutr" path="res://addons/scene_manager/editor/label.tscn" id="2"]
 [ext_resource type="Texture2D" uid="uid://bh5qft2w2580j" path="res://addons/scene_manager/icons/FileDialog.svg" id="3"]
 [ext_resource type="Texture2D" uid="uid://bd6ob6pgam1gt" path="res://addons/scene_manager/icons/Collapse.svg" id="4_vqnpn"]
 [ext_resource type="Texture2D" uid="uid://ceksw4v7wfgdq" path="res://addons/scene_manager/icons/Reload.svg" id="5_2r30m"]
@@ -72,10 +71,9 @@ layout_mode = 2
 custom_minimum_size = Vector2(28, 28)
 layout_mode = 2
 
-[node name="scenes" parent="main_container/includes/container/_title" instance=ExtResource("2")]
+[node name="scenes" type="Label" parent="main_container/includes/container/_title"]
 layout_mode = 2
 text = "Includes:"
-vertical_alignment = 1
 
 [node name="includes" type="ScrollContainer" parent="main_container/includes/container"]
 layout_mode = 2
