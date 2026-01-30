@@ -24,7 +24,7 @@ var is_valid: bool:
 				_custom_set_theme(DUPLICATE_LINE_EDIT)
 
 var _sub_section: Control
-var _mouse_is_over_value: bool
+var _mouse_is_over_path: bool
 
 ## Used when comparing the user typed scene_name to detect changes
 var _previous_name: String
@@ -117,28 +117,27 @@ func _on_open_scene_button_up() -> void:
 	EditorInterface.select_file(get_scene_path())
 
 
-# Happens on input on the value element
-func _on_value_gui_input(event: InputEvent) -> void:
+# Happens on input on the scene_path element
+func _on_scene_path_gui_input(event: InputEvent) -> void:
 	if (
 		event is InputEventMouseButton
 		and event.is_released()
 		and event.button_index == MOUSE_BUTTON_LEFT
-		and _mouse_is_over_value
+		and _mouse_is_over_path
 	):
 		EditorInterface.select_file(get_scene_path())
 
 
-# Happens when mouse is over value input
-func _on_value_mouse_entered() -> void:
-	_mouse_is_over_value = true
+# Happens when mouse is over scene_path input
+func _on_scene_path_mouse_entered() -> void:
+	_mouse_is_over_path = true
 
 
-# Happens when mouse is out of value input
-func _on_value_mouse_exited() -> void:
-	_mouse_is_over_value = false
+# Happens when mouse is out of scene_path input
+func _on_scene_path_mouse_exited() -> void:
+	_mouse_is_over_path = false
 
 
-# Happens when an item is selected
 func _on_popup_menu_index_pressed(index: int) -> void:
 	var checked := _popup_menu.is_item_checked(index)
 	_popup_menu.set_item_checked(index, !checked)
@@ -154,12 +153,12 @@ func _on_popup_menu_index_pressed(index: int) -> void:
 
 
 ## Updates the scene_name internal value and normalizes the UI text
-func _update_scene_name(text: String) -> void:
+func _update_scene_name(sc_name: String) -> void:
 	# Normalize the scene_name to be lower case without symbols and replacing spaces with underscores
-	text = SceneManagerUtils.sanitize_scene_name(text)
-	get_scene_name_node().text = text
-	name = text
-	_scene_name = text
+	sc_name = SceneManagerUtils.sanitize_scene_name(sc_name)
+	get_scene_name_node().text = sc_name
+	name = sc_name
+	_scene_name = sc_name
 
 
 # Triggered when LineEdit text changes
