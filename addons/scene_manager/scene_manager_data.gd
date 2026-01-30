@@ -8,10 +8,12 @@ class_name SceneManagerData
 const ROOT_ADDRESS = "res://"
 const C = preload("uid://c3vvdktou45u")
 
-# Data dictionary keys
-const INCLUDE_LIST_KEY := "_include_list"
-const SCENE_DATA_KEY := "_scenes"
-const SECTIONS_KEY := "_sections"
+
+class DictKey:
+	const INCLUDE_LIST = "_include_list"
+	const SCENE_DATA = "_scenes"
+	const SECTIONS = "_sections"
+
 
 # scene.gd autogen file tags
 const SCENE_DATA_HEADER: String = """#
@@ -47,17 +49,17 @@ var includes_visible: bool:
 ## Returns the scenes from `scenes` variable of `scenes.gd` file
 var scenes: Dictionary:
 	get:
-		return _data[SCENE_DATA_KEY]
+		return _data[DictKey.SCENE_DATA]
 
 ## Returns the array value of `_include_list` key from `scenes` variable of `scenes.gd` file
 var includes: Array:
 	get:
-		return _data[INCLUDE_LIST_KEY]
+		return _data[DictKey.INCLUDE_LIST]
 
 ## Returns the array value of `_sections` key from `scenes` variable of `scenes.gd` file
 var sections: Array:
 	get:
-		return _data[SECTIONS_KEY]
+		return _data[DictKey.SECTIONS]
 
 ## Returns true if there's been changes that haven't been saved.[br]
 ## Note this only works in the editor. Does not function in a build.
@@ -116,12 +118,12 @@ func change_scene_name(old_scene_name: String, new_scene_name: String) -> void:
 
 ## Adds a new section
 func add_section(section_name: String) -> void:
-	_data[SECTIONS_KEY].append(section_name)
+	_data[DictKey.SECTIONS].append(section_name)
 
 
 ## Removes the section from the list and updates the rest of the scenes.
 func remove_section(section_name: String) -> void:
-	_data[SECTIONS_KEY].erase(section_name)
+	_data[DictKey.SECTIONS].erase(section_name)
 
 	# Loop through the _sections cache and remove sections associated with the addresses
 	var to_erase := []
@@ -376,7 +378,7 @@ func _refresh_scenes() -> void:
 	for address in data_files:
 		if not address in include_scenes:
 			self.scenes.erase(data_files[address])
-	
+
 	# Subtract the included_scenes with the data_files to find the paths that are not currently
 	# in the data. These will be added to the data.
 	var scenes_to_add := _dict_subtract(include_scenes, data_files)
