@@ -284,17 +284,6 @@ func _refresh_ui() -> void:
 	_reload_ui_includes()
 
 
-## Gets called by other nodes in UI
-##
-## Updates name of all scene_key.
-func update_all_scene_with_key(
-	scene_key: String, scene_new_key: String, value: String, except_list: Array = []
-) -> void:
-	for sc_list in _get_section_lists():
-		if sc_list not in except_list:
-			sc_list.update_scene_with_key(scene_key, scene_new_key, value)
-
-
 ## Checks for duplications in the scene data.[br]
 ## key is the new key to check against the current scene data to see if there's a duplicate.[br]
 ## scene_list is the list the item being changed is located.

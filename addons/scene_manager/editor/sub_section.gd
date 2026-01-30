@@ -9,7 +9,6 @@ var _is_closable: bool = true
 var _header_visible: bool = true
 
 @onready var _button_header: Button = %Button
-@onready var _delete_button: Button = %Delete
 @onready var _list: VBoxContainer = %List
 
 
@@ -78,35 +77,6 @@ func _on_button_up():
 			open()
 
 
-# Updates UI state based on the presence of children
-func _update_visibility_and_state() -> void:
-	var has_children := _list.get_child_count() > 0
-	if name == "All":
-		visible = has_children
-	else:
-		enable_delete_button(!has_children)
-
-
-# When a node adds
-func child_entered():
-	_update_visibility_and_state()
-
-
-# When a node removes
-func child_exited():
-	_update_visibility_and_state()
-
-
-## Enables/disables the delete button for deleting the sub section.
-func enable_delete_button(enable: bool) -> void:
-	_delete_button.disabled = not enable
-
-
-## Sets whether or not to make the delete button visible.
-func set_delete_visible(visible_state: bool) -> void:
-	_delete_button.visible = visible_state
-
-
 ## Sets whether or not the subsection can close.
 func set_closable(can_close: bool) -> void:
 	_is_closable = can_close
@@ -121,10 +91,3 @@ func set_closable(can_close: bool) -> void:
 func set_header_visible(visible_state: bool) -> void:
 	_header_visible = visible_state
 	_button_header.visible = _header_visible
-
-
-# Button Delete
-func _on_delete_button_up():
-	queue_free()
-	await self.tree_exited
-	# Notify "sub_section_removed" to MainPanel

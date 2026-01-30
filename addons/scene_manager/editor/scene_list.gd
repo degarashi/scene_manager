@@ -42,15 +42,11 @@ func _ready() -> void:
 		sub.setup(SectionName.UNCATEGORIZED)
 		_container.add_child(sub)
 		sub.open()
-		sub.enable_delete_button(false)
-		sub.set_delete_visible(false)
 		_main_subsection = sub
 
 		var sub2: SMgrSubSection = SUB_SECTION.instantiate()
 		sub2.setup(SectionName.CATEGORIZED)
 		_container.add_child(sub2)
-		sub2.enable_delete_button(false)
-		sub2.set_delete_visible(false)
 		_secondary_subsection = sub2
 	else:
 		var sub: SMgrSubSection = SUB_SECTION.instantiate()
@@ -59,8 +55,6 @@ func _ready() -> void:
 		_container.add_child(sub)
 		sub.open()
 		sub.set_header_visible(false)
-		sub.enable_delete_button(false)
-		sub.set_delete_visible(false)
 		_main_subsection = sub
 
 	_save_label.visible = false
@@ -146,14 +140,6 @@ func update_item_key(old_key: String, new_key: String) -> void:
 				break
 
 
-## Finds and returns a sub_section in the list
-func find_subsection(key: String) -> Node:
-	for sec in _get_subsections():
-		if sec.name == key:
-			return sec
-	return null
-
-
 ## Removes an item from list
 func remove_item(key: String, value: String) -> void:
 	for sec in _get_subsections():
@@ -163,31 +149,10 @@ func remove_item(key: String, value: String) -> void:
 				return
 
 
-## Removes items that their value begins with passed value
-func remove_items_begins_with(value: String) -> void:
-	for i in range(_container.get_child_count()):
-		var children: Array = _container.get_child(i).get_items()
-		for j in range(len(children)):
-			if children[j].get_value().begins_with(value):
-				children[j].queue_free()
-
-
 ## Clear all scene records from UI list
 func clear_list() -> void:
 	for sec in _get_subsections():
 		sec.queue_free()
-
-
-## Appends all scenes into UI list[br]
-##
-## This function is used for new items that are new in project directory and are
-## not saved before, so they have no settings.[br]
-##
-## Input example:
-## {"scene_key": "scene_address", "scene_key": "scene_address", ...}
-func append_scenes(nodes: Dictionary) -> void:
-	for key in nodes:
-		add_item(key, nodes[key])
 
 
 ## Sort the scenes in all the subsections alphabetically based on the scene key name.
@@ -208,44 +173,6 @@ func _sort_node_list(parent: Node) -> void:
 	for i in range(sorted_nodes.size()):
 		if sorted_nodes[i].get_index() != i:
 			parent.move_child(sorted_nodes[i], i)
-
-
-## Return an array of record nodes from UI list
-func get_list_nodes() -> Array:
-	if _container == null:
-		_container = %container
-
-	var arr: Array[Node] = []
-	for sec in _get_subsections():
-		var nodes := sec.get_items()
-		arr.append_array(nodes)
-	return arr
-
-
-## Returns a specific node from passed scene name
-func get_node_by_scene_name(scene_name: String) -> Node:
-	for sec in _get_subsections():
-		for item in sec.get_items():
-			if item.get_key() == scene_name:
-				return item
-	return null
-
-
-## Returns a specific node from passed scene address
-func get_node_by_scene_address(scene_address: String) -> Node:
-	for sec in _get_subsections():
-		for item in sec.get_items():
-			if item.get_value() == scene_address:
-				return item
-	return null
-
-
-## Update a specific scene record with passed data in UI
-func update_scene_with_key(key: String, new_key: String, value: String) -> void:
-	for i in range(_container.get_child_count()):
-		for sec in _get_subsections():
-			if sec.get_key() == key && sec.get_value() == value:
-				sec.set_key(new_key)
 
 
 ## Reset theme for all children in UI
@@ -271,22 +198,6 @@ func _get_subsections() -> Array[SMgrSubSection]:
 ## Sets whether or not to display there's unsaved changes.
 func set_changes_unsaved(changes: bool) -> void:
 	_save_label.visible = changes
-
-
-## Returns all names of sublist
-func get_all_sublists() -> Array:
-	var arr: Array[String] = []
-	for sec in _get_subsections():
-		arr.append(sec.name)
-	return arr
-
-
-## Adds a subsection
-func add_subsection(text: String) -> Control:
-	var sub: SMgrSubSection = SUB_SECTION.instantiate()
-	sub.setup(text.capitalize())
-	_container.add_child(sub)
-	return sub
 
 
 # List deletion
