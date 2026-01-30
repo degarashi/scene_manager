@@ -4,8 +4,6 @@ class_name SceneManagerData
 ## Handles storing scene information along with some editor properties and
 ## handles saving/loading the data from the `scene.gd` file.
 
-# Project Settings property name
-const ROOT_ADDRESS = "res://"
 const C = preload("uid://c3vvdktou45u")
 
 
@@ -35,8 +33,6 @@ const SCENE_DATA_HEADER: String = """#
 extends Node
 
 """
-
-#region Accessors to the dictionary data
 
 ## Whether or not the editor plugin will auto save.
 var auto_save: bool:
