@@ -2,7 +2,7 @@
 class_name SMgrSceneItem
 extends HBoxContainer
 
-signal on_changed(scene_name: String)
+signal on_scene_name_changed(scene_name: String)
 signal on_reset
 
 const MENU_ID_CATEGORY = 0
@@ -165,7 +165,7 @@ func _update_scene_name(sc_name: String) -> void:
 func _on_scene_name_changed(new_name: String) -> void:
 	# Store current text and notify manager for real-time validation (e.g., duplicate check)
 	_scene_name = new_name
-	on_changed.emit(new_name)
+	on_scene_name_changed.emit(new_name)
 
 
 func _on_scene_name_submitted(_new_text: String) -> void:

@@ -63,7 +63,7 @@ func _ready() -> void:
 
 
 # Callback from the on_changed(SceneItem) signal in the scene_item
-func _on_item_changed(sc_name: String) -> void:
+func _on_scene_name_changed(sc_name: String) -> void:
 	req_check_duplication.emit(sc_name, self)
 
 
@@ -75,7 +75,7 @@ func add_item(scene_name: String, scene_path: String, categorized: bool = false)
 	item.set_scene_name(scene_name)
 	item.set_scene_path(scene_path)
 	# --- connect signals ---
-	item.on_changed.connect(_on_item_changed)
+	item.on_scene_name_changed.connect(_on_scene_name_changed)
 	item.on_reset.connect(_reset_theme_all)
 	# ---
 
@@ -140,10 +140,10 @@ func update_item_key(old_key: String, new_key: String) -> void:
 
 
 ## Removes an item from list
-func remove_item(key: String, value: String) -> void:
+func remove_item(sc_name: String, path: String) -> void:
 	for sec in _get_subsections():
 		for item in sec.get_items():
-			if item.get_scene_name() == key && item.get_scene_path() == value:
+			if item.get_scene_name() == sc_name && item.get_scene_path() == path:
 				item.queue_free()
 				return
 
