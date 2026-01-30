@@ -23,7 +23,6 @@ var is_valid: bool:
 				_custom_set_theme(DUPLICATE_LINE_EDIT)
 
 var _sub_section: Control
-var _list: Control
 var _mouse_is_over_value: bool
 
 ## Used when comparing the user typed key to detect changes

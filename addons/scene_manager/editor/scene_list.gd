@@ -80,8 +80,6 @@ func add_item(key: String, value: String, categorized: bool = false) -> void:
 	item.on_reset.connect(_set_reset_theme_for_all)
 	# ---
 
-	item._list = self
-
 	# For the default All case, determine which sub category it goes into
 	if name == ALL_LIST_NAME and categorized:
 		_secondary_subsection.add_item(item)
