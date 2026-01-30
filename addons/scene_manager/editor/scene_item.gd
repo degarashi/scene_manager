@@ -5,8 +5,8 @@ extends HBoxContainer
 signal on_changed(scene_name: String)
 signal on_reset
 
-const CATEGORY_ID = 0
-const DUPLICATE_LINE_EDIT: StyleBox = preload(
+const MENU_ID_CATEGORY = 0
+const THEME_DUPLICATE_LINE_EDIT: StyleBox = preload(
 	"res://addons/scene_manager/themes/line_edit_duplicate.tres"
 )
 const INVALID_SCENE_NAME: String = "none"
@@ -21,7 +21,7 @@ var is_valid: bool:
 			if valid:
 				remove_custom_theme()
 			else:
-				_custom_set_theme(DUPLICATE_LINE_EDIT)
+				_custom_set_theme(THEME_DUPLICATE_LINE_EDIT)
 
 var _sub_section: Control
 var _mouse_is_over_path: bool
@@ -86,12 +86,12 @@ func _on_popup_button_button_up() -> void:
 	_popup_menu.add_separator("Categories")
 	i += 1
 
-	# Categories have id of CATEGORY_ID
+	# Categories have id of MENU_ID_CATEGORY
 	for section_name in sections:
 		if section_name == C.ALL_SECTION_NAME:
 			continue
 		_popup_menu.add_check_item(section_name)
-		_popup_menu.set_item_id(i, CATEGORY_ID)
+		_popup_menu.set_item_id(i, MENU_ID_CATEGORY)
 
 		var sect: Array
 		EBUS.get_sections.emit(sect, get_scene_path())
@@ -143,7 +143,7 @@ func _on_popup_menu_index_pressed(index: int) -> void:
 	_popup_menu.set_item_checked(index, !checked)
 
 	var section_name := _popup_menu.get_item_text(index)
-	if _popup_menu.get_item_id(index) == CATEGORY_ID:
+	if _popup_menu.get_item_id(index) == MENU_ID_CATEGORY:
 		if !checked:
 			EBUS.add_scene_to_section.emit(section_name, get_scene_name(), get_scene_path(), false)
 			EBUS.item_added_to_section.emit(self, section_name)
