@@ -221,6 +221,14 @@ func remove_section(section_name: String) -> void:
 	if sections.has(section_name):
 		sections.erase(section_name)
 		_has_changes = true
+	else:
+		printerr(
+			(
+				"Scene Manager Error: Cannot remove section. Section '%s' does not exist."
+				% section_name
+			)
+		)
+		return
 
 	# Also remove from section references held by each scene
 	for sc_name in scenes:
@@ -243,6 +251,15 @@ func change_scene_name(old_name: String, new_name: String) -> void:
 
 
 func add_scene_to_section(scene_path: String, section_name: String) -> void:
+	if not sections.has(section_name):
+		printerr(
+			(
+				"Scene Manager Error: Cannot add scene to section. Section '%s' does not exist."
+				% section_name
+			)
+		)
+		return
+
 	if not cache_path_to_scene.has(scene_path):
 		return
 
@@ -253,6 +270,15 @@ func add_scene_to_section(scene_path: String, section_name: String) -> void:
 
 
 func remove_scene_from_section(scene_path: String, section_name: String) -> void:
+	if not sections.has(section_name):
+		printerr(
+			(
+				"Scene Manager Error: Cannot remove scene from section. Section '%s' does not exist."
+				% section_name
+			)
+		)
+		return
+
 	if not cache_path_to_scene.has(scene_path):
 		return
 
@@ -267,6 +293,15 @@ func remove_scene_from_section(scene_path: String, section_name: String) -> void
 
 
 func add_include_path(inc_path: String) -> void:
+	if not DirAccess.dir_exists_absolute(inc_path):
+		printerr(
+			(
+				"Scene Manager Error: Cannot add include path. Directory '%s' does not exist."
+				% inc_path
+			)
+		)
+		return
+
 	if not include_list.has(inc_path):
 		include_list.append(inc_path)
 		_has_changes = true
@@ -276,6 +311,14 @@ func remove_include_path(scene_path: String) -> void:
 	if include_list.has(scene_path):
 		include_list.erase(scene_path)
 		_has_changes = true
+	else:
+		printerr(
+			(
+				"Scene Manager Error: Cannot remove include path. Path '%s' is not in the list."
+				% scene_path
+			)
+		)
+		return
 
 	if cache_path_to_scene.has(scene_path):
 		var scene_info := cache_path_to_scene[scene_path]
@@ -293,12 +336,20 @@ func remove_include_path(scene_path: String) -> void:
 func get_scene_sections(scene_path: String) -> Array[String]:
 	if cache_path_to_scene.has(scene_path):
 		return cache_path_to_scene[scene_path].sections
+
+	printerr(
+		"Scene Manager Error: Cannot get sections. Scene path '%s' does not exist." % scene_path
+	)
 	return []
 
 
 func has_sections(scene_path: String) -> bool:
 	if cache_path_to_scene.has(scene_path):
 		return not cache_path_to_scene[scene_path].sections.is_empty()
+
+	printerr(
+		"Scene Manager Error: Cannot check sections. Scene path '%s' does not exist." % scene_path
+	)
 	return false
 
 
