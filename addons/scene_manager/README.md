@@ -66,7 +66,7 @@ Take the diagram above that shows the tree when the game is loaded. Autoload wil
 <img src="images/scene-manager2.png"/>
 </p>
 
-If we load Scene #2 with the default scene loading mode, which is **SINGLE**, then the World node is deleted along with the children scene, then replaced with a new World node and Scene #2 as a child.
+If we load Scene #2 with the default scene loading mode, which is **SINGLE**, then the World node is removed along with the children scene, then replaced with a new World node and Scene #2 as a child.
 
 <p align="center">
 <img src="images/scene-manager3.png"/>
@@ -84,7 +84,7 @@ We could also additively load another scene (Scene #3) under the first one in th
 <img src="images/scene-manager5.png"/>
 </p>
 
-Now, if we load Scene #4, but specify **SINGLE_NODE** mode under the default World node, then the `SceneManager` will delete the World node and all the child scenes under it, create a new World node, and have Scene #4 as a child. Note that the UI node remains, so any UI scene that was previously loaded will still be on the screen.
+Now, if we load Scene #4, but specify **SINGLE_NODE** mode under the default World node, then the `SceneManager` will remove the World node and all the child scenes under it, create a new World node, and have Scene #4 as a child. Note that the UI node remains, so any UI scene that was previously loaded will still be on the screen.
 
 <p align="center">
 <img src="images/scene-manager6.png"/>

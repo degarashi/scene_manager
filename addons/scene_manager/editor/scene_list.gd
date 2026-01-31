@@ -24,7 +24,7 @@ var _secondary_subsection: SMgrSubSection
 
 # Container containing sub section
 @onready var _subsection_cont: VBoxContainer = %container
-@onready var _delete_list_button: Button = %delete_list
+@onready var _remove_list_button: Button = %remove_list
 @onready var _save_label: Label = %save_label
 
 
@@ -34,10 +34,10 @@ func setup(name_a: String) -> void:
 
 func _ready() -> void:
 	if name == C.ALL_SECTION_NAME:
-		_delete_list_button.icon = null
-		_delete_list_button.disabled = true
-		_delete_list_button.visible = false
-		_delete_list_button.focus_mode = Control.FOCUS_NONE
+		_remove_list_button.icon = null
+		_remove_list_button.disabled = true
+		_remove_list_button.visible = false
+		_remove_list_button.focus_mode = Control.FOCUS_NONE
 
 		var sub: SMgrSubSection = SUB_SECTION.instantiate()
 		sub.setup(SectionName.UNCATEGORIZED)
@@ -199,8 +199,7 @@ func set_changes_unsaved(changes: bool) -> void:
 	_save_label.visible = changes
 
 
-# List deletion
-func _on_delete_list_button_up() -> void:
+func _on_remove_list_button_up() -> void:
 	var section_name := name
 	if name == C.ALL_SECTION_NAME:
 		return

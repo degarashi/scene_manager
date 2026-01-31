@@ -322,13 +322,13 @@ func remove_include_path(scene_path: String) -> void:
 
 	if cache_path_to_scene.has(scene_path):
 		var scene_info := cache_path_to_scene[scene_path]
-		# Find the key with the corresponding scene object from the scenes dictionary and delete it
+		# Find the key with the corresponding scene object from the scenes dictionary and remove it
 		for sc_name in scenes:
 			if scenes[sc_name] == scene_info:
 				scenes.erase(sc_name)
 				_has_changes = true
 				break
-		# also delete from cache
+		# also remove from cache
 		cache_path_to_scene.erase(scene_path)
 
 

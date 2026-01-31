@@ -300,7 +300,7 @@ func unload_scene(scene: Scenes.SceneName) -> void:
 func _add_scene_node(node: Node, load_options := SceneLoadOptions.new()) -> Node:
 	var root := get_tree().get_root()
 
-	# If doing single scene loading, delete the specified node and load
+	# If doing single scene loading, remove the specified node and load
 	# the scene into the default node.
 	var parent_node: Node = null
 	if (
