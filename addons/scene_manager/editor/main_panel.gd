@@ -19,7 +19,7 @@ const ICON_COLLAPSE_BUTTON = preload("res://addons/scene_manager/icons/Collapse.
 
 const C = preload("uid://c3vvdktou45u")
 
-var _manager_data: SceneManagerData = SceneManagerData.new()
+var _manager_data: SMgrData
 var _save_delay_timer: Timer = null
 
 # UI nodes and items
@@ -71,7 +71,7 @@ func _connect_ebus() -> void:
 
 
 func _ready() -> void:
-	_manager_data.load()
+	_manager_data = SMgrData.load_data(SMgrProjectSettings.scene_path)
 	_connect_ebus()
 
 	# Refreshes the UI with the latest data
@@ -99,7 +99,7 @@ func _item_removed_from_section(item: SMgrSceneItem, section_name: String) -> vo
 
 func _handle_data_modification() -> void:
 	if SMgrProjectSettings.auto_save:
-		_manager_data.save()
+		_manager_data.save_data(SMgrProjectSettings.scene_path)
 
 	# Update the lists to show "unsaved changes" if there's any changes from the scene file.
 	_refresh_save_changes()
@@ -109,8 +109,8 @@ func _section_removed(section_name: String) -> void:
 	_manager_data.remove_section(section_name)
 
 	# Loop through the scenes and update the categorized for the ALL_SECTION_NAME list
-	for scene in _manager_data.scenes:
-		_update_categorized(scene)
+	for sc_name in _manager_data.scenes:
+		_update_categorized(sc_name)
 
 	_handle_data_modification()
 
@@ -136,7 +136,7 @@ func _include_child_removed(node: Node, address: String) -> void:
 
 
 ## Retrieves the available sections from the data.
-func get_sections(scene_address: String) -> Array:
+func get_sections(scene_address: String) -> Array[String]:
 	return _manager_data.get_scene_sections(scene_address)
 
 
@@ -149,21 +149,6 @@ func get_section_names(excepts: Array[String] = [""]) -> Array[String]:
 			continue
 		arr.append(sc_list.name)
 	return arr
-
-
-# Clears scenes inside a UI list
-func _clear_scenes_list(name: String) -> void:
-	var sc_list := _get_scene_list_by_section_name(name)
-	if sc_list != null:
-		sc_list.clear_list()
-
-
-# Clears scenes inside all UI lists
-# Removes all tabs in scene manager
-func _clear_all_section_lists() -> void:
-	for sc_list in _get_section_lists():
-		sc_list.clear_list()
-		sc_list.free()
 
 
 # Returns nodes of all section lists from UI in `Scene Manager` tool
@@ -189,19 +174,19 @@ func _sort_scenes_in_lists() -> void:
 
 
 # Renames a scene in all the lists.
-func _rename_scene_in_lists(old_key: String, new_key: String) -> void:
+func _rename_scene_in_lists(old_name: String, new_name: String) -> void:
 	for sc_list in _get_section_lists():
-		sc_list.update_item_key(old_key, new_key)
+		sc_list.update_item_key(old_name, new_name)
 		sc_list.sort_scenes()
 
 
 # Updates the categorized/uncategorized sub section in the ALL_SECTION_NAME list for the scene.
-func _update_categorized(key: String) -> void:
+func _update_categorized(sc_name: String) -> void:
 	# Get the scene information from the data
-	var categorized := _manager_data.has_sections(_manager_data.scenes[key]["value"])
+	var categorized := _manager_data.has_sections(_manager_data.scenes[sc_name].path)
 
 	var sc_list := _get_scene_list_by_section_name(C.ALL_SECTION_NAME)
-	sc_list.update_item_categorized(key, categorized)
+	sc_list.update_item_categorized(sc_name, categorized)
 
 
 ## Removes a scene from a specific list.
@@ -234,37 +219,31 @@ func _add_include_item(address: String) -> void:
 	_include_path_list.add_child(item)
 
 
-# Clears all tabs, UI lists and include list
-func _clear_ui_elements() -> void:
-	_clear_all_section_lists()
-	_clear_include_list()
-
-
-# Reloads all scenes in UI and in this script
 func _reload_ui_scenes() -> void:
 	for sc_name in _manager_data.scenes:
-		var scene = _manager_data.scenes[sc_name]
-		for section in scene["sections"]:
-			_add_scene_to_section(section, sc_name, scene["value"], true)
+		var scene := _manager_data.scenes[sc_name]
+		for section in scene.sections:
+			_add_scene_to_section(section, sc_name, scene.path, true)
 
 		_add_scene_to_section(
-			C.ALL_SECTION_NAME, sc_name, scene["value"], _manager_data.has_sections(scene["value"])
+			C.ALL_SECTION_NAME, sc_name, scene.path, _manager_data.has_sections(scene.path)
 		)
 
 	_sort_scenes_in_lists()
 
 
-# Reloads include list in UI
 func _reload_ui_includes() -> void:
-	_clear_include_list()
-	for text in _manager_data.includes:
-		_add_include_item(text)
+	for child in _include_path_list.get_children():
+		child.free()
+	for inc_path in _manager_data.include_list:
+		_add_include_item(inc_path)
 
 
-# Reloads tabs in UI
 func _reload_ui_tabs() -> void:
-	if _get_scene_list_by_section_name(C.ALL_SECTION_NAME) == null:
-		_add_section_tab(C.ALL_SECTION_NAME)
+	for child in _section_tab_container.get_children():
+		child.free()
+	_add_section_tab(C.ALL_SECTION_NAME)
+
 	for section in _manager_data.sections:
 		var found = false
 		for sc_list in _get_section_lists():
@@ -274,10 +253,7 @@ func _reload_ui_tabs() -> void:
 			_add_section_tab(section)
 
 
-# Refresh button
 func _refresh_ui() -> void:
-	_manager_data.load()
-	_clear_ui_elements()
 	_reload_ui_tabs()
 	_reload_ui_scenes()
 	_reload_ui_includes()
@@ -289,9 +265,8 @@ func _check_duplication(sc_name: String, scene_list: SMgrSceneList) -> void:
 		scene_list.check_duplication(sc_name)
 
 
-# Save button
 func _on_save_button_up() -> void:
-	_manager_data.save()
+	_manager_data.save(SMgrProjectSettings.scene_path)
 	_refresh_save_changes()
 
 
@@ -308,12 +283,6 @@ func _get_includes_list() -> Array[SMgrDeletableItem]:
 	for c: SMgrDeletableItem in _include_path_list.get_children():
 		ret.append(c)
 	return ret
-
-
-# Clears includes from UI
-func _clear_include_list() -> void:
-	for node in _get_includes_list():
-		node.free()
 
 
 # Returns true if passed address exists in include list
@@ -366,9 +335,9 @@ func _on_address_text_changed(new_text: String) -> void:
 
 
 # Adds a new list to the section-tab container
-func _add_section_tab(text: String) -> void:
+func _add_section_tab(section_name: String) -> void:
 	var sc_list: SMgrSceneList = SCENE_LIST_ITEM.instantiate()
-	sc_list.setup(text.capitalize())
+	sc_list.setup(section_name)
 	# --- signal connection ---
 	sc_list.section_removed.connect(self._section_removed)
 	sc_list.req_check_duplication.connect(self._check_duplication)
