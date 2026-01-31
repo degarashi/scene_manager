@@ -153,6 +153,36 @@ func _save_to_dict() -> Dictionary:
 	return ret
 
 
+func _save_as_string() -> String:
+	# Generates the scene.gd file with all the scene data
+	var ret: String = SCENE_DATA_HEADER
+
+	# --- Enums ---
+	# Convert the keys of the dictionary into an enum
+	ret += CommentKey.ENUM + "\n"
+	ret += "enum SceneName \\\n{ \n\tNONE = -1, "
+
+	# Keep track of invalid enums so there aren't blank names that make the generated enum invalid
+	var num_invalid: int = 0
+	for sc_name: String in self.scenes.keys():
+		if sc_name == "":
+			ret += "\n\t%s%d, " % [INVALID_NAME, num_invalid]
+			num_invalid += 1
+		else:
+			ret += "\n\t%s, " % sc_name.to_upper()
+
+	ret += "\n}\n\n"
+	# ---
+
+	# --- Other Data ---
+	ret += CommentKey.DICTIONARY + "\n"
+	ret += "var scenes: Dictionary = \\\n"
+	ret += JSON.stringify(_save_to_dict(), "\t") + "\n"
+	ret += CommentKey.END_DICTIONARY + "\n"
+	# ---
+	return ret
+
+
 # --- File I/O (Persistence) ---
 static func load_data(file_path: String) -> SMgrData:
 	return SMgrData._load_from_dict(_load_file_as_dict(file_path))
@@ -175,34 +205,7 @@ func save_data(path: String) -> void:
 		)
 		return
 
-	# Generates the scene.gd file with all the scene data
-	var write_str: String = SCENE_DATA_HEADER
-
-	# --- Enums ---
-	# Convert the keys of the dictionary into an enum
-	write_str += CommentKey.ENUM + "\n"
-	write_str += "enum SceneName \\\n{ \n\tNONE = -1, "
-
-	# Keep track of invalid enums so there aren't blank names that make the generated enum invalid
-	var num_invalid: int = 0
-	for sc_name: String in self.scenes.keys():
-		if sc_name == "":
-			write_str += "\n\t%s%d, " % [INVALID_NAME, num_invalid]
-			num_invalid += 1
-		else:
-			write_str += "\n\t%s, " % sc_name.to_upper()
-
-	write_str += "\n}\n\n"
-	# ---
-
-	# --- Other Data ---
-	write_str += CommentKey.DICTIONARY + "\n"
-	write_str += "var scenes: Dictionary = \\\n"
-	write_str += JSON.stringify(_save_to_dict(), "\t") + "\n"
-	write_str += CommentKey.END_DICTIONARY + "\n"
-	# ---
-
-	file.store_string(write_str)
+	file.store_string(_save_as_string())
 	_has_changes = false
 
 
