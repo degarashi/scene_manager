@@ -146,10 +146,10 @@ func _on_popup_menu_index_pressed(index: int) -> void:
 	if _popup_menu.get_item_id(index) == MENU_ID_CATEGORY:
 		if !checked:
 			EBUS.add_scene_to_section.emit(section_name, get_scene_name(), get_scene_path(), false)
-			EBUS.item_added_to_section.emit(self, section_name)
+			EBUS.scene_added_to_section.emit(self, section_name)
 		else:
 			EBUS.remove_scene_from_section.emit(section_name, get_scene_name(), get_scene_path())
-			EBUS.item_removed_from_section.emit(self, section_name)
+			EBUS.scene_removed_from_section.emit(self, section_name)
 
 
 ## Updates the scene_name internal value and normalizes the UI text

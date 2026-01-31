@@ -65,8 +65,8 @@ func _connect_ebus() -> void:
 	)
 	EBUS.scene_renamed.connect(_on_scene_renamed)
 	EBUS.remove_scene_from_section.connect(_remove_scene_from_section)
-	EBUS.item_added_to_section.connect(_item_added_to_section)
-	EBUS.item_removed_from_section.connect(_item_removed_from_section)
+	EBUS.scene_added_to_section.connect(_scene_added_to_section)
+	EBUS.scene_removed_from_section.connect(_item_removed_from_section)
 	EBUS.add_scene_to_section.connect(_add_scene_to_section)
 
 
@@ -82,7 +82,7 @@ func _ready() -> void:
 	_init_save_delay_timer()
 
 
-func _item_added_to_section(item: SMgrSceneItem, section_name: String) -> void:
+func _scene_added_to_section(item: SMgrSceneItem, section_name: String) -> void:
 	_manager_data.add_scene_to_section(item.get_scene_path(), section_name)
 	_update_categorized(item.get_scene_name())
 	_handle_data_modification()
