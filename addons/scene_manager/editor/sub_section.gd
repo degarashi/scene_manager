@@ -27,13 +27,11 @@ func setup(name_a: String) -> void:
 
 ## Add child to the sub section list
 func add_item(item: SMgrSceneItem) -> void:
-	item.set_subsection(self)
 	_scene_item_cont.add_child(item)
 
 
 ## Removes an item from sub section list
 func remove_item(item: SMgrSceneItem) -> void:
-	item.set_subsection(null)
 	_scene_item_cont.remove_child(item)
 
 

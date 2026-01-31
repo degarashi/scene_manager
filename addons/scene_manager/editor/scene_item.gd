@@ -62,11 +62,6 @@ func get_scene_name_node() -> LineEdit:
 	return %scene_name_edit
 
 
-## Sets subsection for current item
-func set_subsection(node: Control) -> void:
-	_sub_section = node
-
-
 ## Sets passed theme to normal theme of `scene_name` LineEdit
 func _custom_set_theme(theme: StyleBox) -> void:
 	get_scene_name_node().add_theme_stylebox_override("normal", theme)
