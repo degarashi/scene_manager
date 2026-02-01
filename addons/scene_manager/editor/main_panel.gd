@@ -23,24 +23,27 @@ var _manager_data: SMgrData
 var _save_delay_timer: Timer = null
 
 # UI nodes and items
-@onready var _include_path_list: Control = %include_list
-# -- buttons (of bottom) ---
-@onready var _save_button: Button = %save
-@onready var _refresh_button: Button = %refresh
-@onready var _auto_save_button: Button = %auto_save
-# add list
+@onready var _section_tab_cont: TabContainer = %section_tab_container
+
+# --- add section ---
 @onready var _add_section_button: Button = %add_section_button
 @onready var _section_name_line_edit: LineEdit = %section_name_to_add
-# add include
+
+# --- include list ---
 @onready var _address_line_edit: LineEdit = %address
 @onready var _file_dialog: FileDialog = %file_dialog
 @onready var _hide_button: Button = %hide
 @onready var _hide_unhide_button: Button = %hide_unhide
 @onready var _add_button: Button = %add
-# containers
-@onready var _section_tab_container: TabContainer = %section_tab_container
-@onready var _include_container: Container = %includes
-@onready var _include_add_panel_container: Container = %include_add_panel
+
+@onready var _include_path_list: Control = %include_list
+@onready var _include_path_cont: Container = %includes
+@onready var _include_add_panel_cont: Container = %include_add_panel
+
+# -- buttons (of bottom) ---
+@onready var _save_button: Button = %save
+@onready var _refresh_button: Button = %refresh
+@onready var _auto_save_button: Button = %auto_save
 
 
 ## Create a new Timer node to write to the scenes.gd file when the timer ends
@@ -155,7 +158,7 @@ func get_section_names(excepts: Array[String] = [""]) -> Array[String]:
 # Returns nodes of all section lists from UI in `Scene Manager` tool
 func _get_section_lists() -> Array[SMgrSceneList]:
 	var ret: Array[SMgrSceneList] = []
-	for c: SMgrSceneList in _section_tab_container.get_children():
+	for c: SMgrSceneList in _section_tab_cont.get_children():
 		ret.append(c)
 	return ret
 
@@ -241,7 +244,7 @@ func _reload_ui_includes() -> void:
 
 
 func _reload_ui_tabs() -> void:
-	for child in _section_tab_container.get_children():
+	for child in _section_tab_cont.get_children():
 		child.free()
 	_add_section_tab(C.ALL_SECTION_NAME)
 
@@ -343,7 +346,7 @@ func _add_section_tab(section_name: String) -> void:
 	sc_list.section_removed.connect(self._section_removed)
 	sc_list.req_check_duplication.connect(self._check_duplication)
 	# ---
-	_section_tab_container.add_child(sc_list)
+	_section_tab_cont.add_child(sc_list)
 
 
 # Adds the new section to the tab container and to the manager data
@@ -372,8 +375,8 @@ func _show_includes_list(value: bool) -> void:
 	var icon: Texture2D = ICON_COLLAPSE_BUTTON if value else ICON_EXPAND_BUTTON
 	_hide_button.icon = icon
 	_hide_unhide_button.icon = icon
-	_include_container.visible = value
-	_include_add_panel_container.visible = value
+	_include_path_cont.visible = value
+	_include_add_panel_cont.visible = value
 	_hide_unhide_button.visible = !value
 
 
