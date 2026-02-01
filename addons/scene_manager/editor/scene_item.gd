@@ -6,9 +6,7 @@ signal on_scene_name_changed(scene_name: String)
 signal on_reset
 
 const MENU_ID_CATEGORY = 0
-const THEME_DUPLICATE_LINE_EDIT: StyleBox = preload(
-	"res://addons/scene_manager/themes/line_edit_duplicate.tres"
-)
+const THEME_DUPLICATE_LINE_EDIT: StyleBox = preload("uid://21mjw515mptn")
 const INVALID_SCENE_NAME: String = "none"
 const EBUS = preload("uid://ra25t5in8erp")
 const C = preload("uid://c3vvdktou45u")
@@ -23,7 +21,6 @@ var is_valid: bool:
 			else:
 				_custom_set_theme(THEME_DUPLICATE_LINE_EDIT)
 
-var _sub_section: Control
 var _mouse_is_over_path: bool
 
 ## Used when comparing the user typed scene_name to detect changes
@@ -32,6 +29,7 @@ var _previous_name: String
 @onready var _popup_menu: PopupMenu = %popup_menu
 @onready var _scene_name_edit: LineEdit = %scene_name_edit
 @onready var _scene_name: String = %scene_name_edit.text
+@onready var _scene_path: LineEdit = %scene_path
 
 
 func _ready() -> void:
@@ -43,36 +41,31 @@ func _ready() -> void:
 func set_scene_name(sc_name: String) -> void:
 	_previous_name = sc_name
 	_scene_name = sc_name
-	get_scene_name_node().text = sc_name
+	_scene_name_edit.text = sc_name
 
 
 func set_scene_path(path: String) -> void:
-	%scene_path.text = path
+	_scene_path.text = path
 
 
 func get_scene_name() -> String:
-	return get_scene_name_node().text
+	return _scene_name_edit.text
 
 
 func get_scene_path() -> String:
-	return %scene_path.text
-
-
-func get_scene_name_node() -> LineEdit:
-	return %scene_name_edit
+	return _scene_path.text
 
 
 ## Sets passed theme to normal theme of `scene_name` LineEdit
 func _custom_set_theme(theme: StyleBox) -> void:
-	get_scene_name_node().add_theme_stylebox_override("normal", theme)
+	_scene_name_edit.add_theme_stylebox_override("normal", theme)
 
 
 ## Removes added custom theme for `scene_name` LineEdit
 func remove_custom_theme() -> void:
-	get_scene_name_node().remove_theme_stylebox_override("normal")
+	_scene_name_edit.remove_theme_stylebox_override("normal")
 
 
-# Popup Button
 func _on_popup_button_button_up() -> void:
 	var i: int = 0
 	var sections: Array
@@ -104,9 +97,8 @@ func _on_popup_button_button_up() -> void:
 	_popup_menu.popup()
 
 
-# Happens when open scene button clicks
 func _on_open_scene_button_up() -> void:
-	# Open it
+	# Open scene
 	EditorInterface.open_scene_from_path(get_scene_path())
 	# Show in FileSystem
 	EditorInterface.select_file(get_scene_path())
@@ -151,7 +143,7 @@ func _on_popup_menu_index_pressed(index: int) -> void:
 func _update_scene_name(sc_name: String) -> void:
 	# Normalize the scene_name to be lower case without symbols and replacing spaces with underscores
 	sc_name = SceneManagerUtils.sanitize_scene_name(sc_name)
-	get_scene_name_node().text = sc_name
+	_scene_name_edit.text = sc_name
 	name = sc_name
 	_scene_name = sc_name
 

@@ -72,8 +72,6 @@ func add_item(scene_name: String, scene_path: String, categorized: bool = false)
 		await ready
 
 	var item: SMgrSceneItem = SCENE_ITEM.instantiate()
-	item.set_scene_name(scene_name)
-	item.set_scene_path(scene_path)
 	# --- connect signals ---
 	item.on_scene_name_changed.connect(_on_scene_name_changed)
 	item.on_reset.connect(_reset_theme_all)
@@ -84,6 +82,9 @@ func add_item(scene_name: String, scene_path: String, categorized: bool = false)
 		_secondary_subsection.add_item(item)
 	else:
 		_main_subsection.add_item(item)
+
+	item.set_scene_name(scene_name)
+	item.set_scene_path(scene_path)
 
 
 ## Updates whether or not the item is categorized and moves it to the correct subcategory.[br]
