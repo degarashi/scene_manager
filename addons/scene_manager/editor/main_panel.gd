@@ -7,7 +7,7 @@ extends MarginContainer
 ## stores all the scene information in the project.
 
 # Scene item, include item prefabs
-const SCENE_INCLUDE_ITEM = preload("res://addons/scene_manager/editor/deletable_item.tscn")
+const SCENE_INCLUDE_ITEM = preload("res://addons/scene_manager/editor/removable_item.tscn")
 const SCENE_LIST_ITEM = preload("res://addons/scene_manager/editor/scene_list.tscn")
 const EBUS := preload("uid://ra25t5in8erp")
 
