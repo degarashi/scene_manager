@@ -214,7 +214,7 @@ metadata/enabled = true
 [connection signal="text_changed" from="main_container/includes/include_add_panel/include_interactive_section_container/add_include_container/dialog_add_include_container/address" to="." method="_on_address_text_changed"]
 [connection signal="button_up" from="main_container/includes/include_add_panel/include_interactive_section_container/add_include_container/dialog_add_include_container2/add" to="." method="_on_add_button_up"]
 [connection signal="button_up" from="main_container/includes/include_add_panel/include_interactive_section_container/add_include_container/dialog_add_include_container2/hide" to="." method="_on_hide_button_up"]
-[connection signal="button_up" from="main_container/interactive_section_container/margin_refresh_save_container/refresh_save_container/save_refresh_container/refresh" to="." method="_refresh_ui"]
+[connection signal="button_up" from="main_container/interactive_section_container/margin_refresh_save_container/refresh_save_container/save_refresh_container/refresh" to="." method="_on_refresh_button_up"]
 [connection signal="button_up" from="main_container/interactive_section_container/margin_refresh_save_container/refresh_save_container/save_refresh_container/save_container/save" to="." method="_on_save_button_up"]
 [connection signal="button_up" from="main_container/interactive_section_container/margin_refresh_save_container/refresh_save_container/save_refresh_container/save_container/hide_unhide" to="." method="_on_hide_button_up"]
 [connection signal="button_up" from="main_container/interactive_section_container/margin_refresh_save_container/refresh_save_container/auto_save_refresh_container/auto_save" to="." method="_on_auto_save_button_up"]

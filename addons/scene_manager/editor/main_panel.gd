@@ -397,3 +397,8 @@ func _on_auto_save_button_up() -> void:
 	SMgrProjectSettings.auto_save = not SMgrProjectSettings.auto_save
 	_change_auto_save_state(SMgrProjectSettings.auto_save)
 	_handle_data_modification()
+
+
+func _on_refresh_button_up() -> void:
+	_manager_data = SMgrData.load_data(SMgrProjectSettings.scene_path)
+	_refresh_ui()
