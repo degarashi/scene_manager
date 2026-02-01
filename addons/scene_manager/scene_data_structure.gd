@@ -336,7 +336,7 @@ func remove_include_path(scene_path: String) -> void:
 
 
 # --- Data Queries (Getters) ---
-func get_scene_sections(scene_path: String) -> Array[String]:
+func get_scene_sections_by_path(scene_path: String) -> Array[String]:
 	if cache_path_to_scene.has(scene_path):
 		return cache_path_to_scene[scene_path].sections
 

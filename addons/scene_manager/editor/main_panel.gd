@@ -141,7 +141,7 @@ func _include_child_removed(item: SMgrRemovableItem) -> void:
 
 ## Retrieves the available sections from the data.
 func get_sections(scene_address: String) -> Array[String]:
-	return _manager_data.get_scene_sections(scene_address)
+	return _manager_data.get_scene_sections_by_path(scene_address)
 
 
 func get_section_names(excepts: Array[String] = [""]) -> Array[String]:
