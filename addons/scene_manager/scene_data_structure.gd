@@ -320,16 +320,19 @@ func remove_include_path(scene_path: String) -> void:
 		)
 		return
 
-	if cache_path_to_scene.has(scene_path):
-		var scene_info := cache_path_to_scene[scene_path]
-		# Find the key with the corresponding scene object from the scenes dictionary and remove it
-		for sc_name in scenes:
-			if scenes[sc_name] == scene_info:
-				scenes.erase(sc_name)
-				_has_changes = true
-				break
-		# also remove from cache
-		cache_path_to_scene.erase(scene_path)
+	# Delete all scenes under the path
+	var keys_to_remove: Array[String] = []
+	for sc_name in scenes:
+		if scenes[sc_name].path.begins_with(scene_path):
+			keys_to_remove.append(sc_name)
+
+	for sc_name in keys_to_remove:
+		var scene_info = scenes[sc_name]
+		# Also deleted from cache (map from path to scene)
+		if cache_path_to_scene.has(scene_info.path):
+			cache_path_to_scene.erase(scene_info.path)
+		# Delete from main data
+		scenes.erase(sc_name)
 
 
 # --- Data Queries (Getters) ---
