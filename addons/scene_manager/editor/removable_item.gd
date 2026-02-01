@@ -1,21 +1,18 @@
 @tool
-class_name SMgrDeletableItem
+class_name SMgrRemovableItem
 extends HBoxContainer
 
-signal on_remove_request(node: Node, addr: String)
+signal on_remove(node: SMgrRemovableItem)
 
 
-## Set address and update node name
-func set_address(addr: String) -> void:
-	%address.text = addr
-	name = addr
+func set_item_string(text: String) -> void:
+	%entry_lineedit.text = text
+	name = text
 
 
-## Return the current address text
-func get_address() -> String:
-	return %address.text
+func get_item_string() -> String:
+	return %entry_lineedit.text
 
 
-## Notify the root manager to handle deletion via signal
 func _on_remove_button_up() -> void:
-	on_remove_request.emit(self, get_address())
+	on_remove.emit(self)

@@ -124,10 +124,11 @@ func _on_scene_renamed(old_scene_name: String, new_scene_name: String) -> void:
 
 
 # When an include item remove button clicks
-func _include_child_removed(node: Node, address: String) -> void:
-	node.queue_free()
-	await node.tree_exited
-	_manager_data.remove_include_path(address)
+func _include_child_removed(item: SMgrRemovableItem) -> void:
+	var item_ent := item.get_item_string()
+	item.queue_free()
+	await item.tree_exited
+	_manager_data.remove_include_path(item_ent)
 	_handle_data_modification()
 	_refresh_ui()
 
@@ -213,9 +214,9 @@ func _add_scene_to_section(
 
 # Adds an address to the include list
 func _add_include_item(address: String) -> void:
-	var item: SMgrDeletableItem = SCENE_INCLUDE_ITEM.instantiate()
-	item.set_address(address)
-	item.on_remove_request.connect(_include_child_removed)
+	var item: SMgrRemovableItem = SCENE_INCLUDE_ITEM.instantiate()
+	item.set_item_string(address)
+	item.on_remove.connect(_include_child_removed)
 	_include_path_list.add_child(item)
 
 
@@ -278,9 +279,9 @@ func _refresh_save_changes() -> void:
 
 
 # Returns array of include nodes from UI view
-func _get_includes_list() -> Array[SMgrDeletableItem]:
-	var ret: Array[SMgrDeletableItem] = []
-	for c: SMgrDeletableItem in _include_path_list.get_children():
+func _get_includes_list() -> Array[SMgrRemovableItem]:
+	var ret: Array[SMgrRemovableItem] = []
+	for c: SMgrRemovableItem in _include_path_list.get_children():
 		ret.append(c)
 	return ret
 
@@ -288,7 +289,7 @@ func _get_includes_list() -> Array[SMgrDeletableItem]:
 # Returns true if passed address exists in include list
 func _include_exists_in_list(address: String) -> bool:
 	for ent in _get_includes_list():
-		if ent.get_address() == address or address.begins_with(ent.get_address()):
+		if ent.get_item_string() == address or address.begins_with(ent.get_item_string()):
 			return true
 	return false
 
