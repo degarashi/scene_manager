@@ -51,14 +51,14 @@ class Scene:
 
 
 # include path list
-var include_list: Array[String]
+var _include_list: Array[String]
 # scene_name -> Scene class
 var scenes: Dictionary[String, Scene]
 # main sections list
-var sections: Array[String]
+var _sections: Array[String]
 
 # scene_path -> Scene map
-var cache_path_to_scene: Dictionary[String, Scene]
+var _cache_path_to_scene: Dictionary[String, Scene]
 var has_changes: bool:
 	get():
 		return _has_changes
@@ -68,16 +68,16 @@ var _has_changes: bool = false
 
 # --- Internal Methods (Private) ---
 func _make_cache() -> void:
-	cache_path_to_scene.clear()
+	_cache_path_to_scene.clear()
 	for sc_name in scenes:
 		var scene_info := scenes[sc_name]
-		cache_path_to_scene[scene_info.path] = scene_info
+		_cache_path_to_scene[scene_info.path] = scene_info
 
 
 static func _load_from_dict(src: Dictionary) -> SMgrData:
 	var ret := SMgrData.new()
-	ret.include_list = AF.convert_to_array_string(src.get(Key.INCLUDE_LIST, []))
-	ret.sections = AF.convert_to_array_string(src.get(Key.SECTIONS, []))
+	ret._include_list = AF.convert_to_array_string(src.get(Key.INCLUDE_LIST, []))
+	ret._sections = AF.convert_to_array_string(src.get(Key.SECTIONS, []))
 
 	var src_sc: Dictionary = src.get(Key.SCENE_DATA, {})
 	for sc_name: String in src_sc:
@@ -142,8 +142,8 @@ static func _load_file_as_dict(file_path: String) -> Dictionary:
 
 func _save_to_dict() -> Dictionary:
 	var ret: Dictionary = {}
-	ret[Key.INCLUDE_LIST] = include_list
-	ret[Key.SECTIONS] = sections
+	ret[Key.INCLUDE_LIST] = _include_list
+	ret[Key.SECTIONS] = _sections
 
 	var scene_dict: Dictionary = {}
 	for sc_name in scenes:
@@ -211,15 +211,15 @@ func save_data(path: String) -> void:
 
 # --- Section Management ---
 func add_section(section_name: String) -> void:
-	if section_name != "" and not sections.has(section_name):
-		sections.append(section_name)
+	if section_name != "" and not _sections.has(section_name):
+		_sections.append(section_name)
 		_has_changes = true
 
 
 func remove_section(section_name: String) -> void:
 	# remove from section list
-	if sections.has(section_name):
-		sections.erase(section_name)
+	if _sections.has(section_name):
+		_sections.erase(section_name)
 		_has_changes = true
 	else:
 		printerr(
@@ -251,7 +251,7 @@ func change_scene_name(old_name: String, new_name: String) -> void:
 
 
 func add_scene_to_section(scene_path: String, section_name: String) -> void:
-	if not sections.has(section_name):
+	if not _sections.has(section_name):
 		printerr(
 			(
 				"Scene Manager Error: Cannot add scene to section. Section '%s' does not exist."
@@ -260,17 +260,17 @@ func add_scene_to_section(scene_path: String, section_name: String) -> void:
 		)
 		return
 
-	if not cache_path_to_scene.has(scene_path):
+	if not _cache_path_to_scene.has(scene_path):
 		return
 
-	var scene_info: Scene = cache_path_to_scene[scene_path]
+	var scene_info: Scene = _cache_path_to_scene[scene_path]
 	if not scene_info.sections.has(section_name):
 		scene_info.sections.append(section_name)
 		_has_changes = true
 
 
 func remove_scene_from_section(scene_path: String, section_name: String) -> void:
-	if not sections.has(section_name):
+	if not _sections.has(section_name):
 		printerr(
 			(
 				"Scene Manager Error: Cannot remove scene from section. Section '%s' does not exist."
@@ -279,10 +279,10 @@ func remove_scene_from_section(scene_path: String, section_name: String) -> void
 		)
 		return
 
-	if not cache_path_to_scene.has(scene_path):
+	if not _cache_path_to_scene.has(scene_path):
 		return
 
-	var scene_info: Scene = cache_path_to_scene[scene_path]
+	var scene_info: Scene = _cache_path_to_scene[scene_path]
 	var index := scene_info.sections.find(section_name)
 	if index != -1:
 		scene_info.sections.remove_at(index)
@@ -302,14 +302,14 @@ func add_include_path(inc_path: String) -> void:
 		)
 		return
 
-	if not include_list.has(inc_path):
-		include_list.append(inc_path)
+	if not _include_list.has(inc_path):
+		_include_list.append(inc_path)
 		_has_changes = true
 
 
 func remove_include_path(scene_path: String) -> void:
-	if include_list.has(scene_path):
-		include_list.erase(scene_path)
+	if _include_list.has(scene_path):
+		_include_list.erase(scene_path)
 		_has_changes = true
 	else:
 		printerr(
@@ -329,16 +329,16 @@ func remove_include_path(scene_path: String) -> void:
 	for sc_name in keys_to_remove:
 		var scene_info = scenes[sc_name]
 		# Also deleted from cache (map from path to scene)
-		if cache_path_to_scene.has(scene_info.path):
-			cache_path_to_scene.erase(scene_info.path)
+		if _cache_path_to_scene.has(scene_info.path):
+			_cache_path_to_scene.erase(scene_info.path)
 		# Delete from main data
 		scenes.erase(sc_name)
 
 
 # --- Data Queries (Getters) ---
 func get_scene_sections_by_path(scene_path: String) -> Array[String]:
-	if cache_path_to_scene.has(scene_path):
-		return cache_path_to_scene[scene_path].sections
+	if _cache_path_to_scene.has(scene_path):
+		return _cache_path_to_scene[scene_path].sections
 
 	printerr(
 		"Scene Manager Error: Cannot get sections. Scene path '%s' does not exist." % scene_path
@@ -347,8 +347,8 @@ func get_scene_sections_by_path(scene_path: String) -> Array[String]:
 
 
 func has_section(scene_path: String) -> bool:
-	if cache_path_to_scene.has(scene_path):
-		return not cache_path_to_scene[scene_path].sections.is_empty()
+	if _cache_path_to_scene.has(scene_path):
+		return not _cache_path_to_scene[scene_path].sections.is_empty()
 
 	printerr(
 		"Scene Manager Error: Cannot check sections. Scene path '%s' does not exist." % scene_path
@@ -362,3 +362,11 @@ func get_scene_path_from_enum(key: Scenes.SceneName) -> String:
 		if SceneManagerUtils.sanitize_as_enum_string(sc_name) == key_str:
 			return scenes[sc_name].path
 	return ""
+
+
+func get_include_list() -> Array[String]:
+	return _include_list
+
+
+func get_sections_list() -> Array[String]:
+	return _sections

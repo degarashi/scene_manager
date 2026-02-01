@@ -239,7 +239,7 @@ func _reload_ui_scenes() -> void:
 func _reload_ui_includes() -> void:
 	for child in _include_path_list.get_children():
 		child.free()
-	for inc_path in _manager_data.include_list:
+	for inc_path in _manager_data.get_include_list():
 		_add_include_item(inc_path)
 
 
@@ -248,7 +248,7 @@ func _reload_ui_tabs() -> void:
 		child.free()
 	_add_section_tab(C.ALL_SECTION_NAME)
 
-	for section in _manager_data.sections:
+	for section in _manager_data.get_sections_list():
 		var found = false
 		for sc_list in _get_section_lists():
 			if sc_list.name == section:
