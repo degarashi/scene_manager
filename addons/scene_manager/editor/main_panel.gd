@@ -187,7 +187,7 @@ func _rename_scene_in_lists(old_name: String, new_name: String) -> void:
 # Updates the categorized/uncategorized sub section in the ALL_SECTION_NAME list for the scene.
 func _update_categorized(sc_name: String) -> void:
 	# Get the scene information from the data
-	var categorized := _manager_data.has_sections(_manager_data.scenes[sc_name].path)
+	var categorized := _manager_data.has_section(_manager_data.scenes[sc_name].path)
 
 	var sc_list := _get_scene_list_by_section_name(C.ALL_SECTION_NAME)
 	sc_list.update_item_categorized(sc_name, categorized)
@@ -230,7 +230,7 @@ func _reload_ui_scenes() -> void:
 			_add_scene_to_section(section, sc_name, scene.path, true)
 
 		_add_scene_to_section(
-			C.ALL_SECTION_NAME, sc_name, scene.path, _manager_data.has_sections(scene.path)
+			C.ALL_SECTION_NAME, sc_name, scene.path, _manager_data.has_section(scene.path)
 		)
 
 	_sort_scenes_in_lists()

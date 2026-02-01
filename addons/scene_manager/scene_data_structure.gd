@@ -346,7 +346,7 @@ func get_scene_sections(scene_path: String) -> Array[String]:
 	return []
 
 
-func has_sections(scene_path: String) -> bool:
+func has_section(scene_path: String) -> bool:
 	if cache_path_to_scene.has(scene_path):
 		return not cache_path_to_scene[scene_path].sections.is_empty()
 
