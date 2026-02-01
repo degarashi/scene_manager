@@ -7,15 +7,15 @@ extends MarginContainer
 ## stores all the scene information in the project.
 
 # Scene item, include item prefabs
-const SCENE_INCLUDE_ITEM = preload("res://addons/scene_manager/editor/removable_item.tscn")
-const SCENE_LIST_ITEM = preload("res://addons/scene_manager/editor/scene_list.tscn")
+const SCENE_INCLUDE_ITEM = preload("uid://ciaqe7l3hugns")
+const SCENE_LIST_ITEM = preload("uid://7r0ywsv3ga6g")
 const EBUS := preload("uid://ra25t5in8erp")
 
 # Icons
-const ICON_CHECKBOX_ON = preload("res://addons/scene_manager/icons/GuiChecked.svg")
-const ICON_CHECKBOX_OFF = preload("res://addons/scene_manager/icons/GuiCheckedDisabled.svg")
-const ICON_EXPAND_BUTTON = preload("res://addons/scene_manager/icons/Expand.svg")
-const ICON_COLLAPSE_BUTTON = preload("res://addons/scene_manager/icons/Collapse.svg")
+const ICON_CHECKBOX_ON = preload("uid://c1ps4ed6wrx51")
+const ICON_CHECKBOX_OFF = preload("uid://bu5cjmgtiiwfp")
+const ICON_EXPAND_BUTTON = preload("uid://t6iu67x15d3")
+const ICON_COLLAPSE_BUTTON = preload("uid://bd6ob6pgam1gt")
 
 const C = preload("uid://c3vvdktou45u")
 
