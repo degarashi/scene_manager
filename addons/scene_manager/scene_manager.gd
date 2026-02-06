@@ -418,25 +418,30 @@ func exit_game(fade_time: float = 1.0) -> void:
 ## Instantiates the loaded scene into the tree (initially hidden).
 ## Should be called after load_finished following a preload_scene_async call.
 func instantiate_async_result() -> void:
-	if _loading_scene_path != "":
-		var scene_resource := ResourceLoader.load_threaded_get(_loading_scene_path) as PackedScene
-		if scene_resource:
-			var scene_node := scene_resource.instantiate()
-			scene_node.scene_file_path = _loading_scene_path
+	if _loading_scene_path == "" or _reserved_scene_id == Scenes.Id.NONE:
+		push_warning(
+			"instantiate_async_result called without an active async load or reserved scene."
+		)
+		return
 
-			var temp_options := _reserved_options.copy()
-			if temp_options.mode == _C.SceneLoadingMode.SINGLE:
-				temp_options.mode = _C.SceneLoadingMode.SINGLE_NODE
-			var parent_node: Node = _attach_scene_to_tree(scene_node, temp_options)
+	var scene_resource := ResourceLoader.load_threaded_get(_loading_scene_path) as PackedScene
+	if scene_resource:
+		var scene_node := scene_resource.instantiate()
+		scene_node.scene_file_path = _loading_scene_path
 
-			# Ensure the parent_node is not the last node to keep the transition scene on top.
-			var root := get_tree().get_root()
-			root.move_child(parent_node, root.get_child_count() - 2)
+		var temp_options := _reserved_options.copy()
+		if temp_options.mode == _C.SceneLoadingMode.SINGLE:
+			temp_options.mode = _C.SceneLoadingMode.SINGLE_NODE
+		var parent_node: Node = _attach_scene_to_tree(scene_node, temp_options)
 
-			_loading_scene_path = ""
-			_load_scene_id = Scenes.Id.NONE
+		# Ensure the parent_node is not the last node to keep the transition scene on top.
+		var root := get_tree().get_root()
+		root.move_child(parent_node, root.get_child_count() - 2)
 
-			_loaded_scene_map[_reserved_scene_id] = _SceneEntry.new(parent_node, scene_node)
+		_loading_scene_path = ""
+		_load_scene_id = Scenes.Id.NONE
+
+		_loaded_scene_map[_reserved_scene_id] = _SceneEntry.new(parent_node, scene_node)
 
 
 ## When you added the loaded scene to the scene tree by `instantiate_async_result`
@@ -445,6 +450,12 @@ func instantiate_async_result() -> void:
 ## This is used in the `load_scene_with_transition` flow and uses the reserved information for
 ## switching scenes.
 func activate_prepared_scene() -> void:
+	if _reserved_scene_id == Scenes.Id.NONE:
+		push_warning(
+			"activate_prepared_scene called but no scene is reserved. Ensure you are in an async load flow."
+		)
+		return
+
 	_set_transition_started()
 	_set_clickable(_reserved_options.clickable)
 
