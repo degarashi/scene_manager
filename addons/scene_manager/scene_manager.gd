@@ -42,6 +42,7 @@ class _AnimKey:
 	const FADE = &"fade"
 
 
+# ------------- [Private Variable] -------------
 static var _ps := preload("uid://dn6eh4s0h8jhi")
 ## Path of the scene currently being loaded.
 var _loading_scene_path: String = ""
@@ -295,6 +296,19 @@ func _unload_all_nodes() -> void:
 		_unload_node(n_name)
 
 
+## Pre-reserves the next scene and its options.
+## @param scene ID of the scene to reserve.
+## @param load_options Load options to apply.
+func _reserve_next_scene(scene: Scenes.Id, load_options := SceneLoadOptions.new()) -> void:
+	if scene == Scenes.Id.NONE:
+		push_warning("Attempted to reserve a NONE scene. Skipping.")
+		return
+
+	_reserved_scene_id = scene
+	# Store a copy of the options so external changes don't affect the reservation.
+	_reserved_options = load_options.copy()
+
+
 # ------------- [Public Method] -------------
 ## Sets the history stack capacity (number of times you can go back).
 ## @param input Allowed number of history entries (0 to disable).
@@ -497,16 +511,3 @@ func load_scene_with_transition(
 	load_options.mode = _C.SceneLoadingMode.ADDITIVE
 	load_options.add_to_back = false
 	switch_to_scene(transition_scene, load_options)
-
-
-## Pre-reserves the next scene and its options.
-## @param scene ID of the scene to reserve.
-## @param load_options Load options to apply.
-func _reserve_next_scene(scene: Scenes.Id, load_options := SceneLoadOptions.new()) -> void:
-	if scene == Scenes.Id.NONE:
-		push_warning("Attempted to reserve a NONE scene. Skipping.")
-		return
-
-	_reserved_scene_id = scene
-	# Store a copy of the options so external changes don't affect the reservation.
-	_reserved_options = load_options.copy()
