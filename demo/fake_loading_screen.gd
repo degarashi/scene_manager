@@ -86,9 +86,8 @@ func _on_move_to_next_scene_button_pressed() -> void:
 	move_to_next_scene_button.disabled = true
 
 	# Execute transition to the reserved scene
-	if SceneManager._reserved_scene_id != Scenes.Id.NONE:
-		SceneManager.switch_to_scene(
-			SceneManager._reserved_scene_id, SceneManager._reserved_options
-		)
+	var resv_scene := SceneManager.get_reserved_scene()
+	if resv_scene != Scenes.Id.NONE:
+		SceneManager.switch_to_scene(resv_scene, SceneManager.get_reserved_load_option())
 	else:
 		push_error("FakeLoadingScreen Error: No scene reserved in SceneManager.")
