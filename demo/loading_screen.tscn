@@ -58,4 +58,20 @@ grow_horizontal = 0
 grow_vertical = 0
 text = "Move To Next Scene"
 
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 0
+offset_left = 17.0
+offset_top = 14.0
+offset_right = 137.0
+offset_bottom = 54.0
+
+[node name="Label" type="Label" parent="HBoxContainer"]
+layout_mode = 2
+text = "Next Scene: "
+
+[node name="NextSceneLabel" type="Label" parent="HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "----"
+
 [connection signal="button_up" from="MoveToNextSceneButton" to="." method="_on_move_to_next_scene_button_button_up"]

@@ -1,4 +1,4 @@
-extends Control
+extends "./loading_screen.gd"
 
 # ------------- [Constants] -------------
 ## List of dummy messages to display during loading
@@ -40,6 +40,7 @@ func _ready() -> void:
 	move_to_next_scene_button.visible = false
 	move_to_next_scene_button.pressed.connect(_on_move_to_next_scene_button_pressed)
 
+	_update_next_scene_label()
 	_run_fake_progress()
 
 
