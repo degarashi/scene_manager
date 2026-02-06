@@ -60,7 +60,7 @@ text = "Load Scene1 (with Fake Loading)"
 
 [node name="QuitButton" type="Button" parent="CenterContainer/VBoxContainer"]
 layout_mode = 2
-text = "QUIT"
+text = "Quit"
 
 [connection signal="button_up" from="CenterContainer/VBoxContainer/HBoxContainer/Scene1Button" to="." method="_on_scene_1_button_button_up"]
 [connection signal="pressed" from="CenterContainer/VBoxContainer/HBoxContainer/BeginLoadingButton" to="." method="_on_begin_loading_button_pressed"]
