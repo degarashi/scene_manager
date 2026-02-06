@@ -511,3 +511,14 @@ func load_scene_with_transition(
 	load_options.mode = _C.SceneLoadingMode.ADDITIVE
 	load_options.add_to_back = false
 	switch_to_scene(transition_scene, load_options)
+
+
+## Returns the currently reserved scene Enum.
+## @return Reserved scene Enum.
+func get_reserved_scene() -> Scenes.Id:
+	return _reserved_scene_id
+
+
+## Returns the reserved load options for the reserved scene.
+func get_reserved_load_option() -> SceneLoadOptions:
+	return _reserved_options
