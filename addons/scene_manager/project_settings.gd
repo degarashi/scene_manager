@@ -4,6 +4,7 @@ extends SMgrResource
 
 signal on_auto_save_changed(enable: bool)
 const DEFAULT_SCENES_FILENAME = "scenes.gd"
+const DEFAULT_PATH_TO_SCENES := "res://scenes.gd"
 const DEFAULT_FADE_OUT_TIME: float = 1
 const DEFAULT_FADE_IN_TIME: float = 1
 
@@ -32,7 +33,7 @@ class Key:
 var scene_path: String:
 	get:
 		return ProjectSettings.get_setting(
-			Property.SCENE_PATH, SMgrConstants.DEFAULT_PATH_TO_SCENES
+			Property.SCENE_PATH, DEFAULT_PATH_TO_SCENES
 		)
 	set(value):
 		if scene_path != value:
@@ -93,7 +94,7 @@ func setup_project_settings() -> void:
 	var settings: Dictionary[String, Dictionary] = {
 		Property.SCENE_PATH:
 		{
-			Key.DEFAULT: SMgrConstants.DEFAULT_PATH_TO_SCENES,
+			Key.DEFAULT: DEFAULT_PATH_TO_SCENES,
 			Key.TYPE: TYPE_STRING,
 			Key.HINT: PROPERTY_HINT_FILE,
 			Key.HINT_STRING: DEFAULT_SCENES_FILENAME,

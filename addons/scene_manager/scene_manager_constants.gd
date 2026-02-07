@@ -15,6 +15,5 @@ enum SceneLoadingMode {
 const DEFAULT_TREE_NODE_NAME: String = "World"
 ## Default node name for loading/transition scenes
 const DEFAULT_LOADING_NODE_NAME: String = "===Transition==="
-const DEFAULT_PATH_TO_SCENES := "res://scenes.gd"
 
 const ALL_SECTION_NAME = "All"
