@@ -294,12 +294,14 @@ func switch_to_scene(scene: Scenes.Id, options := SceneLoadOptions.new()) -> voi
 
 	await _execute_fade_async(options.fade_out_time, true)
 
+	# --- Actual scene switching ---
 	var new_scene_node := create_scene_instance_blocking(scene)
 	if new_scene_node:
 		var parent_node := _attach_scene_to_tree(new_scene_node, options)
 		_loaded_scene_map[scene] = _SceneEntry.new(parent_node, new_scene_node)
 		_current_scene_enum = scene
 		scene_loaded.emit()
+	# ------
 
 	await _execute_fade_async(options.fade_in_time, false)
 
