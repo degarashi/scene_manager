@@ -21,6 +21,10 @@ func _enter_tree():
 		preload("res://addons/scene_manager/icons/line-edit-complete-icon.svg")
 	)
 
+	get_tree().create_timer(1.0).timeout.connect(_delay)
+
+
+func _delay() -> void:
 	# --- main panel ---
 	_main_panel = MAIN_PANEL_SCENE.instantiate()
 	_main_panel.name = MAIN_PANEL_NAME
@@ -52,13 +56,38 @@ func _exit_tree() -> void:
 
 
 func _enable_plugin() -> void:
-	var path_to_scenes := SMgrConstants.DEFAULT_PATH_TO_SCENES
-	assert(not path_to_scenes.is_empty())
+	# Attempt setup first
+	var needs_scan := _setup_default_data()
 
-	add_autoload_singleton("SceneManager", "res://addons/scene_manager/scene_manager.tscn")
-	add_autoload_singleton("Scenes", path_to_scenes)
+	if needs_scan:
+		# If scan is required, wait for completion (filesystem_changed) before registering autoloads
+		var fs := EditorInterface.get_resource_filesystem()
+		fs.filesystem_changed.connect(_register_autoloads, CONNECT_ONE_SHOT)
+	else:
+		# If files already exist, register immediately
+		_register_autoloads()
 
 
-func _disable_plugin() -> void:
-	remove_autoload_singleton("SceneManager")
-	remove_autoload_singleton("Scenes")
+func _setup_default_data() -> bool:
+	if not FileAccess.file_exists(_ps.scene_data_path):
+		var source_dir := "res://addons/scene_manager/default_data/"
+		var dir := DirAccess.open(source_dir)
+		if dir:
+			dir.list_dir_begin()
+			var file_name = dir.get_next()
+			while file_name != "":
+				if not dir.current_is_dir():
+					dir.copy(source_dir.path_join(file_name), "res://".path_join(file_name))
+				file_name = dir.get_next()
+
+			# Start filesystem scan and notify that a scan is required
+			EditorInterface.get_resource_filesystem().scan()
+			return true
+	return false
+
+
+func _register_autoloads() -> void:
+	if not ProjectSettings.has_setting("autoload/SceneManager"):
+		add_autoload_singleton("SceneManager", "res://addons/scene_manager/scene_manager.tscn")
+	if not ProjectSettings.has_setting("autoload/Scenes"):
+		add_autoload_singleton("Scenes", _ps.scene_path)

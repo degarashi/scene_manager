@@ -264,13 +264,8 @@ func _reload_data() -> void:
 		_manager_data.data_changed.disconnect(_trigger_refresh)
 		_manager_data.on_dirty_flag_changed.disconnect(_on_dirty_flag_changed)
 
-	var path := _ps.scene_data_path
-	if ResourceLoader.exists(path):
-		_manager_data = ResourceLoader.load(path)
-	else:
-		# If the file is missing or invalid as a resource
-		_manager_data = SMgrData.new()
-		_manager_data.save_data(_ps.scene_path, _ps.scene_data_path)
+	assert(ResourceLoader.exists(_ps.scene_data_path))
+	_manager_data = ResourceLoader.load(_ps.scene_data_path)
 
 	_update_last_modified_time()
 
