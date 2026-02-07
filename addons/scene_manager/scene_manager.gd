@@ -107,12 +107,9 @@ func _check_loading_progress() -> void:
 			set_process(false)
 			_load_progress.clear()
 			load_finished.emit()
-		ResourceLoader.THREAD_LOAD_FAILED:
+		ResourceLoader.THREAD_LOAD_FAILED, ResourceLoader.THREAD_LOAD_INVALID_RESOURCE:
 			set_process(false)
 			push_error("Scene Manager: Loading failed for path: %s" % _loading_scene_path)
-		ResourceLoader.THREAD_LOAD_INVALID_RESOURCE:
-			set_process(false)
-			push_error("Scene Manager: Invalid resource at path: %s" % _loading_scene_path)
 
 
 ## Creates a full-screen Control wrapper to hold scenes.
