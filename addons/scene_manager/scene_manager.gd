@@ -187,20 +187,17 @@ func _set_clickable(clickable: bool) -> void:
 ## Attaches a specified node to the scene tree and unloads existing nodes if necessary.
 func _attach_scene_to_tree(node: Node, options: SceneLoadOptions) -> Control:
 	var root := get_tree().root
-	var parent_node: Control = root.get_node_or_null(options.node_name)
 
-	# Cleanup for SINGLE/SINGLE_NODE modes.
+	# If SINGLE, send all existing nodes to the trash
 	if options.mode == _C.SceneLoadingMode.SINGLE:
 		_unload_all_nodes()
-		parent_node = null  # Ensure it is recreated.
-	elif options.mode == _C.SceneLoadingMode.SINGLE_NODE and parent_node:
+	elif options.mode == _C.SceneLoadingMode.SINGLE_NODE:
 		_unload_node(options.node_name)
-		parent_node = null
 
-	# Create wrapper if it doesn't exist (e.g., for Additive mode).
-	if not parent_node:
-		parent_node = _create_ui_wrapper(options.node_name)
-		root.add_child(parent_node)
+	# At this point, the node with options.node_name has been removed from root (moved to trash).
+	# This ensures the newly created wrapper will have the exact name specified.
+	var parent_node := _create_ui_wrapper(options.node_name)
+	root.add_child(parent_node)
 
 	parent_node.add_child(node)
 
@@ -217,20 +214,25 @@ func _unload_node(node_name: String) -> void:
 	var target_node := root.get_node_or_null(node_name)
 
 	if not target_node:
+		push_warning(
+			"Scene Manager: Attempted to unload node '%s', but it was not found." % node_name
+		)
 		return
 
-	# Identify all scenes loaded under this container and remove from mapping.
+	# remove from Id map
 	var ids_to_remove: Array[Scenes.Id] = []
 	for id in _loaded_scene_map:
 		if _loaded_scene_map[id].container_node.name == node_name:
 			ids_to_remove.append(id)
 
 	for id in ids_to_remove:
-		var entry: _SceneEntry = _loaded_scene_map[id]
-		if is_instance_valid(entry.scene_node):
-			entry.scene_node.queue_free()
 		_loaded_scene_map.erase(id)
 
+	# Move to trash and then delete
+	# (This will immediately release the name directly under root)
+	target_node.reparent(_trash_node)
+	# Change the name just in case
+	target_node.name = "dying_" + str(target_node.get_instance_id())
 	target_node.queue_free()
 
 
