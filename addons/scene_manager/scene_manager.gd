@@ -277,7 +277,14 @@ func get_scene_blocking(scene: Scenes.Id) -> PackedScene:
 		return null
 
 	var address := _scene_db.get_scene_path_from_enum(scene)
-	assert(not address.is_empty())
+	assert(
+		not address.is_empty(),
+		(
+			"Scene Manager: The path for Scene ID '%s' was not found in the database.\n
+				 Ensure the scene is correctly registered."
+			% Scenes.Id.keys()[scene]
+		)
+	)
 	return load(address)
 
 
