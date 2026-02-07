@@ -72,7 +72,8 @@ func _ready() -> void:
 	_init_trash_node()
 	set_process(false)
 
-	_scene_db = SMgrData.load_data(_ps.scene_path)
+	# SMgrData is a Resource, so read it with the loader
+	_scene_db = load(_ps.scene_data_path)
 
 	var current_path := get_tree().current_scene.scene_file_path
 	_current_scene_enum = _scene_db.get_scene_enum_by_path(current_path)

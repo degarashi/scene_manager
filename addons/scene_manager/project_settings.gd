@@ -39,6 +39,10 @@ var scene_path: String:
 			ProjectSettings.set_setting(Property.SCENE_PATH, value)
 			_save()
 
+var scene_data_path: String:
+	get:
+		return scene_path.get_base_dir().path_join("scenes_data.tres")
+
 var fade_out_time: float:
 	get:
 		return ProjectSettings.get_setting(

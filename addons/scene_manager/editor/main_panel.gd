@@ -82,7 +82,7 @@ func _get_dirty_flag(recv: Array[bool]) -> void:
 
 
 func _on_save_button_button_up() -> void:
-	_manager_data.save_data(_ps.scene_path)
+	_manager_data.save_data(_ps.scene_path, _ps.scene_data_path)
 	# Update the time immediately after saving as it is a self-initiated change
 	_update_last_modified_time()
 
@@ -103,7 +103,7 @@ func _do_save_when_auto() -> void:
 
 
 func _do_save() -> void:
-	_manager_data.save_data(_ps.scene_path)
+	_manager_data.save_data(_ps.scene_path, _ps.scene_data_path)
 	_update_last_modified_time()
 
 
@@ -233,7 +233,14 @@ func _reload_data() -> void:
 		_manager_data.data_changed.disconnect(_trigger_refresh)
 		_manager_data.on_dirty_flag_changed.disconnect(_on_dirty_flag_changed)
 
-	_manager_data = SMgrData.load_data(_ps.scene_path)
+	var path := _ps.scene_data_path
+	if ResourceLoader.exists(path):
+		_manager_data = ResourceLoader.load(path)
+	else:
+		# If the file is missing or invalid as a resource
+		_manager_data = SMgrData.new()
+		_manager_data.save_data(_ps.scene_path, _ps.scene_data_path)
+
 	_update_last_modified_time()
 
 	_manager_data.data_changed.connect(_trigger_refresh)

@@ -1,0 +1,45 @@
+[gd_resource type="Resource" script_class="SMgrData" load_steps=8 format=3 uid="uid://k01ajr4ov76g"]
+
+[ext_resource type="Script" uid="uid://cweru83312e1d" path="res://addons/scene_manager/data_store/scene_data_scene.gd" id="1_a1hep"]
+[ext_resource type="Script" uid="uid://dfpylmwx6ab2x" path="res://addons/scene_manager/data_store/scene_data_structure.gd" id="2_wx7rs"]
+
+[sub_resource type="Resource" id="Resource_a1hep"]
+script = ExtResource("1_a1hep")
+name = "fake_loading_screen"
+path = "res://demo/fake_loading_screen.tscn"
+uid = 5495634729037908381
+
+[sub_resource type="Resource" id="Resource_wx7rs"]
+script = ExtResource("1_a1hep")
+name = "loading_screen"
+path = "res://demo/loading_screen.tscn"
+uid = 3205915700789431932
+
+[sub_resource type="Resource" id="Resource_qx7sb"]
+script = ExtResource("1_a1hep")
+name = "scene_1"
+path = "res://demo/scene_1.tscn"
+uid = 7784575442615425582
+
+[sub_resource type="Resource" id="Resource_385vf"]
+script = ExtResource("1_a1hep")
+name = "scene_0"
+path = "res://demo/scene_0.tscn"
+uid = 3167048368848614594
+
+[sub_resource type="Resource" id="Resource_egbw6"]
+script = ExtResource("1_a1hep")
+name = "scene_2"
+path = "res://demo/scene_2.tscn"
+uid = 5390443888696816947
+
+[resource]
+script = ExtResource("2_wx7rs")
+_include_list = Array[String](["res://demo"])
+_scenes = Dictionary[int, ExtResource("1_a1hep")]({
+3167048368848614594: SubResource("Resource_385vf"),
+3205915700789431932: SubResource("Resource_wx7rs"),
+5390443888696816947: SubResource("Resource_egbw6"),
+5495634729037908381: SubResource("Resource_a1hep"),
+7784575442615425582: SubResource("Resource_qx7sb")
+})

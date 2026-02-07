@@ -9,13 +9,9 @@ extends Node
 enum Id \
 { 
 	NONE = -1,
+	FAKE_LOADING_SCREEN,
 	LOADING_SCREEN,
 	SCENE_1,
 	SCENE_0,
 	SCENE_2,
-	FAKE_LOADING_SCREEN,
 }
-
-# [Scene Data Block]
-"{\n\"_include_list\": Array[String]([\"res://demo\"]),\n\"_scenes\": [{\n\"name\": \"loading_screen\",\n\"path\": \"res://demo/loading_screen.tscn\",\n\"sections\": Array[String]([]),\n\"uid\": 3205915700789431932\n}, {\n\"name\": \"scene_1\",\n\"path\": \"res://demo/scene_1.tscn\",\n\"sections\": Array[String]([]),\n\"uid\": 7784575442615425582\n}, {\n\"name\": \"scene_0\",\n\"path\": \"res://demo/scene_0.tscn\",\n\"sections\": Array[String]([]),\n\"uid\": 3167048368848614594\n}, {\n\"name\": \"scene_2\",\n\"path\": \"res://demo/scene_2.tscn\",\n\"sections\": Array[String]([]),\n\"uid\": 5390443888696816947\n}, {\n\"name\": \"fake_loading_screen\",\n\"path\": \"res://demo/fake_loading_screen.tscn\",\n\"sections\": Array[String]([]),\n\"uid\": 5495634729037908381\n}],\n\"_sections\": Array[String]([])\n}"
-# [End Scene Data Block]
