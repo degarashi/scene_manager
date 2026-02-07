@@ -16,6 +16,7 @@ var _ps := preload("uid://dn6eh4s0h8jhi")
 var _manager_data: SMgrData
 ## For file monitoring
 var _last_modified_time: int = 0
+var _connect_ebus: bool
 
 @onready var _refresh_delay_timer: Timer = %RefreshDelayTimer
 @onready var _save_delay_timer: Timer = %SaveDelayTimer
@@ -43,6 +44,7 @@ var _last_modified_time: int = 0
 
 
 func _ready() -> void:
+	_connect_ebus = false
 	_reload_data()
 	_refresh_ui()
 
@@ -54,6 +56,10 @@ func _ready() -> void:
 		fs.filesystem_changed.connect(_on_filesystem_changed)
 
 	_update_last_modified_time()
+
+
+func _exit_tree() -> void:
+	_disconnect_ebus()
 
 
 func _on_filesystem_changed() -> void:
@@ -148,6 +154,8 @@ func _get_scene_enums(recv: Array[String]) -> void:
 
 
 func connect_ebus() -> void:
+	_connect_ebus = true
+
 	_EBUS.get_scenes.connect(_get_scenes)
 	_EBUS.get_scene_info.connect(_get_scene_info)
 	# Bind arguments to common methods and connect
@@ -172,6 +180,29 @@ func connect_ebus() -> void:
 	_EBUS.change_scene_name.connect(_change_scene_name)
 	_EBUS.get_dirty_flag.connect(_get_dirty_flag)
 	_EBUS_I.get_scene_enums.connect(_get_scene_enums)
+
+
+func _disconnect_ebus() -> void:
+	if not _connect_ebus:
+		return
+
+	_EBUS.get_scenes.disconnect(_get_scenes)
+	_EBUS.get_scene_info.disconnect(_get_scene_info)
+	_EBUS.get_scenes_all.disconnect(_get_scenes_by_type)
+	_EBUS.get_scenes_categorized.disconnect(_get_scenes_by_type)
+	_EBUS.get_scenes_uncategorized.disconnect(_get_scenes_by_type)
+
+	for c in _EBUS.get_section_names.get_connections():
+		_EBUS.get_section_names.disconnect(c.callable)
+	for c in _EBUS.add_scene_to_section.get_connections():
+		_EBUS.add_scene_to_section.disconnect(c.callable)
+	for c in _EBUS.remove_scene_from_section.get_connections():
+		_EBUS.remove_scene_from_section.disconnect(c.callable)
+
+	_EBUS.has_scene_by_name.disconnect(_has_scene_by_name)
+	_EBUS.change_scene_name.disconnect(_change_scene_name)
+	_EBUS.get_dirty_flag.disconnect(_get_dirty_flag)
+	_EBUS_I.get_scene_enums.disconnect(_get_scene_enums)
 
 
 func _remove_include_path(item: SMgrRemovableItem) -> void:
