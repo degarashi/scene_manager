@@ -60,6 +60,7 @@ var _reserved_options: SceneLoadOptions
 var _loaded_scene_map: Dictionary[Scenes.Id, _SceneEntry] = {}
 var _current_scene_enum: Scenes.Id = Scenes.Id.NONE
 var _is_transitioning: bool = false
+var _trash_node: Control
 
 @onready var _fade_color_rect: ColorRect = %fade
 @onready var _animation_player: AnimationPlayer = %animation_player
@@ -68,6 +69,7 @@ var _is_transitioning: bool = false
 
 # ------------- [Callbacks] -------------
 func _ready() -> void:
+	_init_trash_node()
 	set_process(false)
 
 	_scene_db = SMgrData.load_data(_ps.scene_path)
@@ -83,6 +85,14 @@ func _process(_delta: float) -> void:
 
 
 # ------------- [Private Methods] -------------
+func _init_trash_node() -> void:
+	_trash_node = Control.new()
+	_trash_node.name = "trash_node"
+	_trash_node.process_mode = Node.PROCESS_MODE_DISABLED
+	_trash_node.visible = false
+	add_child(_trash_node)
+
+
 ## Checks progress during asynchronous scene loading and emits signals.
 func _check_loading_progress() -> void:
 	var prev_percent := int(_load_progress[0] * 100) if not _load_progress.is_empty() else 0
