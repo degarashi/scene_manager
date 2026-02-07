@@ -70,18 +70,36 @@ func _enable_plugin() -> void:
 
 func _setup_default_data() -> bool:
 	if not FileAccess.file_exists(_ps.scene_data_path):
-		var source_dir := "res://addons/scene_manager/default_data/"
-		var dir := DirAccess.open(source_dir)
+		var source_dir: String = "res://addons/scene_manager/default_data/"
+		var dir: DirAccess = DirAccess.open(source_dir)
 		if dir:
 			dir.list_dir_begin()
-			var file_name = dir.get_next()
+			var file_name: String = dir.get_next()
 			while file_name != "":
 				if not dir.current_is_dir():
-					dir.copy(source_dir.path_join(file_name), "res://".path_join(file_name))
+					var source_path: String = source_dir.path_join(file_name)
+					var target_path: String = "res://".path_join(file_name)
+
+					# Copy file
+					dir.copy(source_path, target_path)
+
+					# Reset UID for resource files to avoid conflicts
+					if (
+						file_name.ends_with(".gd")
+						or file_name.ends_with(".tres")
+						or file_name.ends_with(".tscn")
+					):
+						var res: Resource = load(target_path)
+						if res:
+							# Recognize the resource as a new path and maintain UID consistency
+							res.take_over_path(target_path)
+							ResourceSaver.save(res, target_path)
+
 				file_name = dir.get_next()
 
 			# Start filesystem scan and notify that a scan is required
-			EditorInterface.get_resource_filesystem().scan()
+			var fs: EditorFileSystem = EditorInterface.get_resource_filesystem()
+			fs.scan()
 			return true
 	return false
 
