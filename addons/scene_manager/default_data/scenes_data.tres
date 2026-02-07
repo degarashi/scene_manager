@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="SMgrData" load_steps=3 format=3 uid="uid://b3fe1plyih5fa"]
+
+[ext_resource type="Script" uid="uid://cweru83312e1d" path="res://addons/scene_manager/data_store/scene_data_scene.gd" id="1_a1hep"]
+[ext_resource type="Script" uid="uid://dfpylmwx6ab2x" path="res://addons/scene_manager/data_store/scene_data_structure.gd" id="2_wx7rs"]
+
+[resource]
+script = ExtResource("2_wx7rs")
