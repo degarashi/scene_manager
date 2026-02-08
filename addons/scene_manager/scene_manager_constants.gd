@@ -13,5 +13,3 @@ enum SceneLoadingMode {
 
 ## Default node name to be used for scenes
 const DEFAULT_TREE_NODE_NAME: String = "World"
-## Default node name for loading/transition scenes
-const DEFAULT_LOADING_NODE_NAME: String = "===Transition==="

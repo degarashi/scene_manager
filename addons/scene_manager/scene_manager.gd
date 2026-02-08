@@ -21,6 +21,7 @@ signal fade_out_finished
 const _C = preload("uid://c3vvdktou45u")
 const _RING_BUFFER = preload("uid://t3tlcswbndjo")
 const _INITIAL_FADE_IN_TIME = 1.0
+const _LOADING_NODE_NAME: String = "===Transition==="
 
 
 # ------------- [Defines] -------------
@@ -344,7 +345,7 @@ func load_scene_with_transition(
 	_reserved_mode = _C.SceneLoadingMode.SINGLE
 
 	var trans_options := SceneLoadOptions.new()
-	trans_options.node_name = _C.DEFAULT_LOADING_NODE_NAME
+	trans_options.node_name = _LOADING_NODE_NAME
 
 	add_scene(transition_scene, trans_options)
 
@@ -407,7 +408,7 @@ func activate_prepared_scene() -> void:
 	await _execute_fade_async(_reserved_options.fade_out_time, true)
 
 	# Remove the loading screen
-	_unload_scene(_C.DEFAULT_LOADING_NODE_NAME)
+	_unload_scene(_LOADING_NODE_NAME)
 
 	# In SINGLE mode, remove everything except the new scene (reserved_scene_id)
 	if _reserved_mode == _C.SceneLoadingMode.SINGLE:
