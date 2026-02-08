@@ -176,21 +176,39 @@ func add_include_path(inc_path: String) -> bool:
 	var is_file := FileAccess.file_exists(inc_path) and inc_path.ends_with(".tscn")
 
 	if not is_dir and not is_file:
-		printerr(
+		push_warning(
 			"Scene Manager Error: Path '%s' is not a valid directory or .tscn file." % inc_path
 		)
 		return false
 
-	if not _include_list.has(inc_path):
-		_include_list.append(inc_path)
-		if is_dir:
-			_scan_dir_recursive(inc_path)
-		else:
-			_register_scene_file(inc_path)
-		data_changed.emit()
-		return true
+	# Check for inclusion relationships
+	for existing_path in _include_list:
+		if inc_path.begins_with(existing_path):
+			var msg := (
+				"Scene Manager: Path '%s' is already covered by '%s'." % [inc_path, existing_path]
+			)
+			push_warning(msg)  # Shows in the editor's Warning tab
+			return false
 
-	return false
+	# If the new path is a parent of existing paths, remove those sub-paths
+	var original_size := _include_list.size()
+	_include_list = _include_list.filter(
+		func(p: String) -> bool: return not p.begins_with(inc_path)
+	)
+
+	if _include_list.size() < original_size:
+		print("Scene Manager: Removed sub-paths that are now covered by '%s'." % inc_path)
+
+	# Add to list and execute scan
+	_include_list.append(inc_path)
+	if is_dir:
+		_scan_dir_recursive(inc_path)
+	else:
+		_register_scene_file(inc_path)
+
+	data_changed.emit()
+	print("Scene Manager: Successfully added path '%s'." % inc_path)
+	return true
 
 
 ## Recursively scans a directory and registers .tscn files
