@@ -182,7 +182,7 @@ func _attach_scene_to_tree(
 	if mode == _C.SceneLoadingMode.SINGLE:
 		_unload_all_nodes()
 	elif mode == _C.SceneLoadingMode.SINGLE_NODE:
-		_unload_scene(node_name)
+		_unload_scene(node_name, false)
 
 	# At this point, the node with node_name has been removed from root (moved to trash).
 	# This ensures the newly created wrapper will have the exact name specified.
@@ -199,14 +199,15 @@ func _attach_scene_to_tree(
 
 ## Frees all scenes under a specified parent node and removes them from the map.
 ## @param node_name Name of the parent node to release.
-func _unload_scene(node_name: String) -> void:
+func _unload_scene(node_name: String, should_found: bool = true) -> void:
 	# If a node with the specified name exists directly under root, remove it.
 	var root := get_tree().root
 	var target_node := root.get_node_or_null(node_name)
 	if not target_node:
-		push_warning(
-			"Scene Manager: Attempted to unload node '%s', but it was not found." % node_name
-		)
+		if should_found:
+			push_warning(
+				"Scene Manager: Attempted to unload node '%s', but it was not found." % node_name
+			)
 		return
 
 	# Remove from the loaded scenes map
