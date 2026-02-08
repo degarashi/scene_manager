@@ -18,7 +18,6 @@ var _manager_data: SMgrData
 var _last_modified_time: int = 0
 var _connect_ebus: bool
 
-@onready var _refresh_delay_timer: Timer = %RefreshDelayTimer
 @onready var _save_delay_timer: Timer = %SaveDelayTimer
 
 @onready var _section_tab_cont: TabContainer = %section_tab_container
@@ -91,11 +90,6 @@ func _on_save_button_button_up() -> void:
 	_manager_data.save_data(_ps.scene_path, _ps.scene_data_path)
 	# Update the time immediately after saving as it is a self-initiated change
 	_update_last_modified_time()
-
-
-func _trigger_refresh() -> void:
-	if is_inside_tree():
-		_refresh_delay_timer.start()
 
 
 func _trigger_save() -> void:
@@ -211,7 +205,6 @@ func _remove_include_path(item: SMgrRemovableItem) -> void:
 	item.queue_free()
 
 	_manager_data.remove_include_path(item_ent)
-	_trigger_refresh()
 
 
 func _add_include_item(path: String) -> void:
@@ -261,7 +254,7 @@ func _refresh_ui() -> void:
 
 func _reload_data() -> void:
 	if _manager_data:
-		_manager_data.data_changed.disconnect(_trigger_refresh)
+		_manager_data.data_changed_debounced.disconnect(_refresh_ui)
 		_manager_data.on_dirty_flag_changed.disconnect(_on_dirty_flag_changed)
 
 	assert(ResourceLoader.exists(_ps.scene_data_path))
@@ -269,7 +262,7 @@ func _reload_data() -> void:
 
 	_update_last_modified_time()
 
-	_manager_data.data_changed.connect(_trigger_refresh)
+	_manager_data.data_changed_debounced.connect(_refresh_ui)
 	_manager_data.on_dirty_flag_changed.connect(_on_dirty_flag_changed)
 	_EBUS.on_dirty_flag_changed.emit(false)
 
@@ -288,8 +281,7 @@ func _on_address_text_changed(_new_text: String) -> void:
 
 
 func _on_add_include_button_button_up() -> void:
-	if _manager_data.add_include_path(_address_edit.text):
-		_trigger_refresh()
+	_manager_data.add_include_path(_address_edit.text)
 	_address_edit.text = ""
 	_validate_include_path()
 
@@ -344,7 +336,3 @@ func _on_refresh_button_up() -> void:
 
 func _on_save_delay_timer_timeout() -> void:
 	_do_save_when_auto()
-
-
-func _on_refresh_delay_timer_timeout() -> void:
-	_refresh_ui()
