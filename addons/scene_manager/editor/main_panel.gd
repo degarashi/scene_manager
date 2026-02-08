@@ -37,8 +37,6 @@ var _connect_ebus: bool
 @onready var _include_list_scroll: Container = %include_list_scroll
 @onready var _include_add_panel: Container = %include_add_panel
 
-# -- buttons (of bottom) ---
-@onready var _refresh_button: Button = %refresh_button
 @onready var _garbage_bin: Control = %garbage_bin
 
 
