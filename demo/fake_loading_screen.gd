@@ -43,6 +43,15 @@ func _ready() -> void:
 	_update_next_scene_label()
 	_run_fake_progress()
 
+	# Start asynchronous loading
+	# Requests a load using the scene ID reserved by load_scene_with_transition
+	var resv_scene := SceneManager.get_reserved_scene()
+	if resv_scene != Scenes.Id.NONE:
+		SceneManager.preload_scene_async(resv_scene)
+		SceneManager.instantiate_async_result()
+	else:
+		push_error("No reserved scene found.")
+
 
 # ------------- [Private Method] -------------
 func _run_fake_progress() -> void:
@@ -89,6 +98,6 @@ func _on_move_to_next_scene_button_pressed() -> void:
 	# Execute transition to the reserved scene
 	var resv_scene := SceneManager.get_reserved_scene()
 	if resv_scene != Scenes.Id.NONE:
-		SceneManager.switch_to_scene(resv_scene, SceneManager.get_reserved_load_option())
+		SceneManager.activate_prepared_scene()
 	else:
 		push_error("FakeLoadingScreen Error: No scene reserved in SceneManager.")

@@ -2,7 +2,7 @@ extends Control
 
 
 func _on_load_scene_2_button_button_up() -> void:
-	SceneManager.switch_to_scene(Scenes.Id.SCENE_2)
+	SceneManager.switch_to_scene(Scenes.Id.SCENE_2, true)
 
 
 func _on_reload_button_button_up() -> void:

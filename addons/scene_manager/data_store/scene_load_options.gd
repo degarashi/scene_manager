@@ -18,8 +18,6 @@ static var default_fade_in: float:
 @export_group("Hierarchy")
 ## Where in the node structure the new scene will load.
 @export var node_name: String = _C.DEFAULT_TREE_NODE_NAME
-## Whether to only have a single scene or an additive load. Defaults to SINGLE.
-@export var mode: _C.SceneLoadingMode = _C.SceneLoadingMode.SINGLE
 
 @export_group("Visuals")
 ## Duration of the fade out effect.
@@ -31,33 +29,23 @@ static var default_fade_in: float:
 ## Whether or not to block mouse input during the scene load. Defaults to true.
 @export var clickable: bool = true
 
-@export_group("")
-## Whether or not to add the scene onto the stack so the scene can go back to it.
-@export var add_to_back: bool = true
-
 
 ## Creates options for loading a scene.
 ##
 ## [param node]: Target node name for loading.
-## [param mode]: Loading mode (Single/Additive).
 ## [param clickable]: If true, allows interaction during transition.
 ## [param fade_out_time]: Custom fade out duration.
 ## [param fade_in_time]: Custom fade in duration.
-## [param add_to_back]: If true, enables navigation back to this scene.
 func _init(
 	node: String = _C.DEFAULT_TREE_NODE_NAME,
-	mode: _C.SceneLoadingMode = _C.SceneLoadingMode.SINGLE,
 	clickable: bool = true,
 	fade_out_time: float = default_fade_out,
-	fade_in_time: float = default_fade_in,
-	add_to_back: bool = true
+	fade_in_time: float = default_fade_in
 ) -> void:
 	self.node_name = node
-	self.mode = mode
 	self.clickable = clickable
 	self.fade_out_time = fade_out_time
 	self.fade_in_time = fade_in_time
-	self.add_to_back = add_to_back
 
 
 ## Create a copy of the SceneLoadOptions instance.

@@ -30,10 +30,10 @@ class _SceneEntry:
 	var scene_node: Node
 
 	## Initialize the instance.
-	## @param p_wrapper The parent wrapper node.
+	## @param p_container The parent wrapper node.
 	## @param p_scene The main scene node.
-	func _init(p_wrapper: Control, p_scene: Node) -> void:
-		container_node = p_wrapper
+	func _init(p_container: Control, p_scene: Node) -> void:
+		container_node = p_container
 		scene_node = p_scene
 
 
@@ -46,17 +46,19 @@ class _AnimKey:
 static var _ps := preload("uid://dn6eh4s0h8jhi")
 
 var _scene_db: SMgrData
-var _loading_scene_path: String = ""
+var _load_scene_path: String = ""
 ## ID of the scene currently being loaded.
 var _load_scene_id: Scenes.Id = Scenes.Id.NONE
 ## Array for holding raw loading progress data.
 var _load_progress: Array = []
-## Reserved scene ID for the next scheduled load.
+
+# Reservation info for asynchronous loading
 var _reserved_scene_id: Scenes.Id = Scenes.Id.NONE
 ## Load options for the reserved scene.
 var _reserved_options: SceneLoadOptions
+var _reserved_mode: _C.SceneLoadingMode = _C.SceneLoadingMode.SINGLE
 
-## Map of loaded scenes (Key: Id, Value: _SceneEntry).
+## Scenes currently present in the field (Key: Scene-Id, Value: _SceneEntry).
 var _loaded_scene_map: Dictionary[Scenes.Id, _SceneEntry] = {}
 var _current_scene_enum: Scenes.Id = Scenes.Id.NONE
 var _is_transitioning: bool = false
@@ -97,25 +99,21 @@ func _init_trash_node() -> void:
 ## Checks progress during asynchronous scene loading and emits signals.
 func _check_loading_progress() -> void:
 	var prev_percent := int(_load_progress[0] * 100) if not _load_progress.is_empty() else 0
-	var status := ResourceLoader.load_threaded_get_status(_loading_scene_path, _load_progress)
+	var status := ResourceLoader.load_threaded_get_status(_load_scene_path, _load_progress)
 	var next_percent := int(_load_progress[0] * 100)
 
 	if prev_percent != next_percent:
 		load_percent_changed.emit(next_percent)
 
-	match status:
-		ResourceLoader.THREAD_LOAD_LOADED:
-			set_process(false)
-			_load_progress.clear()
-			load_finished.emit()
-		ResourceLoader.THREAD_LOAD_FAILED, ResourceLoader.THREAD_LOAD_INVALID_RESOURCE:
-			set_process(false)
-			push_error("Scene Manager: Loading failed for path: %s" % _loading_scene_path)
+	if status == ResourceLoader.THREAD_LOAD_LOADED:
+		set_process(false)
+		_load_progress.clear()
+		load_finished.emit()
+	elif status in [ResourceLoader.THREAD_LOAD_FAILED, ResourceLoader.THREAD_LOAD_INVALID_RESOURCE]:
+		set_process(false)
+		push_error("Scene Manager: Loading failed for: %s" % _load_scene_path)
 
 
-## Creates a full-screen Control wrapper to hold scenes.
-## @param node_name Name of the wrapper node.
-## @return Configured Control node.
 func _create_ui_wrapper(node_name: String) -> Control:
 	var wrapper := Control.new()
 	wrapper.name = node_name
@@ -183,23 +181,25 @@ func _set_clickable(clickable: bool) -> void:
 
 
 ## Attaches a specified node to the scene tree and unloads existing nodes if necessary.
-func _attach_scene_to_tree(node: Node, options: SceneLoadOptions) -> Control:
+func _attach_scene_to_tree(
+	node: Node, mode: _C.SceneLoadingMode, node_name: String, add_to_back: bool
+) -> Control:
 	var root := get_tree().root
 
 	# If SINGLE, send all existing nodes to the trash
-	if options.mode == _C.SceneLoadingMode.SINGLE:
+	if mode == _C.SceneLoadingMode.SINGLE:
 		_unload_all_nodes()
-	elif options.mode == _C.SceneLoadingMode.SINGLE_NODE:
-		_unload_node(options.node_name)
+	elif mode == _C.SceneLoadingMode.SINGLE_NODE:
+		_unload_scene(node_name)
 
-	# At this point, the node with options.node_name has been removed from root (moved to trash).
+	# At this point, the node with node_name has been removed from root (moved to trash).
 	# This ensures the newly created wrapper will have the exact name specified.
-	var parent_node := _create_ui_wrapper(options.node_name)
+	var parent_node := _create_ui_wrapper(node_name)
 	root.add_child(parent_node)
 
 	parent_node.add_child(node)
 
-	if options.add_to_back and _current_scene_enum != Scenes.Id.NONE:
+	if add_to_back and _current_scene_enum != Scenes.Id.NONE and mode == _C.SceneLoadingMode.SINGLE:
 		_history_stack.push(_current_scene_enum)
 
 	return parent_node
@@ -207,17 +207,17 @@ func _attach_scene_to_tree(node: Node, options: SceneLoadOptions) -> Control:
 
 ## Frees all scenes under a specified parent node and removes them from the map.
 ## @param node_name Name of the parent node to release.
-func _unload_node(node_name: String) -> void:
+func _unload_scene(node_name: String) -> void:
+	# If a node with the specified name exists directly under root, remove it.
 	var root := get_tree().root
 	var target_node := root.get_node_or_null(node_name)
-
 	if not target_node:
 		push_warning(
 			"Scene Manager: Attempted to unload node '%s', but it was not found." % node_name
 		)
 		return
 
-	# remove from Id map
+	# Remove from the loaded scenes map
 	var ids_to_remove: Array[Scenes.Id] = []
 	for id in _loaded_scene_map:
 		if _loaded_scene_map[id].container_node.name == node_name:
@@ -226,7 +226,12 @@ func _unload_node(node_name: String) -> void:
 	for id in ids_to_remove:
 		_loaded_scene_map.erase(id)
 
-	# Move to trash and then delete
+	# Delete the node itself
+	_remove_node_safely(target_node)
+
+
+func _remove_node_safely(target_node: Node) -> void:
+	# Move to trash and then remove
 	# (This will immediately release the name directly under root)
 	target_node.reparent(_trash_node)
 	# Change the name just in case
@@ -243,57 +248,13 @@ func _unload_all_nodes() -> void:
 			unique_names.append(n_name)
 
 	for n_name in unique_names:
-		_unload_node(n_name)
+		_unload_scene(n_name)
 
 
-# ------------- [Public Method] -------------
-## Sets the history stack capacity (number of times you can go back).
-## @param input Allowed number of history entries (0 to disable).
-func set_back_limit(input: int) -> void:
-	_history_stack.set_capacity(maxi(input, 0))
-
-
-## Clears the entire history stack.
-func clear_history() -> void:
-	_history_stack.clear()
-
-
-## Blocking generation of an instance from a scene ID.
-## @param scene Scene ID.
-## @return Generated node.
-func create_scene_instance_blocking(scene: Scenes.Id) -> Node:
-	var pack := get_scene_blocking(scene)
-	return pack.instantiate() if pack else null
-
-
-## Blocking load of a PackedScene from a scene ID.
-## @param scene Scene ID.
-## @return Loaded PackedScene.
-func get_scene_blocking(scene: Scenes.Id) -> PackedScene:
-	if scene == Scenes.Id.NONE:
-		push_warning("Attempted to get PackedScene for a NONE scene. Skipping.")
-		return null
-
-	var address := _scene_db.get_scene_path_from_enum(scene)
-	assert(
-		not address.is_empty(),
-		(
-			"Scene Manager: The path for Scene ID '%s' was not found in the database.\n
-				 Ensure the scene is correctly registered."
-			% Scenes.Id.keys()[scene]
-		)
-	)
-	return load(address)
-
-
-## Switches to a specified scene (replaces the existing scene by default).
-## @param scene Target scene ID.
-## @param options Loading configuration options.
-func switch_to_scene(scene: Scenes.Id, options := SceneLoadOptions.new()) -> void:
-	if scene == Scenes.Id.NONE:
-		push_warning("Attempted to get PackedScene for a NONE scene. Skipping.")
-		return
-
+# Internal common transition logic
+func _perform_transition(
+	scene: Scenes.Id, mode: _C.SceneLoadingMode, add_to_back: bool, options: SceneLoadOptions
+) -> void:
 	_is_transitioning = true
 	_set_clickable(options.clickable)
 
@@ -302,9 +263,12 @@ func switch_to_scene(scene: Scenes.Id, options := SceneLoadOptions.new()) -> voi
 	# --- Actual scene switching ---
 	var new_scene_node := create_scene_instance_blocking(scene)
 	if new_scene_node:
-		var parent_node := _attach_scene_to_tree(new_scene_node, options)
+		var parent_node := _attach_scene_to_tree(
+			new_scene_node, mode, options.node_name, add_to_back
+		)
 		_loaded_scene_map[scene] = _SceneEntry.new(parent_node, new_scene_node)
-		_current_scene_enum = scene
+		if mode == _C.SceneLoadingMode.SINGLE:
+			_current_scene_enum = scene
 		scene_loaded.emit()
 	# ------
 
@@ -314,15 +278,29 @@ func switch_to_scene(scene: Scenes.Id, options := SceneLoadOptions.new()) -> voi
 	_is_transitioning = false
 
 
-## Goes back to the previous scene from history.
-## @return True if the transition started successfully.
+# ------------- [Public Methods] -------------
+## Discards the current main scene and switches to a new one.
+func switch_to_scene(
+	scene: Scenes.Id, add_to_back: bool, options := SceneLoadOptions.new()
+) -> void:
+	if scene == Scenes.Id.NONE:
+		return
+	_perform_transition(scene, _C.SceneLoadingMode.SINGLE, add_to_back, options)
+
+
+## Adds a scene while keeping the current scene (for UI or sub-screens).
+func add_scene(scene: Scenes.Id, options := SceneLoadOptions.new()) -> void:
+	if scene == Scenes.Id.NONE:
+		return
+	_perform_transition(scene, _C.SceneLoadingMode.ADDITIVE, false, options)
+
+
 func load_previous_scene() -> bool:
 	var target_scene: Scenes.Id = _history_stack.pop()
 	if target_scene != Scenes.Id.NONE and _current_scene_enum != Scenes.Id.NONE:
 		var options := SceneLoadOptions.new()
 		options.node_name = _loaded_scene_map[_current_scene_enum].container_node.name
-		options.add_to_back = false
-		switch_to_scene(target_scene, options)
+		switch_to_scene(target_scene, false, options)
 		return true
 	return false
 
@@ -337,8 +315,7 @@ func reload_current_scene() -> bool:
 
 	var options := SceneLoadOptions.new()
 	options.node_name = _loaded_scene_map[_current_scene_enum].container_node.name
-	options.add_to_back = false
-	switch_to_scene(_current_scene_enum, options)
+	switch_to_scene(_current_scene_enum, false, options)
 	return true
 
 
@@ -353,32 +330,67 @@ func exit_game(fade_time: float = 1.0) -> void:
 	get_tree().quit(0)
 
 
-## Instantiates the loaded scene into the tree (initially hidden).
-## Should be called after load_finished following a preload_scene_async call.
+# ------------- [Async Loading] -------------
+func preload_scene_async(scene: Scenes.Id, use_sub_threads = false) -> void:
+	if scene == Scenes.Id.NONE:
+		return
+	_load_scene_path = _scene_db.get_scene_path_from_enum(scene)
+	_load_scene_id = scene
+	set_process(true)
+	ResourceLoader.load_threaded_request(_load_scene_path, "", use_sub_threads)
+
+
+func load_scene_with_transition(
+	next_scene: Scenes.Id, transition_scene: Scenes.Id, options := SceneLoadOptions.new()
+) -> void:
+	_reserved_scene_id = next_scene
+	_reserved_options = options.copy()
+	_reserved_mode = _C.SceneLoadingMode.SINGLE
+
+	var trans_options := SceneLoadOptions.new()
+	trans_options.node_name = _C.DEFAULT_LOADING_NODE_NAME
+
+	add_scene(transition_scene, trans_options)
+
+
 func instantiate_async_result() -> void:
-	if _loading_scene_path == "" or _reserved_scene_id == Scenes.Id.NONE:
+	if _load_scene_path == "" or _reserved_scene_id == Scenes.Id.NONE:
 		push_warning("instantiate_async_result: No reserved scene to instantiate.")
 		return
 
-	var res := ResourceLoader.load_threaded_get(_loading_scene_path) as PackedScene
+	var res := ResourceLoader.load_threaded_get(_load_scene_path) as PackedScene
 	if res:
 		var scene_node := res.instantiate()
-		scene_node.scene_file_path = _loading_scene_path
+		scene_node.scene_file_path = _load_scene_path
 
-		var options := _reserved_options.copy()
-		if options.mode == _C.SceneLoadingMode.SINGLE:
-			options.mode = _C.SceneLoadingMode.SINGLE_NODE
+		# Temporarily add in ADDITIVE mode.
+		# To avoid name conflicts if _reserved_options.node_name is the same as an existing scene,
+		# we use a temporary unique name here.
+		var parent_node := _attach_scene_to_tree(
+			scene_node,
+			_C.SceneLoadingMode.ADDITIVE,
+			_to_tmp_name(_reserved_options.node_name),
+			false
+		)
 
-		var parent_node := _attach_scene_to_tree(scene_node, options)
-
-		# Ensure the parent_node is not the last node to keep the transition scene on top.
-		var root := get_tree().get_root()
+		# Place it right behind the loading screen (which is at the top).
+		var root := get_tree().root
 		root.move_child(parent_node, root.get_child_count() - 2)
 
 		_loaded_scene_map[_reserved_scene_id] = _SceneEntry.new(parent_node, scene_node)
+		_load_scene_path = ""
 
-		_loading_scene_path = ""
-		_load_scene_id = Scenes.Id.NONE
+
+static func _to_tmp_name(node_name: String) -> String:
+	return node_name + "_" + str(ResourceUID.create_id())
+
+
+static func _from_tmp_name(tmp_name: String) -> String:
+	var parts := tmp_name.split("_")
+	if parts.size() > 1:
+		parts.remove_at(parts.size() - 1)
+		return "_".join(parts)
+	return tmp_name
 
 
 ## When you added the loaded scene to the scene tree by `instantiate_async_result`
@@ -398,23 +410,28 @@ func activate_prepared_scene() -> void:
 
 	await _execute_fade_async(_reserved_options.fade_out_time, true)
 
-	# Unload the temporary transition/loading scene node.
-	_unload_node(_C.DEFAULT_LOADING_NODE_NAME)
+	# Remove the loading screen
+	_unload_scene(_C.DEFAULT_LOADING_NODE_NAME)
 
-	# If the original load options was SINGLE loading mode, then also remove any other
-	# node that isn't part of the load option node name.
-	if _reserved_options.mode == _C.SceneLoadingMode.SINGLE:
-		var current_node_name := _reserved_options.node_name
-		var targets: Array[String] = []
+	# In SINGLE mode, remove everything except the new scene (reserved_scene_id)
+	if _reserved_mode == _C.SceneLoadingMode.SINGLE:
+		var target_names: Array[String] = []
 		for id in _loaded_scene_map:
+			if id == _reserved_scene_id:
+				continue
+
 			var n_name := _loaded_scene_map[id].container_node.name
-			if n_name != current_node_name and n_name not in targets:
-				targets.append(n_name)
+			if n_name not in target_names:
+				target_names.append(n_name)
 
-		for n_name in targets:
-			_unload_node(n_name)
+		for t_name in target_names:
+			_unload_scene(t_name)
 
-	_current_scene_enum = _reserved_scene_id
+		# Revert the temporary name back to the original name to avoid conflicts
+		var cont := _loaded_scene_map[_reserved_scene_id].container_node
+		cont.name = _from_tmp_name(cont.name)
+
+		_current_scene_enum = _reserved_scene_id
 
 	await _execute_fade_async(_reserved_options.fade_in_time, false)
 
@@ -425,38 +442,17 @@ func activate_prepared_scene() -> void:
 	_reserved_options = null
 
 
-## Starts interactive (asynchronous) scene loading.
-## @param scene Target scene ID.
-## @param use_sub_threads Whether to use sub-threads.
-func preload_scene_async(scene: Scenes.Id, use_sub_threads = false) -> void:
+# ------------- [Utils] -------------
+func get_scene_blocking(scene: Scenes.Id) -> PackedScene:
 	if scene == Scenes.Id.NONE:
-		push_warning("Attempted to preload_scene_async a NONE scene. Skipping.")
-		return
-
-	_loading_scene_path = _scene_db.get_scene_path_from_enum(scene)
-	_load_scene_id = scene
-	set_process(true)
-	ResourceLoader.load_threaded_request(_loading_scene_path, "", use_sub_threads)
+		return null
+	var address := _scene_db.get_scene_path_from_enum(scene)
+	return load(address)
 
 
-## Executes scene transition via a loading/transition scene.
-## @param next_scene Final destination scene ID.
-## @param transition_scene Scene to display during loading.
-## @param options Load options for the final scene.
-func load_scene_with_transition(
-	next_scene: Scenes.Id, transition_scene: Scenes.Id, options := SceneLoadOptions.new()
-) -> void:
-	# Reserve the target scene.
-	_reserved_scene_id = next_scene
-	_reserved_options = options.copy()
-
-	# Configure the transition scene to appear on a separate node on top.
-	var trans_options := SceneLoadOptions.new()
-	trans_options.node_name = _C.DEFAULT_LOADING_NODE_NAME
-	trans_options.mode = _C.SceneLoadingMode.ADDITIVE
-	trans_options.add_to_back = false
-
-	switch_to_scene(transition_scene, trans_options)
+func create_scene_instance_blocking(scene: Scenes.Id) -> Node:
+	var pack := get_scene_blocking(scene)
+	return pack.instantiate() if pack else null
 
 
 ## Returns the currently reserved scene Enum.
