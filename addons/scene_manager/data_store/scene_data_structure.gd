@@ -173,7 +173,7 @@ func _scan_and_collect_uids(dir_path: String, collected_uids: Array[int]) -> voi
 			if file_name != "." and file_name != "..":
 				_scan_and_collect_uids(full_path, collected_uids)
 		elif file_name.ends_with(".tscn"):
-			var uid = _register_scene_file(full_path)
+			var uid := _register_scene_file(full_path)
 			if uid != ResourceUID.INVALID_ID:
 				collected_uids.append(uid)
 		file_name = dir.get_next()
@@ -291,7 +291,7 @@ func _register_scene_file(full_path: String) -> int:
 	var scene_name: String = base_name
 
 	# Handle duplicate names to ensure unique Enum keys
-	var existing_names: Array = []
+	var existing_names: Array[String] = []
 	for s in _scenes.values():
 		existing_names.append(s.name)
 
