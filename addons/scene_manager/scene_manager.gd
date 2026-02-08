@@ -151,21 +151,15 @@ func _on_initial_setup() -> void:
 ## @param speed Playback speed (seconds).
 ## @param is_out True for fade-out, false for fade-in.
 func _execute_fade_async(speed: float, is_out: bool) -> void:
-	if speed <= 0:
+	if speed > 0:
 		if is_out:
-			fade_out_finished.emit()
+			fade_out_started.emit()
+			_animation_player.play(_AnimKey.FADE, -1, 1.0 / speed, false)
 		else:
-			fade_in_finished.emit()
-		return
+			fade_in_started.emit()
+			_animation_player.play(_AnimKey.FADE, -1, -1.0 / speed, true)
 
-	if is_out:
-		fade_out_started.emit()
-		_animation_player.play(_AnimKey.FADE, -1, 1.0 / speed, false)
-	else:
-		fade_in_started.emit()
-		_animation_player.play(_AnimKey.FADE, -1, -1.0 / speed, true)
-
-	await _animation_player.animation_finished
+		await _animation_player.animation_finished
 
 	if is_out:
 		fade_out_finished.emit()
