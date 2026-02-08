@@ -186,9 +186,11 @@ metadata/enabled = true
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="padding" type="Control" parent="main_container/interactive_section_container/margin_refresh_save_container/refresh_save_container/auto_save_refresh_container"]
+[node name="check_invalid_ids_button" type="Button" parent="main_container/interactive_section_container/margin_refresh_save_container/refresh_save_container/auto_save_refresh_container"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+text = "Check Invalid Ids"
 
 [node name="auto_save_button" parent="main_container/interactive_section_container/margin_refresh_save_container/refresh_save_container/auto_save_refresh_container" instance=ExtResource("6_efl6f")]
 unique_name_in_owner = true
@@ -217,4 +219,5 @@ one_shot = true
 [connection signal="button_up" from="main_container/interactive_section_container/margin_refresh_save_container/refresh_save_container/save_refresh_container/refresh_button" to="." method="_on_refresh_button_up"]
 [connection signal="button_up" from="main_container/interactive_section_container/margin_refresh_save_container/refresh_save_container/save_refresh_container/save_container/save_button" to="." method="_on_save_button_button_up"]
 [connection signal="button_up" from="main_container/interactive_section_container/margin_refresh_save_container/refresh_save_container/save_refresh_container/save_container/unhide_include_button" to="." method="_on_hide_button_up"]
+[connection signal="button_up" from="main_container/interactive_section_container/margin_refresh_save_container/refresh_save_container/auto_save_refresh_container/check_invalid_ids_button" to="." method="_on_check_invalid_ids_button_button_up"]
 [connection signal="timeout" from="SaveDelayTimer" to="." method="_on_save_delay_timer_timeout"]
