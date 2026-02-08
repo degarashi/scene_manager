@@ -262,6 +262,11 @@ func _perform_transition_blocking(
 		if mode == _C.SceneLoadingMode.SINGLE:
 			_current_scene_enum = scene
 		scene_loaded.emit()
+	else:
+		push_error("Scene Manager: Failed to instantiate scene with ID %d" % scene)
+		_set_clickable(true)
+		_is_transitioning = false
+		return
 
 	await _execute_fade_async(options.fade_in_time, false)
 
