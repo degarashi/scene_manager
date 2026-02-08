@@ -178,8 +178,6 @@ func _set_clickable(clickable: bool) -> void:
 func _attach_scene_to_tree(
 	node: Node, mode: _C.SceneLoadingMode, node_name: String, add_to_back: bool
 ) -> Control:
-	var root := get_tree().root
-
 	# If SINGLE, send all existing nodes to the trash
 	if mode == _C.SceneLoadingMode.SINGLE:
 		_unload_all_nodes()
@@ -189,7 +187,7 @@ func _attach_scene_to_tree(
 	# At this point, the node with node_name has been removed from root (moved to trash).
 	# This ensures the newly created wrapper will have the exact name specified.
 	var parent_node := _create_ui_wrapper(node_name)
-	root.add_child(parent_node)
+	get_tree().root.add_child(parent_node)
 
 	parent_node.add_child(node)
 
@@ -245,8 +243,8 @@ func _unload_all_nodes() -> void:
 		_unload_scene(n_name)
 
 
-# Internal common transition logic
-func _perform_transition(
+# Internal common transition logic (blocking)
+func _perform_transition_blocking(
 	scene: Scenes.Id, mode: _C.SceneLoadingMode, add_to_back: bool, options: SceneLoadOptions
 ) -> void:
 	_is_transitioning = true
@@ -254,7 +252,6 @@ func _perform_transition(
 
 	await _execute_fade_async(options.fade_out_time, true)
 
-	# --- Actual scene switching ---
 	var new_scene_node := create_scene_instance_blocking(scene)
 	if new_scene_node:
 		var parent_node := _attach_scene_to_tree(
@@ -264,7 +261,6 @@ func _perform_transition(
 		if mode == _C.SceneLoadingMode.SINGLE:
 			_current_scene_enum = scene
 		scene_loaded.emit()
-	# ------
 
 	await _execute_fade_async(options.fade_in_time, false)
 
@@ -279,14 +275,14 @@ func switch_to_scene(
 ) -> void:
 	if scene == Scenes.Id.NONE:
 		return
-	_perform_transition(scene, _C.SceneLoadingMode.SINGLE, add_to_back, options)
+	_perform_transition_blocking(scene, _C.SceneLoadingMode.SINGLE, add_to_back, options)
 
 
 ## Adds a scene while keeping the current scene (for UI or sub-screens).
 func add_scene(scene: Scenes.Id, options := SceneLoadOptions.new()) -> void:
 	if scene == Scenes.Id.NONE:
 		return
-	_perform_transition(scene, _C.SceneLoadingMode.ADDITIVE, false, options)
+	_perform_transition_blocking(scene, _C.SceneLoadingMode.ADDITIVE, false, options)
 
 
 func load_previous_scene() -> bool:
