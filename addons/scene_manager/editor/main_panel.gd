@@ -11,6 +11,7 @@ const _EBUS_I = preload("uid://bnwpfojr6e0dh")
 const _C = preload("uid://c3vvdktou45u")
 const _ICON_EXPAND_BUTTON = preload("uid://t6iu67x15d3")
 const _ICON_COLLAPSE_BUTTON = preload("uid://bd6ob6pgam1gt")
+const _ALL_SECTION_NAME = "All"
 
 var _ps := preload("uid://dn6eh4s0h8jhi")
 var _manager_data: SMgrData
@@ -235,7 +236,7 @@ func _reload_ui_scenes() -> void:
 	# Obtain and update the scene internally via EventBus
 	var prim_sec: SMgrSection = _PRIMARY_SECTION_SCENE.instantiate()
 	_section_tab_cont.add_child(prim_sec)
-	prim_sec.setup(_C.ALL_SECTION_NAME)
+	prim_sec.setup(_ALL_SECTION_NAME)
 	prim_sec.on_remove.connect(_on_section_remove)
 
 	for section in _manager_data.get_sections_list():
