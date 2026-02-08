@@ -17,6 +17,16 @@ signal fade_in_finished
 ## Emitted when the fade-out effect finishes.
 signal fade_out_finished
 
+## Enums for how to load the scene.
+enum _SceneLoadingMode {
+	## Will make it so only one scene will exist for the whole tree. Default option.
+	SINGLE,
+	## Will make it so only one scene will exist for the specified node.
+	SINGLE_NODE,
+	## Will add the scene to the node along with anything else loaded.
+	ADDITIVE
+}
+
 # ------------- [Constants] -------------
 const _C = preload("uid://c3vvdktou45u")
 const _RING_BUFFER = preload("uid://t3tlcswbndjo")
@@ -57,7 +67,7 @@ var _load_progress: Array = []
 var _reserved_scene_id: Scenes.Id = Scenes.Id.NONE
 ## Load options for the reserved scene.
 var _reserved_options: SceneLoadOptions
-var _reserved_mode: _C.SceneLoadingMode = _C.SceneLoadingMode.SINGLE
+var _reserved_mode := _SceneLoadingMode.SINGLE
 
 ## Scenes currently present in the field (Key: Scene-Id, Value: _SceneEntry).
 var _loaded_scene_map: Dictionary[Scenes.Id, _SceneEntry] = {}
@@ -177,12 +187,12 @@ func _set_clickable(clickable: bool) -> void:
 
 ## Attaches a specified node to the scene tree and unloads existing nodes if necessary.
 func _attach_scene_to_tree(
-	node: Node, mode: _C.SceneLoadingMode, node_name: String, add_to_back: bool
+	node: Node, mode: _SceneLoadingMode, node_name: String, add_to_back: bool
 ) -> Control:
 	# If SINGLE, send all existing nodes to the trash
-	if mode == _C.SceneLoadingMode.SINGLE:
+	if mode == _SceneLoadingMode.SINGLE:
 		_unload_all_nodes()
-	elif mode == _C.SceneLoadingMode.SINGLE_NODE:
+	elif mode == _SceneLoadingMode.SINGLE_NODE:
 		_unload_scene(node_name, false)
 
 	# At this point, the node with node_name has been removed from root (moved to trash).
@@ -192,7 +202,7 @@ func _attach_scene_to_tree(
 
 	parent_node.add_child(node)
 
-	if add_to_back and _current_scene_enum != Scenes.Id.NONE and mode == _C.SceneLoadingMode.SINGLE:
+	if add_to_back and _current_scene_enum != Scenes.Id.NONE and mode == _SceneLoadingMode.SINGLE:
 		_history_stack.push(_current_scene_enum)
 
 	return parent_node
@@ -247,7 +257,7 @@ func _unload_all_nodes() -> void:
 
 # Internal common transition logic (blocking)
 func _perform_transition_blocking(
-	scene: Scenes.Id, mode: _C.SceneLoadingMode, add_to_back: bool, options: SceneLoadOptions
+	scene: Scenes.Id, mode: _SceneLoadingMode, add_to_back: bool, options: SceneLoadOptions
 ) -> void:
 	_is_transitioning = true
 	_set_clickable(options.clickable)
@@ -260,7 +270,7 @@ func _perform_transition_blocking(
 			new_scene_node, mode, options.node_name, add_to_back
 		)
 		_loaded_scene_map[scene] = _SceneEntry.new(parent_node, new_scene_node)
-		if mode == _C.SceneLoadingMode.SINGLE:
+		if mode == _SceneLoadingMode.SINGLE:
 			_current_scene_enum = scene
 		scene_loaded.emit()
 	else:
@@ -282,14 +292,14 @@ func switch_to_scene(
 ) -> void:
 	if scene == Scenes.Id.NONE:
 		return
-	_perform_transition_blocking(scene, _C.SceneLoadingMode.SINGLE, add_to_back, options)
+	_perform_transition_blocking(scene, _SceneLoadingMode.SINGLE, add_to_back, options)
 
 
 ## Adds a scene while keeping the current scene (for UI or sub-screens).
 func add_scene(scene: Scenes.Id, options := SceneLoadOptions.new()) -> void:
 	if scene == Scenes.Id.NONE:
 		return
-	_perform_transition_blocking(scene, _C.SceneLoadingMode.ADDITIVE, false, options)
+	_perform_transition_blocking(scene, _SceneLoadingMode.ADDITIVE, false, options)
 
 
 func load_previous_scene() -> bool:
@@ -342,7 +352,7 @@ func load_scene_with_transition(
 ) -> void:
 	_reserved_scene_id = next_scene
 	_reserved_options = options.copy()
-	_reserved_mode = _C.SceneLoadingMode.SINGLE
+	_reserved_mode = _SceneLoadingMode.SINGLE
 
 	var trans_options := SceneLoadOptions.new()
 	trans_options.node_name = _LOADING_NODE_NAME
@@ -365,7 +375,7 @@ func instantiate_async_result() -> void:
 		# we use a temporary unique name here.
 		var parent_node := _attach_scene_to_tree(
 			scene_node,
-			_C.SceneLoadingMode.ADDITIVE,
+			_SceneLoadingMode.ADDITIVE,
 			_to_tmp_name(_reserved_options.node_name),
 			false
 		)
@@ -411,7 +421,7 @@ func activate_prepared_scene() -> void:
 	_unload_scene(_LOADING_NODE_NAME)
 
 	# In SINGLE mode, remove everything except the new scene (reserved_scene_id)
-	if _reserved_mode == _C.SceneLoadingMode.SINGLE:
+	if _reserved_mode == _SceneLoadingMode.SINGLE:
 		var target_names: Array[String] = []
 		for id in _loaded_scene_map:
 			if id == _reserved_scene_id:
