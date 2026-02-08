@@ -341,6 +341,14 @@ func _on_save_delay_timer_timeout() -> void:
 # --- Invalid SceneId Detection ---
 func _on_check_invalid_ids_button_button_up() -> void:
 	print("Scene Manager: Checking for invalid Scenes.Id references...")
+
+	# Reload the script to ensure Scenes.Id enum is up to date
+	var script: GDScript = ResourceLoader.load(
+		_ps.scene_path, "GDScript", ResourceLoader.CACHE_MODE_REPLACE
+	)
+	if script:
+		Scenes.set_script(script)
+
 	var count: int = _scan_project_for_invalid_ids("res://")
 	if count == 0:
 		print("Scene Manager: No invalid Scenes.Id references found.")
