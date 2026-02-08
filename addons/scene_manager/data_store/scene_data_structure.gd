@@ -44,9 +44,27 @@ var _dirty_flag: bool = false:
 
 func _init() -> void:
 	data_changed.connect(func() -> void: _dirty_flag = true)
+	# Setup filesystem monitoring if running within the editor
+	if Engine.is_editor_hint():
+		setup_filesystem_monitoring.call_deferred()
 
 
 # --- Internal Methods (Private) ---
+
+
+## Setup monitoring for filesystem changes
+func setup_filesystem_monitoring() -> void:
+	var fs := EditorInterface.get_resource_filesystem()
+	if not fs.filesystem_changed.is_connected(_on_filesystem_changed):
+		fs.filesystem_changed.connect(_on_filesystem_changed)
+
+
+## Callback triggered when the filesystem changes (file added, removed, moved, etc.)
+func _on_filesystem_changed() -> void:
+	# Automatically scan and sync new files within include paths
+	sync_with_filesystem()
+
+
 func _export_enum_gd_string() -> String:
 	var ret: String = SCENE_DATA_HEADER
 	ret += CommentKey.ENUM + "\n"
@@ -86,6 +104,7 @@ func save_data(path: String, data_path: String) -> void:
 ## Rescans registered include paths, removes non-existent scenes, and registers new scenes
 func sync_with_filesystem() -> void:
 	var found_uids: Array[int] = []
+	var changed := false
 
 	# Scan each path in the include list
 	for path in _include_list:
@@ -114,6 +133,11 @@ func sync_with_filesystem() -> void:
 	if not uids_to_remove.is_empty():
 		for uid in uids_to_remove:
 			_scenes.erase(uid)
+		changed = true
+
+	# Although data_changed is emitted inside _register_scene_file when a file is added,
+	# we emit it here to ensure notification if deletions occurred.
+	if changed:
 		data_changed.emit()
 
 
