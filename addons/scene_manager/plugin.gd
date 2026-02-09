@@ -68,6 +68,10 @@ func _enable_plugin() -> void:
 		_register_autoloads()
 
 
+func _disable_plugin() -> void:
+	_unregister_autoloads()
+
+
 func _setup_default_data() -> bool:
 	if not FileAccess.file_exists(_ps.scene_data_path):
 		var source_dir: String = "res://addons/scene_manager/default_data/"
@@ -109,3 +113,10 @@ func _register_autoloads() -> void:
 		add_autoload_singleton("SceneManager", "res://addons/scene_manager/scene_manager.tscn")
 	if not ProjectSettings.has_setting("autoload/Scenes"):
 		add_autoload_singleton("Scenes", _ps.scene_path)
+
+
+func _unregister_autoloads() -> void:
+	if ProjectSettings.has_setting("autoload/SceneManager"):
+		remove_autoload_singleton("SceneManager")
+	if ProjectSettings.has_setting("autoload/Scenes"):
+		remove_autoload_singleton("Scenes")
