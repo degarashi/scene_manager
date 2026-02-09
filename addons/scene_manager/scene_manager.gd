@@ -237,6 +237,10 @@ func add_scene(scene: Scenes.Id, options := SceneLoadOptions.new()) -> void:
 		push_warning("Scene Manager: add_scene called with NONE.")
 		return
 
+	if _loaded_scene_map.has(scene):
+		push_warning("Scene Manager: Scene %d is already loaded (additive)." % scene)
+		return
+
 	# Additive mode: No fading, only name conflict resolution
 	_unload_scene(options.node_name, false)
 
