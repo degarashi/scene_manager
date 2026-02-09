@@ -6,8 +6,8 @@ func _on_load_scene_2_button_button_up() -> void:
 
 
 func _on_reload_button_button_up() -> void:
-	SceneManager.reload_current_scene()
+	SceneManager.reload_current_scene(opt)
 
 
 func _on_quit_button_button_up() -> void:
-	SceneManager.exit_game()
+	SceneManager.exit_game(opt.fade_out_time)
