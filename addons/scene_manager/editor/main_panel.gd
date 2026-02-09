@@ -58,6 +58,7 @@ func _ready() -> void:
 
 func _exit_tree() -> void:
 	_disconnect_ebus()
+	_cleanup_manager_data()
 
 
 func _on_filesystem_changed() -> void:
@@ -196,6 +197,7 @@ func _disconnect_ebus() -> void:
 	_EBUS.change_scene_name.disconnect(_change_scene_name)
 	_EBUS.get_dirty_flag.disconnect(_get_dirty_flag)
 	_EBUS_I.get_scene_enums.disconnect(_get_scene_enums)
+	_connect_ebus = false
 
 
 func _remove_include_path(item: SMgrRemovableItem) -> void:
@@ -251,16 +253,18 @@ func _refresh_ui() -> void:
 	_reload_ui_includes()
 
 
-func _reload_data() -> void:
+func _cleanup_manager_data() -> void:
 	if _manager_data:
 		_manager_data.data_changed_debounced.disconnect(_refresh_ui)
 		_manager_data.on_dirty_flag_changed.disconnect(_on_dirty_flag_changed)
+		_manager_data = null
 
-	assert(ResourceLoader.exists(_ps.scene_data_path))
+
+func _reload_data() -> void:
+	_cleanup_manager_data()
+
 	_manager_data = ResourceLoader.load(_ps.scene_data_path)
-
 	_update_last_modified_time()
-
 	_manager_data.data_changed_debounced.connect(_refresh_ui)
 	_manager_data.on_dirty_flag_changed.connect(_on_dirty_flag_changed)
 	_EBUS.on_dirty_flag_changed.emit(false)
