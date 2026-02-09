@@ -53,7 +53,6 @@ var _is_reserved_as_additive: bool = false
 ## Scenes currently present in the field (Key: Scene-Id, Value: _SceneEntry).
 var _loaded_scene_map: Dictionary[Scenes.Id, _SceneEntry] = {}
 var _current_scene_enum: Scenes.Id = Scenes.Id.NONE
-var _is_transitioning: bool = false
 var _trash_node: Control
 var _effector: Node = null
 
@@ -61,14 +60,10 @@ var _effector: Node = null
 
 
 func _set_transitioning(clickable: bool) -> void:
-	assert(not _is_transitioning)
-	_is_transitioning = true
 	_effector.set_clickable(clickable)
 
 
 func _end_transitioning() -> void:
-	assert(_is_transitioning)
-	_is_transitioning = false
 	_effector.set_clickable(true)
 
 
