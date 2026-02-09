@@ -2,19 +2,17 @@ extends Node
 ## Main SceneManager that handles adding and transitioning between scenes.
 
 # ------------- [Signal] -------------
-## Emitted when loading is completed.
-signal load_finished
 ## Emitted when loading progress (0-100) changes.
 signal load_percent_changed(value: int)
+signal load_finished
+signal load_failed
+
 ## Emitted when scene instantiation is completed.
 signal scene_loaded
-## Emitted at the start of the fade-in effect.
+
 signal fade_in_started
-## Emitted at the start of the fade-out effect.
 signal fade_out_started
-## Emitted when the fade-in effect finishes.
 signal fade_in_finished
-## Emitted when the fade-out effect finishes.
 signal fade_out_finished
 
 # ------------- [Constants] -------------
@@ -122,13 +120,21 @@ func _check_loading_progress() -> void:
 	if prev_percent != next_percent:
 		load_percent_changed.emit(next_percent)
 
+	var on_fail := func(reason: String) -> void:
+		_enable_process(false)
+		push_error("Scene Manager: Loading failed for: %s (%s)" % [_load_scene_path, reason])
+		load_failed.emit()
+
 	if status == ResourceLoader.THREAD_LOAD_LOADED:
 		_enable_process(false)
 		_load_progress.clear()
 		load_finished.emit()
-	elif status in [ResourceLoader.THREAD_LOAD_FAILED, ResourceLoader.THREAD_LOAD_INVALID_RESOURCE]:
-		_enable_process(false)
-		push_error("Scene Manager: Loading failed for: %s" % _load_scene_path)
+	elif status == ResourceLoader.THREAD_LOAD_FAILED:
+		on_fail.call("Generic error")
+	elif status == ResourceLoader.THREAD_LOAD_INVALID_RESOURCE:
+		on_fail.call("Invalid resource")
+	else:
+		assert(status == ResourceLoader.THREAD_LOAD_IN_PROGRESS)
 
 
 func _create_ui_wrapper(node_name: String) -> Control:
