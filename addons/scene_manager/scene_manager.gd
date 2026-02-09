@@ -337,13 +337,16 @@ func preload_scene_async(scene: Scenes.Id, use_sub_threads = false) -> void:
 
 
 func load_scene_with_transition(
-	next_scene: Scenes.Id, transition_scene: Scenes.Id, options := SceneLoadOptions.new()
+	next_scene: Scenes.Id,
+	transition_scene: Scenes.Id,
+	opt_fade_in := SceneLoadOptions.new(),
+	opt_activate := opt_fade_in
 ) -> void:
 	_reserved_scene_id = next_scene
-	_reserved_options = options.copy()
+	_reserved_options = opt_activate.copy()
 	_is_reserved_as_additive = false
 
-	var trans_options := SceneLoadOptions.new()
+	var trans_options := opt_fade_in.copy()
 	trans_options.node_name = _LOADING_NODE_NAME
 
 	add_scene(transition_scene, trans_options)
