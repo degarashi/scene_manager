@@ -58,14 +58,6 @@ var _effector: Node = null
 @onready var _loader_mgr := _RESOURCE_LOADER.new()
 
 
-func _set_transitioning(clickable: bool) -> void:
-	_effector.set_clickable(clickable)
-
-
-func _end_transitioning() -> void:
-	_effector.set_clickable(true)
-
-
 # ------------- [Callbacks] -------------
 func _ready() -> void:
 	# Add ResourceLoaderMgr as a child to let it process
@@ -203,7 +195,7 @@ func switch_to_scene(
 		return
 
 	# --- Transition Start ---
-	_set_transitioning(options.clickable)
+	_effector.set_clickable(options.clickable)
 	await _effector.fade_out(options.fade_out_time)
 
 	# --- Scene Replacement ---
@@ -215,7 +207,7 @@ func switch_to_scene(
 	var new_scene_node := create_scene_instance_blocking(scene)
 	if not new_scene_node:
 		push_error("Scene Manager: Failed to instantiate switch_to_scene: %d" % scene)
-		_end_transitioning()
+		_effector.set_clickable(true)
 		return
 
 	var parent_node := _create_ui_wrapper(options.node_name)
@@ -228,7 +220,7 @@ func switch_to_scene(
 	scene_loaded.emit()
 
 	await _effector.fade_in(options.fade_out_time)
-	_end_transitioning()
+	_effector.set_clickable(true)
 
 
 ## Adds a scene while keeping the current scene. (Additive Routine)
@@ -285,7 +277,7 @@ func reload_current_scene(options := SceneLoadOptions.new()) -> bool:
 ## Quits the game after a fade-out effect.
 ## @param fade_time Duration of the fade-out (seconds).
 func exit_game(fade_time: float = 1.0) -> void:
-	_set_transitioning(false)
+	_effector.set_clickable(false)
 	await _effector.fade_out(fade_time)
 	get_tree().quit(0)
 
@@ -384,7 +376,7 @@ func activate_prepared_scene() -> void:
 		_loaded_scene_map.has(_reserved_scene_id), "Scene Manager: Reserved scene entry missing."
 	)
 
-	_set_transitioning(_reserved_options.clickable)
+	_effector.set_clickable(_reserved_options.clickable)
 	await _effector.fade_out(_reserved_options.fade_out_time)
 
 	# Remove the loading screen
@@ -413,7 +405,7 @@ func activate_prepared_scene() -> void:
 	_reserved_scene_id = Scenes.Id.NONE
 	_reserved_options = null
 
-	_end_transitioning()
+	_effector.set_clickable(true)
 
 
 # ------------- [Utils] -------------
