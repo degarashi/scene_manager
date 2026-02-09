@@ -70,6 +70,18 @@ var _trash_node: Control
 @onready var _history_stack := _RING_BUFFER.new()
 
 
+func _set_transitioning(clickable: bool) -> void:
+	assert(not _is_transitioning)
+	_is_transitioning = true
+	_set_clickable(clickable)
+
+
+func _end_transitioning() -> void:
+	assert(_is_transitioning)
+	_is_transitioning = false
+	_set_clickable(true)
+
+
 # ------------- [Callbacks] -------------
 func _ready() -> void:
 	_init_trash_node()
@@ -279,32 +291,26 @@ func _perform_transition_blocking(
 	scene: Scenes.Id, is_additive: bool, add_to_back: bool, options: SceneLoadOptions
 ) -> void:
 	assert(scene != Scenes.Id.NONE, "Scene Manager: Cannot transition to Scenes.Id.NONE.")
-	assert(not _is_transitioning, "Scene Manager: Already in a transition state.")
 
-	_is_transitioning = true
-	_set_clickable(options.clickable)
-
+	_set_transitioning(options.clickable)
 	await _execute_fade_async(options.fade_out_time, true)
 
 	var new_scene_node := create_scene_instance_blocking(scene)
-	if new_scene_node:
-		var parent_node := _attach_scene_to_tree(
-			new_scene_node, is_additive, options.node_name, add_to_back
-		)
-		_loaded_scene_map[scene] = _SceneEntry.new(parent_node, new_scene_node)
-		if not is_additive:
-			_current_scene_enum = scene
-		scene_loaded.emit()
-	else:
+	if not new_scene_node:
 		push_error("Scene Manager: Failed to instantiate scene with ID %d" % scene)
-		_set_clickable(true)
-		_is_transitioning = false
+		_end_transitioning()
 		return
 
-	await _execute_fade_async(options.fade_in_time, false)
+	var parent_node := _attach_scene_to_tree(
+		new_scene_node, is_additive, options.node_name, add_to_back
+	)
+	_loaded_scene_map[scene] = _SceneEntry.new(parent_node, new_scene_node)
+	if not is_additive:
+		_current_scene_enum = scene
+	scene_loaded.emit()
 
-	_set_clickable(true)
-	_is_transitioning = false
+	await _execute_fade_async(options.fade_in_time, false)
+	_end_transitioning()
 
 
 # ------------- [Public Methods] -------------
@@ -351,9 +357,7 @@ func reload_current_scene() -> bool:
 ## Quits the game after a fade-out effect.
 ## @param fade_time Duration of the fade-out (seconds).
 func exit_game(fade_time: float = 1.0) -> void:
-	assert(not _is_transitioning, "Scene Manager: Cannot exit during a transition.")
-	_is_transitioning = true
-	_set_clickable(false)
+	_set_transitioning(false)
 	# Execute and wait for fade-out.
 	await _execute_fade_async(fade_time, true)
 	# Exit.
@@ -440,15 +444,11 @@ func activate_prepared_scene() -> void:
 			"activate_prepared_scene called but no scene is reserved. Ensure you are in an async load flow."
 		)
 		return
-
-	assert(not _is_transitioning, "Scene Manager: Already in a transition state.")
 	assert(
 		_loaded_scene_map.has(_reserved_scene_id), "Scene Manager: Reserved scene entry missing."
 	)
 
-	_is_transitioning = true
-	_set_clickable(_reserved_options.clickable)
-
+	_set_transitioning(_reserved_options.clickable)
 	await _execute_fade_async(_reserved_options.fade_out_time, true)
 
 	# Remove the loading screen
@@ -473,11 +473,11 @@ func activate_prepared_scene() -> void:
 
 	await _execute_fade_async(_reserved_options.fade_in_time, false)
 
-	_set_clickable(true)
 	# Reset the reserved scene information now that the scene has fully loaded.
-	_is_transitioning = false
 	_reserved_scene_id = Scenes.Id.NONE
 	_reserved_options = null
+
+	_end_transitioning()
 
 
 # ------------- [Utils] -------------
