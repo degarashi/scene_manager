@@ -75,7 +75,7 @@ var _trash_node: Control
 # ------------- [Callbacks] -------------
 func _ready() -> void:
 	_init_trash_node()
-	set_process(false)
+	_enable_process(false)
 
 	# SMgrData is a Resource, so read it with the loader
 	_scene_db = load(_ps.scene_data_path)
@@ -100,6 +100,15 @@ func _init_trash_node() -> void:
 	add_child(_trash_node)
 
 
+func _enable_process(enable: bool) -> void:
+	set_process(enable)
+	if enable:
+		assert(
+			not _load_scene_path.is_empty(),
+			"Scene Manager: _enable_process(true) called but _load_scene_path is empty."
+		)
+
+
 ## Checks progress during asynchronous scene loading and emits signals.
 func _check_loading_progress() -> void:
 	assert(
@@ -114,11 +123,11 @@ func _check_loading_progress() -> void:
 		load_percent_changed.emit(next_percent)
 
 	if status == ResourceLoader.THREAD_LOAD_LOADED:
-		set_process(false)
+		_enable_process(false)
 		_load_progress.clear()
 		load_finished.emit()
 	elif status in [ResourceLoader.THREAD_LOAD_FAILED, ResourceLoader.THREAD_LOAD_INVALID_RESOURCE]:
-		set_process(false)
+		_enable_process(false)
 		push_error("Scene Manager: Loading failed for: %s" % _load_scene_path)
 
 
@@ -351,7 +360,7 @@ func preload_scene_async(scene: Scenes.Id, use_sub_threads = false) -> void:
 		return
 	_load_scene_path = _scene_db.get_scene_path_from_enum(scene)
 	_load_scene_id = scene
-	set_process(true)
+	_enable_process(true)
 	ResourceLoader.load_threaded_request(_load_scene_path, "", use_sub_threads)
 
 
