@@ -357,6 +357,7 @@ func instantiate_async_result() -> void:
 		push_warning("instantiate_async_result: No reserved scene to instantiate.")
 		return
 
+	_enable_process(false)
 	var res := ResourceLoader.load_threaded_get(_load_scene_path) as PackedScene
 	if res:
 		var scene_node := res.instantiate()
