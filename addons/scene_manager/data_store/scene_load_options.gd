@@ -56,3 +56,10 @@ func _init(
 ## Create a deep copy of the SceneLoadOptions instance.
 func copy() -> SceneLoadOptions:
 	return self.duplicate() as SceneLoadOptions
+
+
+func _to_string() -> String:
+	return (
+		"SceneLoadOptions(node_name='%s', fade_out_time=%.2f, fade_in_time=%.2f, clickable=%s)"
+		% [node_name, fade_out_time, fade_in_time, clickable]
+	)
