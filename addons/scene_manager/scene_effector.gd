@@ -1,7 +1,5 @@
 extends Node
 
-signal finished
-
 
 ## Definition of animation keys.
 class _AnimKey:
@@ -27,7 +25,6 @@ func _play_fade(speed: float, backwards: bool) -> void:
 	assert(not _is_playing, "SceneEffector: Fade logic called while animation is already playing.")
 
 	if speed <= 0:
-		finished.emit()
 		return
 
 	_is_playing = true
@@ -39,7 +36,6 @@ func _play_fade(speed: float, backwards: bool) -> void:
 	await _animation_player.animation_finished
 
 	_is_playing = false
-	finished.emit()
 
 
 func fade_out(speed: float) -> void:
