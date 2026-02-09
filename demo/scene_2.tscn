@@ -1,28 +1,15 @@
 [gd_scene load_steps=3 format=3 uid="uid://ci2f28yyimdrf"]
 
 [ext_resource type="Script" uid="uid://cujce4jodihjj" path="res://demo/scene_2.gd" id="1_qfws2"]
-[ext_resource type="Resource" uid="uid://0j37pjg3x7cj" path="res://demo/transition_setting.tres" id="2_8tuqg"]
+[ext_resource type="PackedScene" uid="uid://ecxo0comsyff" path="res://demo/scene_base.tscn" id="1_y5x6j"]
 
-[node name="Scene2" type="Control"]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="Scene2" instance=ExtResource("1_y5x6j")]
 script = ExtResource("1_qfws2")
-opt = ExtResource("2_8tuqg")
 
-[node name="ColorRect" type="ColorRect" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(1.0588765e-06, 0.43372267, 0.45321214, 1)
+[node name="ColorRect" parent="." index="0"]
+color = Color(0.4378188, 0.1613518, 0.2446549, 1)
 
-[node name="Label" type="Label" parent="."]
+[node name="Label" type="Label" parent="." index="1"]
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -35,7 +22,7 @@ grow_horizontal = 2
 theme_override_font_sizes/font_size = 45
 text = "SCENE 2"
 
-[node name="LoadScene0Button" type="Button" parent="."]
+[node name="LoadScene0Button" type="Button" parent="." index="2"]
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5

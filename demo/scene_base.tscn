@@ -1,0 +1,23 @@
+[gd_scene load_steps=3 format=3 uid="uid://ecxo0comsyff"]
+
+[ext_resource type="Script" uid="uid://cd1to85vthex0" path="res://demo/scene_base.gd" id="1_yk0k1"]
+[ext_resource type="Resource" uid="uid://0j37pjg3x7cj" path="res://demo/transition_setting.tres" id="2_n7kom"]
+
+[node name="SceneBase" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_yk0k1")
+opt = ExtResource("2_n7kom")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.27, 0.27, 0.27, 1)
