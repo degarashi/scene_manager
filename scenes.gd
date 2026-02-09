@@ -9,6 +9,7 @@ extends Node
 enum Id \
 { 
 	NONE = -1,
+	ADDITIONAL_0,
 	FAKE_LOADING_SCREEN,
 	LOADING_SCREEN,
 	SCENE_1,

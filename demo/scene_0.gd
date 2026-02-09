@@ -1,6 +1,4 @@
-extends Control
-
-@export var opt: SceneLoadOptions
+extends "./scene_base.gd"
 
 
 func _on_scene_1_button_button_up() -> void:
@@ -9,10 +7,7 @@ func _on_scene_1_button_button_up() -> void:
 
 
 func _on_begin_loading_button_pressed() -> void:
-	var loading_opt := opt.copy()
-	SceneManager.load_scene_with_transition(
-		Scenes.Id.SCENE_1, Scenes.Id.LOADING_SCREEN, loading_opt
-	)
+	SceneManager.load_scene_with_transition(Scenes.Id.SCENE_1, Scenes.Id.LOADING_SCREEN, opt)
 
 
 func _on_quit_button_pressed() -> void:
@@ -20,7 +15,12 @@ func _on_quit_button_pressed() -> void:
 
 
 func _on_begin_fake_loading_button_pressed() -> void:
-	var loading_opt := opt.copy()
-	SceneManager.load_scene_with_transition(
-		Scenes.Id.SCENE_1, Scenes.Id.FAKE_LOADING_SCREEN, loading_opt
-	)
+	SceneManager.load_scene_with_transition(Scenes.Id.SCENE_1, Scenes.Id.FAKE_LOADING_SCREEN, opt)
+
+
+func _on_load_additional_button_button_up() -> void:
+	var opts := SceneLoadOptions.new()
+	opts.fade_out_time = 0
+	opts.fade_in_time = 0
+	opts.node_name = "HUD"
+	SceneManager.add_scene(Scenes.Id.ADDITIONAL_0, opts)

@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://di5525fdxb6mc"]
+[gd_scene load_steps=3 format=3 uid="uid://di5525fdxb6mc"]
 
 [ext_resource type="Script" uid="uid://d4kgnvujmxe6r" path="res://demo/scene_1.gd" id="1_j8d63"]
+[ext_resource type="Resource" uid="uid://0j37pjg3x7cj" path="res://demo/transition_setting.tres" id="2_y5avu"]
 
 [node name="Scene1" type="Control"]
 layout_mode = 3
@@ -10,6 +11,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_j8d63")
+opt = ExtResource("2_y5avu")
 
 [node name="ColorRect" type="ColorRect" parent="."]
 layout_mode = 1

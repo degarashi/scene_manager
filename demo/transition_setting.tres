@@ -4,7 +4,7 @@
 
 [resource]
 script = ExtResource("1_d86jb")
-fade_out_time = 0.5
-fade_in_time = 0.5
+fade_out_time = 0.1
+fade_in_time = 0.1
 clickable = false
 metadata/_custom_type_script = "uid://cnwtgrgtiwo2n"

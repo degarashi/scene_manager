@@ -14,6 +14,7 @@ script = ExtResource("1_leh0y")
 opt = ExtResource("2_okcq6")
 
 [node name="ColorRect" type="ColorRect" parent="."]
+visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -58,6 +59,16 @@ text = "Load Scene1 (with Loading)"
 layout_mode = 2
 text = "Load Scene1 (with Fake Loading)"
 
+[node name="HSeparator2" type="HSeparator" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="LoadAdditionalButton" type="Button" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+text = "Load Additional"
+
+[node name="HSeparator3" type="HSeparator" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+
 [node name="QuitButton" type="Button" parent="CenterContainer/VBoxContainer"]
 layout_mode = 2
 text = "Quit"
@@ -65,4 +76,5 @@ text = "Quit"
 [connection signal="button_up" from="CenterContainer/VBoxContainer/HBoxContainer/Scene1Button" to="." method="_on_scene_1_button_button_up"]
 [connection signal="pressed" from="CenterContainer/VBoxContainer/HBoxContainer/BeginLoadingButton" to="." method="_on_begin_loading_button_pressed"]
 [connection signal="pressed" from="CenterContainer/VBoxContainer/BeginFakeLoadingButton" to="." method="_on_begin_fake_loading_button_pressed"]
+[connection signal="button_up" from="CenterContainer/VBoxContainer/LoadAdditionalButton" to="." method="_on_load_additional_button_button_up"]
 [connection signal="pressed" from="CenterContainer/VBoxContainer/QuitButton" to="." method="_on_quit_button_pressed"]

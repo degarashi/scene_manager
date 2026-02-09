@@ -1,8 +1,8 @@
-extends Control
+extends "./scene_base.gd"
 
 
 func _on_load_scene_2_button_button_up() -> void:
-	SceneManager.switch_to_scene(Scenes.Id.SCENE_2, true)
+	SceneManager.switch_to_scene(Scenes.Id.SCENE_2, true, opt)
 
 
 func _on_reload_button_button_up() -> void:
