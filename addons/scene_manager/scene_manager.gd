@@ -16,6 +16,7 @@ const _RING_BUFFER = preload("uid://t3tlcswbndjo")
 const _INITIAL_FADE_IN_TIME = 1.0
 const _LOADING_NODE_NAME: String = "===Transition==="
 const _EFFECTOR_SCENE = preload("uid://2iy8wfgenjka")
+const _RESOURCE_LOADER = preload("uid://dabq3s83q0iku")
 
 
 # ------------- [Defines] -------------
@@ -36,11 +37,8 @@ class _SceneEntry:
 
 # ------------- [Private Variable] -------------
 var _scene_db: SMgrData
-var _load_scene_path: String = ""
 ## ID of the scene currently being loaded.
 var _load_scene_id: Scenes.Id = Scenes.Id.NONE
-## Array for holding raw loading progress data.
-var _load_progress: Array = []
 
 # Reservation info for asynchronous loading
 var _reserved_scene_id: Scenes.Id = Scenes.Id.NONE
@@ -56,6 +54,9 @@ var _effector: Node = null
 
 @onready var _history_stack := _RING_BUFFER.new()
 
+## ResourceLoaderMgr instance
+@onready var _loader_mgr := _RESOURCE_LOADER.new()
+
 
 func _set_transitioning(clickable: bool) -> void:
 	_effector.set_clickable(clickable)
@@ -67,9 +68,12 @@ func _end_transitioning() -> void:
 
 # ------------- [Callbacks] -------------
 func _ready() -> void:
+	# Add ResourceLoaderMgr as a child to let it process
+	add_child(_loader_mgr)
+	_loader_mgr.progress_changed.connect(_on_loader_progress_changed)
+
 	_init_trash_node()
 	_init_effector()
-	_enable_process(false)
 
 	var PS := preload("uid://dn6eh4s0h8jhi")
 	# SMgrData is a Resource, so read it with the loader
@@ -80,10 +84,6 @@ func _ready() -> void:
 	_current_scene_enum = _scene_db.get_scene_enum_by_path(current_path)
 
 	_on_initial_setup.call_deferred()
-
-
-func _process(_delta: float) -> void:
-	_check_loading_progress()
 
 
 # ------------- [Private Methods] -------------
@@ -101,43 +101,11 @@ func _init_trash_node() -> void:
 	add_child(_trash_node)
 
 
-func _enable_process(enable: bool) -> void:
-	set_process(enable)
-	if enable:
-		assert(
-			not _load_scene_path.is_empty(),
-			"Scene Manager: _enable_process(true) called but _load_scene_path is empty."
-		)
-
-
-## Checks progress during asynchronous scene loading and emits signals.
-func _check_loading_progress() -> void:
-	assert(
-		not _load_scene_path.is_empty(),
-		"Scene Manager: _check_loading_progress called but _load_scene_path is empty."
-	)
-	var prev_percent := int(_load_progress[0] * 100) if not _load_progress.is_empty() else 0
-	var status := ResourceLoader.load_threaded_get_status(_load_scene_path, _load_progress)
-	var next_percent := int(_load_progress[0] * 100)
-
-	if prev_percent != next_percent:
-		load_percent_changed.emit(next_percent)
-
-	var on_fail := func(reason: String) -> void:
-		_enable_process(false)
-		push_error("Scene Manager: Loading failed for: %s (%s)" % [_load_scene_path, reason])
-		load_failed.emit()
-
-	if status == ResourceLoader.THREAD_LOAD_LOADED:
-		_enable_process(false)
-		_load_progress.clear()
-		load_finished.emit()
-	elif status == ResourceLoader.THREAD_LOAD_FAILED:
-		on_fail.call("Generic error")
-	elif status == ResourceLoader.THREAD_LOAD_INVALID_RESOURCE:
-		on_fail.call("Invalid resource")
-	else:
-		assert(status == ResourceLoader.THREAD_LOAD_IN_PROGRESS)
+func _on_loader_progress_changed(_path: String, percent: int) -> void:
+	# If the progress is for our currently loading scene, emit signal
+	var loading_path := _scene_db.get_scene_path_from_enum(_load_scene_id)
+	if _path == loading_path:
+		load_percent_changed.emit(percent)
 
 
 func _create_ui_wrapper(node_name: String) -> Control:
@@ -328,14 +296,24 @@ func exit_game(fade_time: float = 1.0) -> void:
 
 
 # ------------- [Async Loading] -------------
-func preload_scene_async(scene: Scenes.Id, use_sub_threads = false) -> void:
+func preload_scene_async(scene: Scenes.Id, use_sub_threads: bool = true) -> void:
 	if scene == Scenes.Id.NONE:
 		push_warning("Scene Manager: preload_scene_async called with Scenes.Id.NONE.")
 		return
-	_load_scene_path = _scene_db.get_scene_path_from_enum(scene)
+
+	var path := _scene_db.get_scene_path_from_enum(scene)
 	_load_scene_id = scene
-	_enable_process(true)
-	ResourceLoader.load_threaded_request(_load_scene_path, "", use_sub_threads)
+
+	_loader_mgr.request(
+		path,
+		func(res: Resource):
+			if res:
+				load_finished.emit()
+			else:
+				load_failed.emit()
+				push_error("Scene Manager: Async load failed for %s" % path),
+		use_sub_threads
+	)
 
 
 func load_scene_with_transition(
@@ -358,15 +336,16 @@ func load_scene_with_transition(
 
 
 func instantiate_async_result() -> void:
-	if _load_scene_path == "" or _reserved_scene_id == Scenes.Id.NONE:
+	var path := _scene_db.get_scene_path_from_enum(_reserved_scene_id)
+	if path == "" or _reserved_scene_id == Scenes.Id.NONE:
 		push_warning("instantiate_async_result: No reserved scene to instantiate.")
 		return
 
-	_enable_process(false)
-	var res := ResourceLoader.load_threaded_get(_load_scene_path) as PackedScene
+	# Load directly (it should be cached in ResourceLoader by ResourceLoaderMgr)
+	var res := load(path) as PackedScene
 	if res:
 		var scene_node := res.instantiate()
-		scene_node.scene_file_path = _load_scene_path
+		scene_node.scene_file_path = path
 
 		# Temporarily additive to coexist with loading screen
 		var parent_node := _attach_scene_to_tree(
@@ -378,10 +357,9 @@ func instantiate_async_result() -> void:
 		root.move_child(parent_node, root.get_child_count() - 2)
 
 		_loaded_scene_map[_reserved_scene_id] = _SceneEntry.new(parent_node, scene_node)
-		_load_scene_path = ""
 	else:
 		push_error(
-			false, "Scene Manager: Failed to get threaded load result for %s" % _load_scene_path
+			false, "Scene Manager: Failed to get threaded load result for %s" % path
 		)
 
 
