@@ -396,10 +396,6 @@ func instantiate_async_result() -> void:
 
 	_enable_process(false)
 	var res := ResourceLoader.load_threaded_get(_load_scene_path) as PackedScene
-	assert(
-		res != null, "Scene Manager: Failed to get threaded load result for %s" % _load_scene_path
-	)
-
 	if res:
 		var scene_node := res.instantiate()
 		scene_node.scene_file_path = _load_scene_path
@@ -415,6 +411,10 @@ func instantiate_async_result() -> void:
 
 		_loaded_scene_map[_reserved_scene_id] = _SceneEntry.new(parent_node, scene_node)
 		_load_scene_path = ""
+	else:
+		push_error(
+			false, "Scene Manager: Failed to get threaded load result for %s" % _load_scene_path
+		)
 
 
 static func _to_tmp_name(node_name: String) -> String:
