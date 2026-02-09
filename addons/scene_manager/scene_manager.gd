@@ -223,13 +223,16 @@ func _perform_transition_blocking(
 ) -> void:
 	assert(scene != Scenes.Id.NONE, "Scene Manager: Cannot transition to Scenes.Id.NONE.")
 
-	_set_transitioning(options.clickable)
-	await _effector.fade_out(options.fade_out_time)
+	# --- Do not fade when additive ---
+	if not is_additive:
+		_set_transitioning(options.clickable)
+		await _effector.fade_out(options.fade_out_time)
 
 	var new_scene_node := create_scene_instance_blocking(scene)
 	if not new_scene_node:
 		push_error("Scene Manager: Failed to instantiate scene with ID %d" % scene)
-		_end_transitioning()
+		if not is_additive:
+			_end_transitioning()
 		return
 
 	var parent_node := _attach_scene_to_tree(
@@ -238,10 +241,13 @@ func _perform_transition_blocking(
 	_loaded_scene_map[scene] = _SceneEntry.new(parent_node, new_scene_node)
 	if not is_additive:
 		_current_scene_enum = scene
+
 	scene_loaded.emit()
 
-	await _effector.fade_in(options.fade_in_time)
-	_end_transitioning()
+	# --- Do not fade when additive ---
+	if not is_additive:
+		await _effector.fade_in(options.fade_out_time)
+		_end_transitioning()
 
 
 # ------------- [Public Methods] -------------
