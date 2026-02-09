@@ -35,8 +35,6 @@ class _SceneEntry:
 
 
 # ------------- [Private Variable] -------------
-static var _ps := preload("uid://dn6eh4s0h8jhi")
-
 var _scene_db: SMgrData
 var _load_scene_path: String = ""
 ## ID of the scene currently being loaded.
@@ -73,8 +71,9 @@ func _ready() -> void:
 	_init_effector()
 	_enable_process(false)
 
+	var PS := preload("uid://dn6eh4s0h8jhi")
 	# SMgrData is a Resource, so read it with the loader
-	_scene_db = load(_ps.scene_data_path)
+	_scene_db = load(PS.scene_data_path)
 	assert(_scene_db != null, "Scene Manager: Failed to load scene database resource.")
 
 	var current_path := get_tree().current_scene.scene_file_path
