@@ -301,27 +301,27 @@ func add_scene(scene: Scenes.Id, options := SceneLoadOptions.new()) -> void:
 	_perform_transition_blocking(scene, true, false, options)
 
 
-func load_previous_scene() -> bool:
+func load_previous_scene(options := SceneLoadOptions.new()) -> bool:
 	var target_scene: Scenes.Id = _history_stack.pop()
 	if target_scene != Scenes.Id.NONE and _current_scene_enum != Scenes.Id.NONE:
-		var options := SceneLoadOptions.new()
-		options.node_name = _loaded_scene_map[_current_scene_enum].container_node.name
-		switch_to_scene(target_scene, false, options)
+		var opt := options.copy()
+		opt.node_name = _loaded_scene_map[_current_scene_enum].container_node.name
+		switch_to_scene(target_scene, false, opt)
 		return true
 	return false
 
 
 ## Reloads the current scene.
 ## @return True if executed.
-func reload_current_scene() -> bool:
+func reload_current_scene(options := SceneLoadOptions.new()) -> bool:
 	# Use the same parent node the scene currently has to keep it consistent.
 	if _current_scene_enum == Scenes.Id.NONE:
 		push_warning("Attempted to reload current scene, but current scene is NONE.")
 		return false
 
-	var options := SceneLoadOptions.new()
-	options.node_name = _loaded_scene_map[_current_scene_enum].container_node.name
-	switch_to_scene(_current_scene_enum, false, options)
+	var opt := options.copy()
+	opt.node_name = _loaded_scene_map[_current_scene_enum].container_node.name
+	switch_to_scene(_current_scene_enum, false, opt)
 	return true
 
 
