@@ -34,6 +34,8 @@ class _SceneEntry:
 	## @param p_container The parent wrapper node.
 	## @param p_scene The main scene node.
 	func _init(p_container: Control, p_scene: Node) -> void:
+		assert(p_container != null, "SceneEntry: container_node cannot be null.")
+		assert(p_scene != null, "SceneEntry: scene_node cannot be null.")
 		container_node = p_container
 		scene_node = p_scene
 
@@ -77,6 +79,7 @@ func _ready() -> void:
 
 	# SMgrData is a Resource, so read it with the loader
 	_scene_db = load(_ps.scene_data_path)
+	assert(_scene_db != null, "Scene Manager: Failed to load scene database resource.")
 
 	var current_path := get_tree().current_scene.scene_file_path
 	_current_scene_enum = _scene_db.get_scene_enum_by_path(current_path)
@@ -99,6 +102,10 @@ func _init_trash_node() -> void:
 
 ## Checks progress during asynchronous scene loading and emits signals.
 func _check_loading_progress() -> void:
+	assert(
+		not _load_scene_path.is_empty(),
+		"Scene Manager: _check_loading_progress called but _load_scene_path is empty."
+	)
 	var prev_percent := int(_load_progress[0] * 100) if not _load_progress.is_empty() else 0
 	var status := ResourceLoader.load_threaded_get_status(_load_scene_path, _load_progress)
 	var next_percent := int(_load_progress[0] * 100)
@@ -116,6 +123,7 @@ func _check_loading_progress() -> void:
 
 
 func _create_ui_wrapper(node_name: String) -> Control:
+	assert(not node_name.is_empty(), "Scene Manager: wrapper node name cannot be empty.")
 	var wrapper := Control.new()
 	wrapper.name = node_name
 
@@ -131,6 +139,8 @@ func _create_ui_wrapper(node_name: String) -> Control:
 ## Initial setup: moves the current scene to the manager's control.
 func _on_initial_setup() -> void:
 	var scene_node := get_tree().current_scene
+	assert(scene_node != null, "Scene Manager: current_scene is null during initial setup.")
+
 	var root := get_tree().root
 	var default_wrapper := _create_ui_wrapper(_C.DEFAULT_TREE_NODE_NAME)
 
@@ -179,6 +189,8 @@ func _set_clickable(clickable: bool) -> void:
 func _attach_scene_to_tree(
 	node: Node, is_additive: bool, node_name: String, add_to_back: bool
 ) -> Control:
+	assert(node != null, "Scene Manager: Node to attach cannot be null.")
+
 	if not is_additive:
 		_unload_all_nodes()
 		if add_to_back and _current_scene_enum != Scenes.Id.NONE:
@@ -224,6 +236,9 @@ func _unload_scene(node_name: String, should_found: bool = true) -> void:
 
 
 func _remove_node_safely(target_node: Node) -> void:
+	assert(target_node != null, "Scene Manager: target_node to remove is null.")
+	assert(_trash_node != null, "Scene Manager: trash_node is not initialized.")
+
 	# Move to trash and then remove
 	# (This will immediately release the name directly under root)
 	target_node.reparent(_trash_node)
@@ -248,6 +263,9 @@ func _unload_all_nodes() -> void:
 func _perform_transition_blocking(
 	scene: Scenes.Id, is_additive: bool, add_to_back: bool, options: SceneLoadOptions
 ) -> void:
+	assert(scene != Scenes.Id.NONE, "Scene Manager: Cannot transition to Scenes.Id.NONE.")
+	assert(not _is_transitioning, "Scene Manager: Already in a transition state.")
+
 	_is_transitioning = true
 	_set_clickable(options.clickable)
 
@@ -318,6 +336,7 @@ func reload_current_scene() -> bool:
 ## Quits the game after a fade-out effect.
 ## @param fade_time Duration of the fade-out (seconds).
 func exit_game(fade_time: float = 1.0) -> void:
+	assert(not _is_transitioning, "Scene Manager: Cannot exit during a transition.")
 	_is_transitioning = true
 	_set_clickable(false)
 	# Execute and wait for fade-out.
@@ -342,6 +361,9 @@ func load_scene_with_transition(
 	opt_fade_in := SceneLoadOptions.new(),
 	opt_activate := opt_fade_in
 ) -> void:
+	assert(next_scene != Scenes.Id.NONE, "Scene Manager: next_scene cannot be NONE.")
+	assert(transition_scene != Scenes.Id.NONE, "Scene Manager: transition_scene cannot be NONE.")
+
 	_reserved_scene_id = next_scene
 	_reserved_options = opt_activate.copy()
 	_is_reserved_as_additive = false
@@ -359,6 +381,10 @@ func instantiate_async_result() -> void:
 
 	_enable_process(false)
 	var res := ResourceLoader.load_threaded_get(_load_scene_path) as PackedScene
+	assert(
+		res != null, "Scene Manager: Failed to get threaded load result for %s" % _load_scene_path
+	)
+
 	if res:
 		var scene_node := res.instantiate()
 		scene_node.scene_file_path = _load_scene_path
@@ -399,6 +425,11 @@ func activate_prepared_scene() -> void:
 			"activate_prepared_scene called but no scene is reserved. Ensure you are in an async load flow."
 		)
 		return
+
+	assert(not _is_transitioning, "Scene Manager: Already in a transition state.")
+	assert(
+		_loaded_scene_map.has(_reserved_scene_id), "Scene Manager: Reserved scene entry missing."
+	)
 
 	_is_transitioning = true
 	_set_clickable(_reserved_options.clickable)
