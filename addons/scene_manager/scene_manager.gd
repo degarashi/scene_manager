@@ -319,6 +319,7 @@ func switch_to_scene(
 	scene: Scenes.Id, add_to_back: bool, options := SceneLoadOptions.new()
 ) -> void:
 	if scene == Scenes.Id.NONE:
+		push_warning("Scene Manager: switch_to_scene called with Scenes.Id.NONE.")
 		return
 	_perform_transition_blocking(scene, false, add_to_back, options)
 
@@ -326,6 +327,7 @@ func switch_to_scene(
 ## Adds a scene while keeping the current scene (for UI or sub-screens).
 func add_scene(scene: Scenes.Id, options := SceneLoadOptions.new()) -> void:
 	if scene == Scenes.Id.NONE:
+		push_warning("Scene Manager: add_scene called with Scenes.Id.NONE.")
 		return
 	_perform_transition_blocking(scene, true, false, options)
 
@@ -367,6 +369,7 @@ func exit_game(fade_time: float = 1.0) -> void:
 # ------------- [Async Loading] -------------
 func preload_scene_async(scene: Scenes.Id, use_sub_threads = false) -> void:
 	if scene == Scenes.Id.NONE:
+		push_warning("Scene Manager: preload_scene_async called with Scenes.Id.NONE.")
 		return
 	_load_scene_path = _scene_db.get_scene_path_from_enum(scene)
 	_load_scene_id = scene
@@ -483,6 +486,7 @@ func activate_prepared_scene() -> void:
 # ------------- [Utils] -------------
 func get_scene_blocking(scene: Scenes.Id) -> PackedScene:
 	if scene == Scenes.Id.NONE:
+		push_warning("Scene Manager: get_scene_blocking called with Scenes.Id.NONE.")
 		return null
 	return load(_scene_db.get_scene_path_from_enum(scene))
 
