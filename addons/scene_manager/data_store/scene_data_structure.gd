@@ -343,6 +343,13 @@ func _get_scene_from_enum(scene: Scenes.Id) -> SMgrDataScene:
 		var sc := _scenes[uid]
 		if SceneManagerUtils.sanitize_as_enum_string(sc.name) == key_str:
 			return sc
+	assert(
+		false,
+		(
+			"Scene Manager: Could not find SMgrDataScene for Enum ID '%s'. " % key_str
+			+ "Data might be out of sync."
+		)
+	)
 	return null
 
 
