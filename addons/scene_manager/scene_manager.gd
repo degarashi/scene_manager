@@ -132,7 +132,9 @@ func _on_initial_setup() -> void:
 	else:
 		push_warning("Initial scene not found in DB (Scenes.Id.NONE).")
 
+	_effector.set_clickable(false)
 	await _effector.fade_in(_INITIAL_FADE_IN_TIME)
+	_effector.set_clickable(true)
 
 
 ## Frees all scenes under a specified parent node and removes them from the map.
