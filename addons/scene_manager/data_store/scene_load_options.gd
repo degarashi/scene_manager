@@ -5,49 +5,54 @@ extends Resource
 const _C = preload("uid://c3vvdktou45u")
 static var _ps := preload("uid://dn6eh4s0h8jhi")
 
-## Default fade out time retrieved from ProjectSettings
-static var default_fade_out: float:
-	get:
-		return _ps.fade_out_time
-
-## Default fade in time retrieved from ProjectSettings
-static var default_fade_in: float:
-	get:
-		return _ps.fade_in_time
-
 @export_group("Hierarchy")
 ## Where in the node structure the new scene will load.
 @export var node_name: String = _C.DEFAULT_TREE_NODE_NAME
 
 @export_group("Visuals")
 ## Duration of the fade out effect.
-@export var fade_out_time: float = default_fade_out
+@export var fade_out_time: float = 0.5
 ## Duration of the fade in effect.
-@export var fade_in_time: float = default_fade_in
+@export var fade_in_time: float = 0.5
 
 @export_group("Interaction")
-## Whether or not to block mouse input during the scene load. Defaults to true.
+## Whether or not to block mouse input during the scene load.
 @export var clickable: bool = true
 
 
+## Helper (static method) to get default values from project settings, etc.
+static func get_default_settings() -> SMgrProjectSettings:
+	return _ps
+
+
 ## Creates options for loading a scene.
-##
-## [param node]: Target node name for loading.
-## [param clickable]: If true, allows interaction during transition.
-## [param fade_out_time]: Custom fade out duration.
-## [param fade_in_time]: Custom fade in duration.
 func _init(
-	node: String = _C.DEFAULT_TREE_NODE_NAME,
-	clickable: bool = true,
-	fade_out_time: float = default_fade_out,
-	fade_in_time: float = default_fade_in
+	p_node: String = "",
+	p_clickable: bool = true,
+	p_fade_out: float = -1.0,
+	p_fade_in: float = -1.0,
 ) -> void:
-	self.node_name = node
-	self.clickable = clickable
-	self.fade_out_time = fade_out_time
-	self.fade_in_time = fade_in_time
+	# Logic for determining default values
+	var settings := get_default_settings()
+
+	# Set Node Name
+	if p_node != "":
+		node_name = p_node
+
+	clickable = p_clickable
+
+	# Determine fade times (if the argument is negative, get from the settings file)
+	if p_fade_out >= 0.0:
+		fade_out_time = p_fade_out
+	elif settings != null:
+		fade_out_time = settings.fade_out_time
+
+	if p_fade_in >= 0.0:
+		fade_in_time = p_fade_in
+	elif settings != null:
+		fade_in_time = settings.fade_in_time
 
 
-## Create a copy of the SceneLoadOptions instance.
+## Create a deep copy of the SceneLoadOptions instance.
 func copy() -> SceneLoadOptions:
 	return self.duplicate() as SceneLoadOptions
