@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=3 uid="uid://2iy8wfgenjka"]
 
-[ext_resource type="Script" uid="uid://dwlyxot1g5tn7" path="res://addons/scene_manager/scene_manager.gd" id="1"]
+[ext_resource type="Script" uid="uid://d0iel61mgjnf5" path="res://addons/scene_manager/scene_effector.gd" id="1_rnvl1"]
 
 [sub_resource type="Animation" id="8"]
 length = 0.001
@@ -27,7 +27,7 @@ _data = {
 
 [node name="scene_manager" type="Node"]
 process_mode = 3
-script = ExtResource("1")
+script = ExtResource("1_rnvl1")
 
 [node name="canvas" type="CanvasLayer" parent="."]
 layer = 100

@@ -10,11 +10,6 @@ signal load_failed
 ## Emitted when scene instantiation is completed.
 signal scene_loaded
 
-signal fade_in_started
-signal fade_out_started
-signal fade_in_finished
-signal fade_out_finished
-
 # ------------- [Constants] -------------
 const _C = preload("uid://c3vvdktou45u")
 const _RING_BUFFER = preload("uid://t3tlcswbndjo")
@@ -36,11 +31,6 @@ class _SceneEntry:
 		assert(p_scene != null, "SceneEntry: scene_node cannot be null.")
 		container_node = p_container
 		scene_node = p_scene
-
-
-## Definition of animation keys.
-class _AnimKey:
-	const FADE = &"fade"
 
 
 # ------------- [Private Variable] -------------
@@ -65,21 +55,19 @@ var _current_scene_enum: Scenes.Id = Scenes.Id.NONE
 var _is_transitioning: bool = false
 var _trash_node: Control
 
-@onready var _fade_color_rect: ColorRect = %fade
-@onready var _animation_player: AnimationPlayer = %animation_player
 @onready var _history_stack := _RING_BUFFER.new()
 
 
 func _set_transitioning(clickable: bool) -> void:
 	assert(not _is_transitioning)
 	_is_transitioning = true
-	_set_clickable(clickable)
+	SceneEffector.set_clickable(clickable)
 
 
 func _end_transitioning() -> void:
 	assert(_is_transitioning)
 	_is_transitioning = false
-	_set_clickable(true)
+	SceneEffector.set_clickable(true)
 
 
 # ------------- [Callbacks] -------------
@@ -181,40 +169,7 @@ func _on_initial_setup() -> void:
 	else:
 		push_warning("Initial scene not found in DB (Scenes.Id.NONE).")
 
-	_fade_in_async(_INITIAL_FADE_IN_TIME)
-
-
-## Executes a fade-out effect.
-func _fade_out_async(speed: float) -> void:
-	if speed <= 0:
-		fade_out_started.emit()
-		fade_out_finished.emit()
-		return
-
-	fade_out_started.emit()
-	_animation_player.play(_AnimKey.FADE, -1, 1.0 / speed, false)
-	await _animation_player.animation_finished
-	fade_out_finished.emit()
-
-
-## Executes a fade-in effect.
-func _fade_in_async(speed: float) -> void:
-	if speed <= 0:
-		fade_in_started.emit()
-		fade_in_finished.emit()
-		return
-
-	fade_in_started.emit()
-	_animation_player.play(_AnimKey.FADE, -1, -1.0 / speed, true)
-	await _animation_player.animation_finished
-	fade_in_finished.emit()
-
-
-## Toggles mouse event transparency during transitions.
-func _set_clickable(clickable: bool) -> void:
-	_fade_color_rect.mouse_filter = (
-		Control.MOUSE_FILTER_IGNORE if clickable else Control.MOUSE_FILTER_STOP
-	)
+	await SceneEffector.fade_in(_INITIAL_FADE_IN_TIME)
 
 
 ## Attaches a specified node to the scene tree and unloads existing nodes if necessary.
@@ -298,7 +253,7 @@ func _perform_transition_blocking(
 	assert(scene != Scenes.Id.NONE, "Scene Manager: Cannot transition to Scenes.Id.NONE.")
 
 	_set_transitioning(options.clickable)
-	await _fade_out_async(options.fade_out_time)
+	await SceneEffector.fade_out(options.fade_out_time)
 
 	var new_scene_node := create_scene_instance_blocking(scene)
 	if not new_scene_node:
@@ -314,7 +269,7 @@ func _perform_transition_blocking(
 		_current_scene_enum = scene
 	scene_loaded.emit()
 
-	await _fade_in_async(options.fade_in_time)
+	await SceneEffector.fade_in(options.fade_in_time)
 	_end_transitioning()
 
 
@@ -365,7 +320,7 @@ func reload_current_scene() -> bool:
 ## @param fade_time Duration of the fade-out (seconds).
 func exit_game(fade_time: float = 1.0) -> void:
 	_set_transitioning(false)
-	await _fade_out_async(fade_time)
+	await SceneEffector.fade_out(fade_time)
 	get_tree().quit(0)
 
 
@@ -455,7 +410,7 @@ func activate_prepared_scene() -> void:
 	)
 
 	_set_transitioning(_reserved_options.clickable)
-	await _fade_out_async(_reserved_options.fade_out_time)
+	await SceneEffector.fade_out(_reserved_options.fade_out_time)
 
 	# Remove the loading screen
 	_unload_scene(_LOADING_NODE_NAME)
@@ -477,7 +432,7 @@ func activate_prepared_scene() -> void:
 
 		_current_scene_enum = _reserved_scene_id
 
-	await _fade_in_async(_reserved_options.fade_in_time)
+	await SceneEffector.fade_in(_reserved_options.fade_in_time)
 
 	# Reset the reserved scene information now that the scene has fully loaded.
 	_reserved_scene_id = Scenes.Id.NONE

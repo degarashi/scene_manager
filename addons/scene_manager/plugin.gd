@@ -3,6 +3,7 @@ extends EditorPlugin
 
 const MAIN_PANEL_SCENE = preload("uid://crnf0w0s44hxx")
 const MAIN_PANEL_NAME = "Scene Manager"
+const AUTOLOAD_PREFIX = "autoload/"
 var _ps := preload("uid://dn6eh4s0h8jhi")
 var _main_panel: SMgrMainPanel
 var _inspector: EditorInspectorPlugin
@@ -108,15 +109,21 @@ func _setup_default_data() -> bool:
 	return false
 
 
+func _get_autoload_list() -> Array:
+	return [
+		{"name": "SceneManager", "path": "res://addons/scene_manager/scene_manager.gd"},
+		{"name": "SceneEffector", "path": "res://addons/scene_manager/scene_effector.tscn"},
+		{"name": "Scenes", "path": _ps.scene_path}
+	]
+
+
 func _register_autoloads() -> void:
-	if not ProjectSettings.has_setting("autoload/SceneManager"):
-		add_autoload_singleton("SceneManager", "res://addons/scene_manager/scene_manager.tscn")
-	if not ProjectSettings.has_setting("autoload/Scenes"):
-		add_autoload_singleton("Scenes", _ps.scene_path)
+	for al in _get_autoload_list():
+		if not ProjectSettings.has_setting(AUTOLOAD_PREFIX + al.name):
+			add_autoload_singleton(al.name, al.path)
 
 
 func _unregister_autoloads() -> void:
-	if ProjectSettings.has_setting("autoload/SceneManager"):
-		remove_autoload_singleton("SceneManager")
-	if ProjectSettings.has_setting("autoload/Scenes"):
-		remove_autoload_singleton("Scenes")
+	for al in _get_autoload_list():
+		if ProjectSettings.has_setting(AUTOLOAD_PREFIX + al.name):
+			remove_autoload_singleton(al.name)
