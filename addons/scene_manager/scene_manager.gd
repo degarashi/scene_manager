@@ -15,6 +15,7 @@ const _C = preload("uid://c3vvdktou45u")
 const _RING_BUFFER = preload("uid://t3tlcswbndjo")
 const _INITIAL_FADE_IN_TIME = 1.0
 const _LOADING_NODE_NAME: String = "===Transition==="
+const _EFFECTOR_SCENE = preload("uid://2iy8wfgenjka")
 
 
 # ------------- [Defines] -------------
@@ -54,6 +55,7 @@ var _loaded_scene_map: Dictionary[Scenes.Id, _SceneEntry] = {}
 var _current_scene_enum: Scenes.Id = Scenes.Id.NONE
 var _is_transitioning: bool = false
 var _trash_node: Control
+var _effector: Node = null
 
 @onready var _history_stack := _RING_BUFFER.new()
 
@@ -61,18 +63,19 @@ var _trash_node: Control
 func _set_transitioning(clickable: bool) -> void:
 	assert(not _is_transitioning)
 	_is_transitioning = true
-	SceneEffector.set_clickable(clickable)
+	_effector.set_clickable(clickable)
 
 
 func _end_transitioning() -> void:
 	assert(_is_transitioning)
 	_is_transitioning = false
-	SceneEffector.set_clickable(true)
+	_effector.set_clickable(true)
 
 
 # ------------- [Callbacks] -------------
 func _ready() -> void:
 	_init_trash_node()
+	_init_effector()
 	_enable_process(false)
 
 	# SMgrData is a Resource, so read it with the loader
@@ -90,6 +93,12 @@ func _process(_delta: float) -> void:
 
 
 # ------------- [Private Methods] -------------
+func _init_effector() -> void:
+	_effector = _EFFECTOR_SCENE.instantiate()
+	_effector.name = "SceneEffector"
+	add_child(_effector)
+
+
 func _init_trash_node() -> void:
 	_trash_node = Control.new()
 	_trash_node.name = "trash_node"
@@ -169,7 +178,7 @@ func _on_initial_setup() -> void:
 	else:
 		push_warning("Initial scene not found in DB (Scenes.Id.NONE).")
 
-	await SceneEffector.fade_in(_INITIAL_FADE_IN_TIME)
+	await _effector.fade_in(_INITIAL_FADE_IN_TIME)
 
 
 ## Attaches a specified node to the scene tree and unloads existing nodes if necessary.
@@ -253,7 +262,7 @@ func _perform_transition_blocking(
 	assert(scene != Scenes.Id.NONE, "Scene Manager: Cannot transition to Scenes.Id.NONE.")
 
 	_set_transitioning(options.clickable)
-	await SceneEffector.fade_out(options.fade_out_time)
+	await _effector.fade_out(options.fade_out_time)
 
 	var new_scene_node := create_scene_instance_blocking(scene)
 	if not new_scene_node:
@@ -269,7 +278,7 @@ func _perform_transition_blocking(
 		_current_scene_enum = scene
 	scene_loaded.emit()
 
-	await SceneEffector.fade_in(options.fade_in_time)
+	await _effector.fade_in(options.fade_in_time)
 	_end_transitioning()
 
 
@@ -320,7 +329,7 @@ func reload_current_scene() -> bool:
 ## @param fade_time Duration of the fade-out (seconds).
 func exit_game(fade_time: float = 1.0) -> void:
 	_set_transitioning(false)
-	await SceneEffector.fade_out(fade_time)
+	await _effector.fade_out(fade_time)
 	get_tree().quit(0)
 
 
@@ -410,7 +419,7 @@ func activate_prepared_scene() -> void:
 	)
 
 	_set_transitioning(_reserved_options.clickable)
-	await SceneEffector.fade_out(_reserved_options.fade_out_time)
+	await _effector.fade_out(_reserved_options.fade_out_time)
 
 	# Remove the loading screen
 	_unload_scene(_LOADING_NODE_NAME)
@@ -432,7 +441,7 @@ func activate_prepared_scene() -> void:
 
 		_current_scene_enum = _reserved_scene_id
 
-	await SceneEffector.fade_in(_reserved_options.fade_in_time)
+	await _effector.fade_in(_reserved_options.fade_in_time)
 
 	# Reset the reserved scene information now that the scene has fully loaded.
 	_reserved_scene_id = Scenes.Id.NONE

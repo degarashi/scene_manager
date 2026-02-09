@@ -112,7 +112,6 @@ func _setup_default_data() -> bool:
 func _get_autoload_list() -> Array:
 	return [
 		{"name": "SceneManager", "path": "res://addons/scene_manager/scene_manager.gd"},
-		{"name": "SceneEffector", "path": "res://addons/scene_manager/scene_effector.tscn"},
 		{"name": "Scenes", "path": _ps.scene_path}
 	]
 
