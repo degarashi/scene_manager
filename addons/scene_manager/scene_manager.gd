@@ -143,30 +143,6 @@ func _on_initial_setup() -> void:
 	await _effector.fade_in(_INITIAL_FADE_IN_TIME)
 
 
-## Attaches a specified node to the scene tree and unloads existing nodes if necessary.
-func _attach_scene_to_tree(
-	node: Node, is_additive: bool, node_name: String, add_to_back: bool
-) -> Control:
-	assert(node != null, "Scene Manager: Node to attach cannot be null.")
-
-	if not is_additive:
-		_unload_all_nodes()
-		if add_to_back and _current_scene_enum != Scenes.Id.NONE:
-			_history_stack.push(_current_scene_enum)
-	else:
-		# Additive mode: only remove if there is a name conflict
-		_unload_scene(node_name, false)
-
-	# At this point, the node with node_name has been removed from root (moved to trash).
-	# This ensures the newly created wrapper will have the exact name specified.
-	var parent_node := _create_ui_wrapper(node_name)
-	get_tree().root.add_child(parent_node)
-
-	parent_node.add_child(node)
-
-	return parent_node
-
-
 ## Frees all scenes under a specified parent node and removes them from the map.
 ## @param node_name Name of the parent node to release.
 func _unload_scene(node_name: String, should_found: bool = true) -> void:
@@ -217,56 +193,65 @@ func _unload_all_nodes() -> void:
 		_unload_scene(n_name)
 
 
-# Internal common transition logic (blocking)
-func _perform_transition_blocking(
-	scene: Scenes.Id, is_additive: bool, add_to_back: bool, options: SceneLoadOptions
-) -> void:
-	assert(scene != Scenes.Id.NONE, "Scene Manager: Cannot transition to Scenes.Id.NONE.")
-
-	# --- Do not fade when additive ---
-	if not is_additive:
-		_set_transitioning(options.clickable)
-		await _effector.fade_out(options.fade_out_time)
-
-	var new_scene_node := create_scene_instance_blocking(scene)
-	if not new_scene_node:
-		push_error("Scene Manager: Failed to instantiate scene with ID %d" % scene)
-		if not is_additive:
-			_end_transitioning()
-		return
-
-	var parent_node := _attach_scene_to_tree(
-		new_scene_node, is_additive, options.node_name, add_to_back
-	)
-	_loaded_scene_map[scene] = _SceneEntry.new(parent_node, new_scene_node)
-	if not is_additive:
-		_current_scene_enum = scene
-
-	scene_loaded.emit()
-
-	# --- Do not fade when additive ---
-	if not is_additive:
-		await _effector.fade_in(options.fade_out_time)
-		_end_transitioning()
-
-
 # ------------- [Public Methods] -------------
-## Discards the current main scene and switches to a new one.
+## Discards the current main scene and switches to a new one. (Main Routine)
 func switch_to_scene(
 	scene: Scenes.Id, add_to_back: bool, options := SceneLoadOptions.new()
 ) -> void:
 	if scene == Scenes.Id.NONE:
-		push_warning("Scene Manager: switch_to_scene called with Scenes.Id.NONE.")
+		push_warning("Scene Manager: switch_to_scene called with NONE.")
 		return
-	_perform_transition_blocking(scene, false, add_to_back, options)
+
+	# --- Transition Start ---
+	_set_transitioning(options.clickable)
+	await _effector.fade_out(options.fade_out_time)
+
+	# --- Scene Replacement ---
+	# Unload everything for a clean switch
+	_unload_all_nodes()
+	if add_to_back and _current_scene_enum != Scenes.Id.NONE:
+		_history_stack.push(_current_scene_enum)
+
+	var new_scene_node := create_scene_instance_blocking(scene)
+	if not new_scene_node:
+		push_error("Scene Manager: Failed to instantiate switch_to_scene: %d" % scene)
+		_end_transitioning()
+		return
+
+	var parent_node := _create_ui_wrapper(options.node_name)
+	get_tree().root.add_child(parent_node)
+	parent_node.add_child(new_scene_node)
+
+	# --- Register and Finalize ---
+	_loaded_scene_map[scene] = _SceneEntry.new(parent_node, new_scene_node)
+	_current_scene_enum = scene
+	scene_loaded.emit()
+
+	await _effector.fade_in(options.fade_out_time)
+	_end_transitioning()
 
 
-## Adds a scene while keeping the current scene (for UI or sub-screens).
+## Adds a scene while keeping the current scene. (Additive Routine)
 func add_scene(scene: Scenes.Id, options := SceneLoadOptions.new()) -> void:
 	if scene == Scenes.Id.NONE:
-		push_warning("Scene Manager: add_scene called with Scenes.Id.NONE.")
+		push_warning("Scene Manager: add_scene called with NONE.")
 		return
-	_perform_transition_blocking(scene, true, false, options)
+
+	# Additive mode: No fading, only name conflict resolution
+	_unload_scene(options.node_name, false)
+
+	var new_scene_node := create_scene_instance_blocking(scene)
+	if not new_scene_node:
+		push_error("Scene Manager: Failed to instantiate add_scene: %d" % scene)
+		return
+
+	var parent_node := _create_ui_wrapper(options.node_name)
+	get_tree().root.add_child(parent_node)
+	parent_node.add_child(new_scene_node)
+
+	# Register additive scene
+	_loaded_scene_map[scene] = _SceneEntry.new(parent_node, new_scene_node)
+	scene_loaded.emit()
 
 
 func load_previous_scene(options := SceneLoadOptions.new()) -> bool:
@@ -353,10 +338,11 @@ func instantiate_async_result() -> void:
 		var scene_node := res.instantiate()
 		scene_node.scene_file_path = path
 
-		# Temporarily additive to coexist with loading screen
-		var parent_node := _attach_scene_to_tree(
-			scene_node, true, _to_tmp_name(_reserved_options.node_name), false
-		)
+		# Temporary additive attachment
+		var tmp_name := _to_tmp_name(_reserved_options.node_name)
+		var parent_node := _create_ui_wrapper(tmp_name)
+		get_tree().root.add_child(parent_node)
+		parent_node.add_child(scene_node)
 
 		# Place it right behind the loading screen (which is at the top).
 		var root := get_tree().root
@@ -364,9 +350,7 @@ func instantiate_async_result() -> void:
 
 		_loaded_scene_map[_reserved_scene_id] = _SceneEntry.new(parent_node, scene_node)
 	else:
-		push_error(
-			false, "Scene Manager: Failed to get threaded load result for %s" % path
-		)
+		push_error(false, "Scene Manager: Failed to get threaded load result for %s" % path)
 
 
 static func _to_tmp_name(node_name: String) -> String:
