@@ -4,6 +4,7 @@ extends EditorPlugin
 const MAIN_PANEL_SCENE = preload("uid://crnf0w0s44hxx")
 const MAIN_PANEL_NAME = "Scene Manager"
 const AUTOLOAD_PREFIX = "autoload/"
+const AF = preload("uid://dlgh4u64a7qxk")
 var _ps := preload("uid://dn6eh4s0h8jhi")
 var _main_panel: SMgrMainPanel
 var _inspector: EditorInspectorPlugin
@@ -90,15 +91,11 @@ func _setup_default_data() -> bool:
 
 					# Reset UID for resource files to avoid conflicts
 					if (
-						file_name.ends_with(".gd")
-						or file_name.ends_with(".tres")
-						or file_name.ends_with(".tscn")
+						target_path.ends_with(".gd")
+						or target_path.ends_with(".tres")
+						or target_path.ends_with(".tscn")
 					):
-						var res: Resource = load(target_path)
-						if res:
-							# Recognize the resource as a new path and maintain UID consistency
-							res.take_over_path(target_path)
-							ResourceSaver.save(res, target_path)
+						AF.change_resource_uid(target_path)
 
 				file_name = dir.get_next()
 
