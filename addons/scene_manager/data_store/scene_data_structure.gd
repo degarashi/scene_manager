@@ -50,8 +50,7 @@ var _data_debouncer: DEBOUNCER
 
 func _on_data_changed() -> void:
 	_dirty_flag = true
-	if is_instance_valid(_data_debouncer):
-		_data_debouncer.call_debounced()
+	_data_debouncer.call_debounced()
 
 
 func _init() -> void:
@@ -63,16 +62,14 @@ func _init() -> void:
 
 func cleanup() -> void:
 	# Remove debouncer
-	if is_instance_valid(_data_debouncer):
-		_data_debouncer.queue_free()
+	_data_debouncer.queue_free()
 	# Disconnect the signal
 	_cleanup_filesystem_monitoring()
 
 
 # --- Internal Methods (Private) ---
 func _on_debounce_timeout() -> void:
-	if is_instance_valid(_data_debouncer):
-		_data_debouncer.call_debounced()
+	data_changed_debounced.emit()
 
 
 func _init_debouncer() -> void:
