@@ -62,7 +62,9 @@ func _init() -> void:
 
 func cleanup() -> void:
 	# Remove debouncer
-	_data_debouncer.queue_free()
+	# (Because the instance may become invalid when switching between enable/disable of the plugin)
+	if is_instance_valid(_data_debouncer):
+		_data_debouncer.queue_free()
 	# Disconnect the signal
 	_cleanup_filesystem_monitoring()
 
