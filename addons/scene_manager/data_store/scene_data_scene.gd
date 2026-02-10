@@ -7,16 +7,24 @@ extends Resource
 @export var name: String
 ## List of sections this scene belongs to
 @export var sections: Array[String]
-## Full path to the scene file
+## Synchronize UID when path is set (prevents redundant execution)
 @export var path: String:
 	set(value):
+		if path == value:
+			return
 		path = value
-		_update_uid_from_path()
-## Godot-specific Resource UID
+		if Engine.is_editor_hint():  # Auto-resolve only when running in editor
+			_update_uid_from_path()
+
+## Synchronize path when UID is set
 @export var uid: int = ResourceUID.INVALID_ID:
 	set(value):
+		if uid == value:
+			return
 		uid = value
-		_update_path_from_uid()
+		if Engine.is_editor_hint():
+			_update_path_from_uid()
+
 
 # ------------- [Private Method] -------------
 ## Retrieves and updates to the latest path based on the UID
