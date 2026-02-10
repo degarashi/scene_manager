@@ -444,7 +444,7 @@ func _get_scenes(cmp: Callable) -> Array[SMgrDataScene]:
 ## Retrieves all registered scenes
 ## @return Array of scene data
 func get_scenes_all() -> Array[SMgrDataScene]:
-	return _get_scenes(func(sc: SMgrDataScene) -> bool: return true)
+	return _get_scenes(func(_sc: SMgrDataScene) -> bool: return true)
 
 
 ## Retrieves scenes that are not categorized
