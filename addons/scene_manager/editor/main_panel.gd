@@ -257,6 +257,7 @@ func _cleanup_manager_data() -> void:
 	if _manager_data:
 		_manager_data.data_changed_debounced.disconnect(_refresh_ui)
 		_manager_data.on_dirty_flag_changed.disconnect(_on_dirty_flag_changed)
+		_manager_data.cleanup()
 		_manager_data = null
 
 

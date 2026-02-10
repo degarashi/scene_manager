@@ -1,40 +1,44 @@
-## Encapsulates debouncing logic to delay the execution of a callback.
-extends RefCounted
+## Encapsulates debouncing logic to delay execution until a specified delay has passed.
+## Only the last call within the delay period will trigger the timeout signal.
+class_name Debouncer
+extends Node
 
-var _timer: SceneTreeTimer
-var _callback: Callable
-var _delay: float
+## Emitted when the debounce delay has successfully completed.
+signal timeout
+
+## The delay time in seconds.
+@export var delay: float = 0.5
+## If true, the timer only fires once (standard debounce behavior).
+@export var one_shot: bool = true
+
+var _timer: Timer
 
 
-func _init(delay: float, callback: Callable) -> void:
-	_delay = delay
-	_callback = callback
+func _ready() -> void:
+	_timer = Timer.new()
+	_timer.one_shot = true
+	_timer.wait_time = delay
+	_timer.autostart = false
+
+	# Relay the internal Timer's timeout to the Debouncer's timeout signal
+	_timer.timeout.connect(func() -> void: timeout.emit())
+	add_child(_timer)
 
 
-## Executes the debounced call. If called repeatedly, previous timer waits are ignored.
+## Starts or restarts the debounce process.
+## Calling this repeatedly resets the timer, ignoring previous calls.
 func call_debounced() -> void:
-	var scene_tree := Engine.get_main_loop() as SceneTree
-	if not scene_tree:
+	if not is_inside_tree():
 		return
-
-	# Overwrite the existing timer reference to invalidate any ongoing 'await'
-	var current_timer := scene_tree.create_timer(_delay)
-	_timer = current_timer
-
-	await current_timer.timeout
-
-	# Check if this specific timer is still the active one and the instance is alive
-	if not is_instance_valid(self) or _timer != current_timer:
-		return
-
-	# Final check on the callback validity before execution
-	if _callback.is_valid():
-		_callback.call()
-
-	# Cleanup reference
-	_timer = null
+	_timer.start(delay)
 
 
-## Explicitly stops the current debounce and prevents the pending callback.
+## Explicitly stops the current debounce process and prevents the timeout signal from emitting.
 func cancel() -> void:
-	_timer = null
+	_timer.stop()
+
+
+## Updates the delay time dynamically.
+func set_delay(new_delay: float) -> void:
+	delay = new_delay
+	_timer.wait_time = delay

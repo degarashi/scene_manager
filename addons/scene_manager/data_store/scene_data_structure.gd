@@ -48,38 +48,62 @@ var _dirty_flag: bool = false:
 var _data_debouncer: DEBOUNCER
 
 
+func _on_data_changed() -> void:
+	_dirty_flag = true
+	if is_instance_valid(_data_debouncer):
+		_data_debouncer.call_debounced()
+
+
 func _init() -> void:
-	# Initialize debouncer (emits signal after DEBOUNCE_TIME seconds of inactivity)
-	_data_debouncer = DEBOUNCER.new(
-		DEBOUNCE_TIME,
-		func() -> void:
-			data_changed_debounced.emit(),
-	)
-
-	data_changed.connect(
-		func() -> void:
-			_dirty_flag = true
-			_data_debouncer.call_debounced()
-	)
-
-	# Setup filesystem monitoring if running within the editor
 	if Engine.is_editor_hint():
-		setup_filesystem_monitoring.call_deferred()
+		_init_debouncer()
+		data_changed.connect(_on_data_changed)
+		_setup_filesystem_monitoring.call_deferred()
+
+
+func cleanup() -> void:
+	# Remove debouncer
+	if is_instance_valid(_data_debouncer):
+		_data_debouncer.queue_free()
+	# Disconnect the signal
+	_cleanup_filesystem_monitoring()
 
 
 # --- Internal Methods (Private) ---
+func _on_debounce_timeout() -> void:
+	if is_instance_valid(_data_debouncer):
+		_data_debouncer.call_debounced()
 
 
-## Setup monitoring for filesystem changes
-func setup_filesystem_monitoring() -> void:
+func _init_debouncer() -> void:
+	if not Engine.is_editor_hint():
+		return
+	_data_debouncer = DEBOUNCER.new()
+	_data_debouncer.delay = DEBOUNCE_TIME
+	_data_debouncer.timeout.connect(_on_debounce_timeout)
+
+	# Needs to be attached to the runtime or the editor's main window, etc.
+	# Here, we adjust it to be added via Engine.get_main_loop()
+	# or check for its existence during the call.
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree:
+		tree.root.add_child.call_deferred(_data_debouncer)
+
+
+func _setup_filesystem_monitoring() -> void:
 	var fs := EditorInterface.get_resource_filesystem()
 	if not fs.filesystem_changed.is_connected(_on_filesystem_changed):
 		fs.filesystem_changed.connect(_on_filesystem_changed)
 
 
+func _cleanup_filesystem_monitoring() -> void:
+	var fs := EditorInterface.get_resource_filesystem()
+	if fs.filesystem_changed.is_connected(_on_filesystem_changed):
+		fs.filesystem_changed.disconnect(_on_filesystem_changed)
+
+
 ## Callback triggered when the filesystem changes (file added, removed, moved, etc.)
 func _on_filesystem_changed() -> void:
-	# Automatically scan and sync new files within include paths
 	sync_with_filesystem()
 
 
@@ -88,7 +112,6 @@ func _export_enum_gd_string() -> String:
 	ret += CommentKey.ENUM + "\n"
 	ret += "enum Id \\\n{ \n\tNONE = -1,"
 
-	var num_invalid: int = 0
 	for uid in _scenes:
 		var sc_name := _scenes[uid].name
 		ret += "\n\t%s," % sc_name.to_upper()
@@ -97,6 +120,10 @@ func _export_enum_gd_string() -> String:
 
 
 func save_data(path: String, data_path: String) -> void:
+	if not Engine.is_editor_hint():
+		push_warning("Scene Manager: 'save_data' is only allowed in the Editor.")
+		return
+
 	# --- write GDScript(Enum) data ---
 	var file := FileAccess.open(path, FileAccess.WRITE)
 	if not file:
@@ -121,6 +148,10 @@ func save_data(path: String, data_path: String) -> void:
 # --- File System Sync ---
 ## Rescans registered include paths, removes non-existent scenes, and registers new scenes
 func sync_with_filesystem() -> void:
+	if not Engine.is_editor_hint():
+		# This is called by internal monitoring, so we skip warning to avoid spamming
+		return
+
 	var found_uids: Array[int] = []
 	var changed := false
 
@@ -185,6 +216,9 @@ func _scan_and_collect_uids(dir_path: String, collected_uids: Array[int]) -> voi
 ## Adds a new section
 ## @param section_name Name of the section to add
 func add_section(section_name: String) -> void:
+	if not Engine.is_editor_hint():
+		push_warning("Scene Manager: 'add_section' is only allowed in the Editor.")
+		return
 	if not section_name.is_empty() and not _sections.has(section_name):
 		_sections.append(section_name)
 		data_changed.emit()
@@ -193,6 +227,9 @@ func add_section(section_name: String) -> void:
 ## Removes a section and clears its references from all associated scenes
 ## @param section_name Name of the section to remove
 func remove_section(section_name: String) -> void:
+	if not Engine.is_editor_hint():
+		push_warning("Scene Manager: 'remove_section' is only allowed in the Editor.")
+		return
 	if _sections.has(section_name):
 		_sections.erase(section_name)
 	else:
@@ -214,6 +251,9 @@ func remove_section(section_name: String) -> void:
 ## @param inc_path Path to add
 ## @return true if successful
 func add_include_path(inc_path: String) -> bool:
+	if not Engine.is_editor_hint():
+		push_warning("Scene Manager: 'add_include_path' is only allowed in the Editor.")
+		return false
 	var is_dir := DirAccess.dir_exists_absolute(inc_path)
 	var is_file := FileAccess.file_exists(inc_path) and inc_path.ends_with(".tscn")
 
@@ -229,7 +269,7 @@ func add_include_path(inc_path: String) -> bool:
 			var msg := (
 				"Scene Manager: Path '%s' is already covered by '%s'." % [inc_path, existing_path]
 			)
-			push_warning(msg)  # Shows in the editor's Warning tab
+			push_warning(msg)
 			return false
 
 	# If the new path is a parent of existing paths, remove those sub-paths
@@ -279,12 +319,10 @@ func _scan_dir_recursive(dir_path: String) -> void:
 ## @param full_path Full path to the scene file
 ## @return Registered UID (even if it already existed)
 func _register_scene_file(full_path: String) -> int:
-	var uid := ResourceLoader.get_resource_uid(full_path)
-	if uid == ResourceUID.INVALID_ID:
+	if not Engine.is_editor_hint():
 		return ResourceUID.INVALID_ID
-
-	# Skip if the UID is already registered
-	if _scenes.has(uid):
+	var uid := ResourceLoader.get_resource_uid(full_path)
+	if uid == ResourceUID.INVALID_ID or _scenes.has(uid):
 		return uid
 
 	var base_name: String = full_path.get_file().get_basename()
@@ -303,7 +341,7 @@ func _register_scene_file(full_path: String) -> int:
 	var new_scene := SMgrDataScene.new()
 	new_scene.name = scene_name
 	new_scene.path = full_path
-	new_scene.uid = uid  # Stored as an int
+	new_scene.uid = uid
 	_scenes[uid] = new_scene
 	data_changed.emit()
 	return uid
@@ -312,6 +350,9 @@ func _register_scene_file(full_path: String) -> int:
 ## Removes an include path and unregisters all scenes under it
 ## @param scene_path Path to remove
 func remove_include_path(scene_path: String) -> void:
+	if not Engine.is_editor_hint():
+		push_warning("Scene Manager: 'remove_include_path' is only allowed in the Editor.")
+		return
 	if _include_list.has(scene_path):
 		_include_list.erase(scene_path)
 	else:
@@ -334,7 +375,7 @@ func remove_include_path(scene_path: String) -> void:
 	data_changed.emit()
 
 
-# --- Data Queries (Getters) ---
+# --- Data Queries (Getters: Allowed at Runtime) ---
 func _get_scene_from_enum(scene: Scenes.Id) -> SMgrDataScene:
 	if scene == Scenes.Id.NONE:
 		return null
@@ -432,6 +473,9 @@ func get_scenes_with_section(section_name: String) -> Array[SMgrDataScene]:
 ## @param uid Scene UID (int)
 ## @param section_name Name of the section to assign
 func add_scene_to_section(uid: int, section_name: String) -> void:
+	if not Engine.is_editor_hint():
+		push_warning("Scene Manager: 'add_scene_to_section' is only allowed in the Editor.")
+		return
 	if _scenes.has(uid):
 		var sc: SMgrDataScene = _scenes[uid]
 		if not section_name in sc.sections:
@@ -443,6 +487,9 @@ func add_scene_to_section(uid: int, section_name: String) -> void:
 ## @param uid Scene UID (int)
 ## @param section_name Name of the section to remove
 func remove_scene_from_section(uid: int, section_name: String) -> void:
+	if not Engine.is_editor_hint():
+		push_warning("Scene Manager: 'remove_scene_from_section' is only allowed in the Editor.")
+		return
 	if _scenes.has(uid):
 		var sc: SMgrDataScene = _scenes[uid]
 		var idx := sc.sections.find(section_name)
@@ -466,6 +513,9 @@ func get_scene_by_name(scene_name: String) -> SMgrDataScene:
 ## @param uid Scene UID (int)
 ## @param new_name New display name
 func change_scene_name(uid: int, new_name: String) -> void:
+	if not Engine.is_editor_hint():
+		push_warning("Scene Manager: 'change_scene_name' is only allowed in the Editor.")
+		return
 	if _scenes.has(uid):
 		var sc: SMgrDataScene = _scenes[uid]
 		if not new_name.is_empty() and sc.name != new_name:
