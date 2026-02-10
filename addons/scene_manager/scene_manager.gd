@@ -9,6 +9,8 @@ signal load_failed
 
 ## Emitted when scene instantiation is completed.
 signal scene_loaded(scene_id: Scenes.Id)
+## Emitted when the entire transition (including visual effects) is finished.
+signal scene_transition_completed(scene_id: Scenes.Id)
 
 # ------------- [Constants] -------------
 const _C = preload("uid://c3vvdktou45u")
@@ -135,6 +137,7 @@ func _on_initial_setup() -> void:
 	_effector.set_clickable(false)
 	await _effector.fade_in(_INITIAL_FADE_IN_TIME)
 	_effector.set_clickable(true)
+	scene_transition_completed.emit(_current_scene_enum)
 
 
 ## Frees all scenes under a specified parent node and removes them from the map.
@@ -223,6 +226,7 @@ func switch_to_scene(
 
 	await _effector.fade_in(options.fade_out_time)
 	_effector.set_clickable(true)
+	scene_transition_completed.emit(scene)
 
 
 ## Adds a scene while keeping the current scene. (Additive Routine)
@@ -408,6 +412,7 @@ func activate_prepared_scene() -> void:
 	_reserved_options = null
 
 	_effector.set_clickable(true)
+	scene_transition_completed.emit(_current_scene_enum)
 
 
 # ------------- [Utils] -------------
