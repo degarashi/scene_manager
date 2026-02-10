@@ -8,7 +8,7 @@ signal load_finished
 signal load_failed
 
 ## Emitted when scene instantiation is completed.
-signal scene_loaded
+signal scene_loaded(scene_id: Scenes.Id)
 
 # ------------- [Constants] -------------
 const _C = preload("uid://c3vvdktou45u")
@@ -219,7 +219,7 @@ func switch_to_scene(
 	# --- Register and Finalize ---
 	_loaded_scene_map[scene] = _SceneEntry.new(parent_node, new_scene_node)
 	_current_scene_enum = scene
-	scene_loaded.emit()
+	scene_loaded.emit(scene)
 
 	await _effector.fade_in(options.fade_out_time)
 	_effector.set_clickable(true)
@@ -249,7 +249,7 @@ func add_scene(scene: Scenes.Id, options := SceneLoadOptions.new()) -> void:
 
 	# Register additive scene
 	_loaded_scene_map[scene] = _SceneEntry.new(parent_node, new_scene_node)
-	scene_loaded.emit()
+	scene_loaded.emit(scene)
 
 
 func load_previous_scene(options := SceneLoadOptions.new()) -> bool:
