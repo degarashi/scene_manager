@@ -3,6 +3,7 @@ class_name SceneLoadOptions
 extends Resource
 
 const _C = preload("uid://c3vvdktou45u")
+const DEFAULT_CLICKABLE_FLAG = false
 static var _ps := preload("uid://dn6eh4s0h8jhi")
 
 @export_group("Hierarchy")
@@ -17,7 +18,7 @@ static var _ps := preload("uid://dn6eh4s0h8jhi")
 
 @export_group("Interaction")
 ## Whether or not to block mouse input during the scene load.
-@export var clickable: bool = true
+@export var clickable: bool = DEFAULT_CLICKABLE_FLAG
 
 
 ## Helper (static method) to get default values from project settings, etc.
@@ -28,7 +29,7 @@ static func get_default_settings() -> SMgrProjectSettings:
 ## Creates options for loading a scene.
 func _init(
 	p_node: String = "",
-	p_clickable: bool = true,
+	p_clickable: bool = DEFAULT_CLICKABLE_FLAG,
 	p_fade_out: float = -1.0,
 	p_fade_in: float = -1.0,
 ) -> void:
