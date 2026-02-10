@@ -1,3 +1,4 @@
+@tool
 ## Encapsulates debouncing logic to delay execution until a specified delay has passed.
 ## Only the last call within the delay period will trigger the timeout signal.
 class_name Debouncer
