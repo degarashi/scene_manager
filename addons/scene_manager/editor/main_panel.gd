@@ -9,6 +9,7 @@ const _SECONDARY_SECTION_SCENE = preload("uid://y7ksk521w5au")
 const _EBUS = preload("uid://ra25t5in8erp")
 const _EBUS_I = preload("uid://bnwpfojr6e0dh")
 const _C = preload("uid://c3vvdktou45u")
+const _AF = preload("uid://dlgh4u64a7qxk")
 const _ICON_EXPAND_BUTTON = preload("uid://t6iu67x15d3")
 const _ICON_COLLAPSE_BUTTON = preload("uid://bd6ob6pgam1gt")
 const _ALL_SECTION_NAME = "All"
@@ -422,3 +423,12 @@ func _check_file_content_for_invalid_ids(file_path: String, valid_keys: Dictiona
 				file_invalid_count += 1
 
 	return file_invalid_count
+
+
+func _on_refresh_uid_button_button_up() -> void:
+	# Refresh by physical renaming
+	_AF.change_resource_uid(_ps.scene_path)
+	_AF.change_resource_uid(_ps.scene_data_path)
+
+	_reload_data()
+	_refresh_ui()
