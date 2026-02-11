@@ -271,12 +271,20 @@ func add_scene(scene: Scenes.Id, options := SceneLoadOptions.new()) -> void:
 
 
 func load_previous_scene(options := SceneLoadOptions.new()) -> bool:
-	var target_scene: Scenes.Id = _history_stack.pop()
-	if target_scene != Scenes.Id.NONE and _current_scene_enum != Scenes.Id.NONE:
+	var target_scene := _history_stack.pop()
+	if target_scene == Scenes.Id.NONE:
+		push_warning(
+			"Scene Manager: Attempted to load previous scene, but history is empty (NONE)."
+		)
+		return false
+
+	if _current_scene_enum != Scenes.Id.NONE:
 		var opt := options.copy()
 		opt.node_name = _loaded_scene_map[_current_scene_enum].container_node.name
 		switch_to_scene(target_scene, false, opt)
 		return true
+
+	push_warning("Scene Manager: Failed to load previous scene because current_scene_enum is NONE.")
 	return false
 
 
