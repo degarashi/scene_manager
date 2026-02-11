@@ -83,3 +83,12 @@ func pop() -> Variant:
 	_size -= 1
 
 	return item
+
+
+## Returns all valid items in the buffer as an Array (from oldest to newest).
+func get_all_items() -> Array:
+	var items := []
+	for i in range(_size):
+		var index := (_tail_index + i) % _capacity
+		items.append(_ring_buffer[index])
+	return items
