@@ -14,7 +14,7 @@ signal scene_transition_completed(scene_id: Scenes.Id)
 
 # ------------- [Constants] -------------
 const _C = preload("uid://c3vvdktou45u")
-const _RING_BUFFER = preload("uid://t3tlcswbndjo")
+const _RING_BUFFER = preload("uid://b6phac21mxnxr")
 const _INITIAL_FADE_IN_TIME = 1.0
 const _LOADING_NODE_NAME: String = "===Transition==="
 const _EFFECTOR_SCENE = preload("uid://2iy8wfgenjka")
@@ -192,10 +192,7 @@ func _unload_all_nodes() -> void:
 
 # ------------- [Public Methods] -------------
 func get_history_list() -> Array[Scenes.Id]:
-	var ret: Array[Scenes.Id] = []
-	for h: Scenes.Id in _history_stack.get_all_items():
-		ret.append(h)
-	return ret
+	return _history_stack.get_all_items()
 
 
 func get_history_count() -> int:
