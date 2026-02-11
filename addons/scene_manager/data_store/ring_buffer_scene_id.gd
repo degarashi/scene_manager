@@ -14,9 +14,7 @@ func push(value: Scenes.Id) -> void:
 
 func pop() -> Scenes.Id:
 	var v = _buffer.pop()
-	if v == null:
-		return 0
-	return v
+	return v if v != null else Scenes.Id.NONE
 
 
 func size() -> Scenes.Id:
