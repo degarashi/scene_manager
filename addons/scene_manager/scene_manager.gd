@@ -191,6 +191,17 @@ func _unload_all_nodes() -> void:
 
 
 # ------------- [Public Methods] -------------
+func get_history_list() -> Array[Scenes.Id]:
+	var ret: Array[Scenes.Id] = []
+	for h: Scenes.Id in _history_stack.get_all_items():
+		ret.append(h)
+	return ret
+
+
+func get_history_count() -> int:
+	return _history_stack.size()
+
+
 ## Discards the current main scene and switches to a new one. (Main Routine)
 func switch_to_scene(
 	scene: Scenes.Id, add_to_back: bool, options := SceneLoadOptions.new()
