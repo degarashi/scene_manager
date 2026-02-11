@@ -17,7 +17,7 @@ func _ready() -> void:
 	# Requests a load using the scene ID reserved by load_scene_with_transition
 	var resv_scene := SceneManager.get_reserved_scene()
 	if resv_scene != Scenes.Id.NONE:
-		SceneManager.preload_scene_async(resv_scene)
+		SceneManager.start_async_load(resv_scene)
 	else:
 		push_error("No reserved scene found.")
 

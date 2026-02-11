@@ -303,9 +303,9 @@ func exit_game(fade_time: float = 1.0) -> void:
 
 
 # ------------- [Async Loading] -------------
-func preload_scene_async(scene: Scenes.Id, use_sub_threads: bool = true) -> void:
+func start_async_load(scene: Scenes.Id, use_sub_threads: bool = true) -> void:
 	if scene == Scenes.Id.NONE:
-		push_warning("Scene Manager: preload_scene_async called with Scenes.Id.NONE.")
+		push_warning("Scene Manager: start_async_load called with Scenes.Id.NONE.")
 		return
 
 	var path := _scene_db.get_scene_path_from_enum(scene)
