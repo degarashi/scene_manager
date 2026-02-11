@@ -47,6 +47,8 @@ var _reserved_scene_id: Scenes.Id = Scenes.Id.NONE
 ## Load options for the reserved scene.
 var _reserved_options: SceneLoadOptions
 var _is_reserved_as_additive: bool = false
+## Whether the reserved scene should be added to history when activated.
+var _reserved_add_to_back: bool = false
 
 ## Scenes currently present in the field (Key: Scene-Id, Value: _SceneEntry).
 var _loaded_scene_map: Dictionary[Scenes.Id, _SceneEntry] = {}
@@ -324,6 +326,7 @@ func preload_scene_async(scene: Scenes.Id, use_sub_threads: bool = true) -> void
 func load_scene_with_transition(
 	next_scene: Scenes.Id,
 	transition_scene: Scenes.Id,
+	add_to_back: bool = true,
 	opt_fade_in := SceneLoadOptions.new(),
 	opt_activate := opt_fade_in
 ) -> void:
@@ -333,6 +336,7 @@ func load_scene_with_transition(
 	_reserved_scene_id = next_scene
 	_reserved_options = opt_activate.copy()
 	_is_reserved_as_additive = false
+	_reserved_add_to_back = add_to_back
 
 	var trans_options := opt_fade_in.copy()
 	trans_options.node_name = _LOADING_NODE_NAME
@@ -345,6 +349,10 @@ func instantiate_async_result() -> void:
 	if path == "" or _reserved_scene_id == Scenes.Id.NONE:
 		push_warning("instantiate_async_result: No reserved scene to instantiate.")
 		return
+
+	# Add current scene to history before switching
+	if _reserved_add_to_back and _current_scene_enum != Scenes.Id.NONE:
+		_history_stack.push(_current_scene_enum)
 
 	# Load directly (it should be cached in ResourceLoader by ResourceLoaderMgr)
 	var res := load(path) as PackedScene
@@ -420,6 +428,7 @@ func activate_prepared_scene() -> void:
 	# Reset the reserved scene information now that the scene has fully loaded.
 	_reserved_scene_id = Scenes.Id.NONE
 	_reserved_options = null
+	_reserved_add_to_back = false
 
 	_effector.set_clickable(true)
 	scene_transition_completed.emit(_current_scene_enum)
