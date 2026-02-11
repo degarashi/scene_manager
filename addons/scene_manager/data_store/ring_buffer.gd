@@ -3,9 +3,9 @@
 const DEFAULT_RING_SIZE: int = 5
 
 var _ring_buffer: Array = Array()
-var _head_index: int = 0 # Keeps track of the head of the buffer ahead of the most recent item
-var _tail_index: int = 0 # Keeps track of the tail with the oldest item
-var _size: int = 0 # Amount of items in the ring buffer
+var _head_index: int = 0  # Keeps track of the head of the buffer ahead of the most recent item
+var _tail_index: int = 0  # Keeps track of the tail with the oldest item
+var _size: int = 0  # Amount of items in the ring buffer
 var _capacity: int
 
 
@@ -30,12 +30,12 @@ func set_capacity(size: int) -> void:
 			temp[i] = _ring_buffer[(_tail_index + 1) % _capacity]
 			if temp[i] == null:
 				break
-			
+
 			_head_index = i
 			_size += 1
-	
+
 	_ring_buffer = temp
-	_tail_index = 0 
+	_tail_index = 0
 
 
 ## Returns how much the ring buffer can hold.
@@ -72,12 +72,12 @@ func push(item) -> void:
 func pop() -> Variant:
 	if _size == 0:
 		return null
-	
+
 	# Move the head back, wrapping it around to the top if it went past the beginning
 	_head_index = _head_index - 1
 	if _head_index < 0:
 		_head_index += _capacity
-	
+
 	var item = _ring_buffer[_head_index]
 	_ring_buffer[_head_index] = null
 	_size -= 1
