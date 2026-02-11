@@ -271,21 +271,34 @@ func add_scene(scene: Scenes.Id, options := SceneLoadOptions.new()) -> void:
 
 
 func load_previous_scene(options := SceneLoadOptions.new()) -> bool:
-	var target_scene := _history_stack.pop()
-	if target_scene == Scenes.Id.NONE:
-		push_warning(
-			"Scene Manager: Attempted to load previous scene, but history is empty (NONE)."
-		)
+	if _history_stack.size() == 0:
+		push_warning("Scene Manager: Attempted to load previous scene, but history is empty.")
 		return false
 
-	if _current_scene_enum != Scenes.Id.NONE:
-		var opt := options.copy()
-		opt.node_name = _loaded_scene_map[_current_scene_enum].container_node.name
-		switch_to_scene(target_scene, false, opt)
-		return true
+	back_to_previous_by_offset(1, options)
+	return true
 
-	push_warning("Scene Manager: Failed to load previous scene because current_scene_enum is NONE.")
-	return false
+
+## Go back in history by the specified number (offset)
+## from the current scene and transition to that scene.
+func back_to_previous_by_offset(offset: int, options := SceneLoadOptions.new()) -> void:
+	if offset <= 0:
+		push_warning("Scene Manager: offset must be greater than 0.")
+		return
+
+	var target_scene := Scenes.Id.NONE
+	for i in range(offset):
+		var popped = _history_stack.pop()
+		if popped != Scenes.Id.NONE:
+			target_scene = popped
+		else:
+			break
+
+	if target_scene == Scenes.Id.NONE:
+		push_warning("Scene Manager: Failed to go back, history is empty or offset out of bounds.")
+		return
+
+	switch_to_scene(target_scene, false, options)
 
 
 ## Reloads the current scene.
