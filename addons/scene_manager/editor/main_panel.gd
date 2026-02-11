@@ -407,7 +407,8 @@ func _check_file_content_for_invalid_ids(file_path: String, valid_keys: Dictiona
 
 	# Extract "Scenes.Id.xxxx" using regular expression
 	var regex: RegEx = RegEx.new()
-	regex.compile("Scenes\\.Id\\.([A-Za-z0-9_]+)")
+	# Exclude method calls (brackets) or enum built-in method names
+	regex.compile("Scenes\\.Id\\.(?!(?:find_key|keys|values|has|size)\\b)([A-Za-z0-9_]+)(?!\\()")
 
 	for i: int in range(lines.size()):
 		var matches: Array[RegExMatch] = regex.search_all(lines[i])
