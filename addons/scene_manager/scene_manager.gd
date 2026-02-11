@@ -17,7 +17,7 @@ const _C = preload("uid://c3vvdktou45u")
 const _RING_BUFFER = preload("uid://b6phac21mxnxr")
 const _INITIAL_FADE_IN_TIME = 1.0
 const _LOADING_NODE_NAME: String = "===Transition==="
-const _EFFECTOR_SCENE = preload("uid://2iy8wfgenjka")
+const _TRANSITION_PLAYER = preload("uid://2iy8wfgenjka")
 const _RESOURCE_LOADER = preload("uid://dabq3s83q0iku")
 
 
@@ -54,7 +54,7 @@ var _reserved_add_to_back: bool = false
 var _loaded_scene_map: Dictionary[Scenes.Id, _SceneEntry] = {}
 var _current_scene_enum: Scenes.Id = Scenes.Id.NONE
 var _trash_node: Control
-var _effector: Node = null
+var _transition_player: Node = null
 
 @onready var _history_stack := _RING_BUFFER.new()
 
@@ -84,9 +84,9 @@ func _ready() -> void:
 
 # ------------- [Private Methods] -------------
 func _init_effector() -> void:
-	_effector = _EFFECTOR_SCENE.instantiate()
-	_effector.name = "SceneEffector"
-	add_child(_effector)
+	_transition_player = _TRANSITION_PLAYER.instantiate()
+	_transition_player.name = "TransitionPlayer"
+	add_child(_transition_player)
 
 
 func _init_trash_node() -> void:
@@ -136,9 +136,9 @@ func _on_initial_setup() -> void:
 	else:
 		push_warning("Initial scene not found in DB (Scenes.Id.NONE).")
 
-	_effector.set_clickable(false)
-	await _effector.fade_in(_INITIAL_FADE_IN_TIME)
-	_effector.set_clickable(true)
+	_transition_player.set_clickable(false)
+	await _transition_player.fade_in(_INITIAL_FADE_IN_TIME)
+	_transition_player.set_clickable(true)
 	scene_transition_completed.emit(_current_scene_enum)
 
 
@@ -210,8 +210,8 @@ func switch_to_scene(
 		return
 
 	# --- Transition Start ---
-	_effector.set_clickable(options.clickable)
-	await _effector.fade_out(options.fade_out_time)
+	_transition_player.set_clickable(options.clickable)
+	await _transition_player.fade_out(options.fade_out_time)
 
 	# --- Scene Replacement ---
 	# Unload everything for a clean switch
@@ -224,7 +224,7 @@ func switch_to_scene(
 		push_error(
 			"Scene Manager: Failed to instantiate switch_to_scene: %s" % Scenes.Id.find_key(scene)
 		)
-		_effector.set_clickable(true)
+		_transition_player.set_clickable(true)
 		return
 
 	var parent_node := _create_ui_wrapper(options.node_name)
@@ -236,8 +236,8 @@ func switch_to_scene(
 	_current_scene_enum = scene
 	scene_loaded.emit(scene)
 
-	await _effector.fade_in(options.fade_out_time)
-	_effector.set_clickable(true)
+	await _transition_player.fade_in(options.fade_out_time)
+	_transition_player.set_clickable(true)
 	scene_transition_completed.emit(scene)
 
 
@@ -297,8 +297,8 @@ func reload_current_scene(options := SceneLoadOptions.new()) -> bool:
 ## Quits the game after a fade-out effect.
 ## @param fade_time Duration of the fade-out (seconds).
 func exit_game(fade_time: float = 1.0) -> void:
-	_effector.set_clickable(false)
-	await _effector.fade_out(fade_time)
+	_transition_player.set_clickable(false)
+	await _transition_player.fade_out(fade_time)
 	get_tree().quit(0)
 
 
@@ -400,8 +400,8 @@ func activate_prepared_scene() -> void:
 		_loaded_scene_map.has(_reserved_scene_id), "Scene Manager: Reserved scene entry missing."
 	)
 
-	_effector.set_clickable(_reserved_options.clickable)
-	await _effector.fade_out(_reserved_options.fade_out_time)
+	_transition_player.set_clickable(_reserved_options.clickable)
+	await _transition_player.fade_out(_reserved_options.fade_out_time)
 
 	# Remove the loading screen
 	_unload_scene(_LOADING_NODE_NAME)
@@ -423,14 +423,14 @@ func activate_prepared_scene() -> void:
 
 		_current_scene_enum = _reserved_scene_id
 
-	await _effector.fade_in(_reserved_options.fade_in_time)
+	await _transition_player.fade_in(_reserved_options.fade_in_time)
 
 	# Reset the reserved scene information now that the scene has fully loaded.
 	_reserved_scene_id = Scenes.Id.NONE
 	_reserved_options = null
 	_reserved_add_to_back = false
 
-	_effector.set_clickable(true)
+	_transition_player.set_clickable(true)
 	scene_transition_completed.emit(_current_scene_enum)
 
 
