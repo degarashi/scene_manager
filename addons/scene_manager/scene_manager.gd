@@ -211,7 +211,9 @@ func switch_to_scene(
 
 	var new_scene_node := create_scene_instance_blocking(scene)
 	if not new_scene_node:
-		push_error("Scene Manager: Failed to instantiate switch_to_scene: %d" % scene)
+		push_error(
+			"Scene Manager: Failed to instantiate switch_to_scene: %s" % Scenes.Id.find_key(scene)
+		)
 		_effector.set_clickable(true)
 		return
 
@@ -236,7 +238,9 @@ func add_scene(scene: Scenes.Id, options := SceneLoadOptions.new()) -> void:
 		return
 
 	if _loaded_scene_map.has(scene):
-		push_warning("Scene Manager: Scene %d is already loaded (additive)." % scene)
+		push_warning(
+			"Scene Manager: Scene %s is already loaded (additive)." % Scenes.Id.find_key(scene)
+		)
 		return
 
 	# Additive mode: No fading, only name conflict resolution
@@ -244,7 +248,7 @@ func add_scene(scene: Scenes.Id, options := SceneLoadOptions.new()) -> void:
 
 	var new_scene_node := create_scene_instance_blocking(scene)
 	if not new_scene_node:
-		push_error("Scene Manager: Failed to instantiate add_scene: %d" % scene)
+		push_error("Scene Manager: Failed to instantiate add_scene: %s" % Scenes.Id.find_key(scene))
 		return
 
 	var parent_node := _create_ui_wrapper(options.node_name)
@@ -352,7 +356,7 @@ func instantiate_async_result() -> void:
 
 		_loaded_scene_map[_reserved_scene_id] = _SceneEntry.new(parent_node, scene_node)
 	else:
-		push_error(false, "Scene Manager: Failed to get threaded load result for %s" % path)
+		push_error("Scene Manager: Failed to get threaded load result for %s" % path)
 
 
 static func _to_tmp_name(node_name: String) -> String:
@@ -374,9 +378,7 @@ static func _from_tmp_name(tmp_name: String) -> String:
 ## switching scenes.
 func activate_prepared_scene() -> void:
 	if _reserved_scene_id == Scenes.Id.NONE:
-		push_warning(
-			"activate_prepared_scene called but no scene is reserved. Ensure you are in an async load flow."
-		)
+		push_warning("activate_prepared_scene called but no scene is reserved.")
 		return
 	assert(
 		_loaded_scene_map.has(_reserved_scene_id), "Scene Manager: Reserved scene entry missing."
