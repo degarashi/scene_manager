@@ -219,7 +219,7 @@ func switch_to_scene(
 	if add_to_back and _current_scene_enum != Scenes.Id.NONE:
 		_history_stack.push(_current_scene_enum)
 
-	var new_scene_node := create_scene_instance_blocking(scene)
+	var new_scene_node := _create_scene_instance_blocking(scene)
 	if not new_scene_node:
 		push_error(
 			"Scene Manager: Failed to instantiate switch_to_scene: %s" % Scenes.Id.find_key(scene)
@@ -256,7 +256,7 @@ func add_scene(scene: Scenes.Id, options := SceneLoadOptions.new()) -> void:
 	# Additive mode: No fading, only name conflict resolution
 	_unload_scene(options.node_name, false)
 
-	var new_scene_node := create_scene_instance_blocking(scene)
+	var new_scene_node := _create_scene_instance_blocking(scene)
 	if not new_scene_node:
 		push_error("Scene Manager: Failed to instantiate add_scene: %s" % Scenes.Id.find_key(scene))
 		return
@@ -435,15 +435,15 @@ func activate_prepared_scene() -> void:
 
 
 # ------------- [Utils] -------------
-func get_scene_blocking(scene: Scenes.Id) -> PackedScene:
+func _get_scene_blocking(scene: Scenes.Id) -> PackedScene:
 	if scene == Scenes.Id.NONE:
-		push_warning("Scene Manager: get_scene_blocking called with Scenes.Id.NONE.")
+		push_warning("Scene Manager: _get_scene_blocking called with Scenes.Id.NONE.")
 		return null
 	return load(_scene_db.get_scene_path_from_enum(scene))
 
 
-func create_scene_instance_blocking(scene: Scenes.Id) -> Node:
-	var pack := get_scene_blocking(scene)
+func _create_scene_instance_blocking(scene: Scenes.Id) -> Node:
+	var pack := _get_scene_blocking(scene)
 	return pack.instantiate() if pack else null
 
 
