@@ -266,6 +266,7 @@ func _reload_data() -> void:
 	_cleanup_manager_data()
 
 	_manager_data = ResourceLoader.load(_ps.scene_data_path)
+	_manager_data.sync_with_filesystem()
 	_update_last_modified_time()
 	_manager_data.data_changed_debounced.connect(_refresh_ui)
 	_manager_data.on_dirty_flag_changed.connect(_on_dirty_flag_changed)
