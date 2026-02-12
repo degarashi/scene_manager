@@ -337,13 +337,14 @@ func _register_scene_file(full_path: String) -> int:
 		scene_name = base_name + str(counter)
 		counter += 1
 
-	var new_scene := SMgrDataScene.new()
-	new_scene.name = scene_name
-	new_scene.path = full_path
-	new_scene.uid = uid
-	_scenes[uid] = new_scene
-	data_changed.emit()
-	return uid
+	# Initialize new scene data using the factory method
+	var new_scene := SMgrDataScene.initialize(scene_name, full_path, uid)
+	if new_scene:
+		_scenes[uid] = new_scene
+		data_changed.emit()
+		return uid
+
+	return ResourceUID.INVALID_ID
 
 
 ## Removes an include path and unregisters all scenes under it

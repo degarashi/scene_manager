@@ -7,67 +7,58 @@ extends Resource
 @export var name: String
 ## List of sections this scene belongs to
 @export var sections: Array[String]
-## Synchronize UID when path is set (prevents redundant execution)
-@export var path: String:
-	set(value):
-		if path == value:
-			return
-		path = value
-		if Engine.is_editor_hint():  # Auto-resolve only when running in editor
-			_update_uid_from_path()
 
-## Synchronize path when UID is set
-@export var uid: int = ResourceUID.INVALID_ID:
-	set(value):
-		if uid == value:
-			return
-		uid = value
-		if Engine.is_editor_hint():
-			_update_path_from_uid()
+@export var path: String
+@export var uid: int = ResourceUID.INVALID_ID
 
 
-# ------------- [Private Method] -------------
-## Retrieves and updates to the latest path based on the UID
-func _update_path_from_uid() -> void:
-	if uid != ResourceUID.INVALID_ID:
-		var current_path = ResourceUID.get_id_path(uid)
-		if not current_path.is_empty() and current_path != path:
-			path = current_path
+# ------------- [Static Helper Methods] -------------
+## Gets the current path from the UID
+static func get_path_from_uid(target_uid: int) -> String:
+	if target_uid == ResourceUID.INVALID_ID:
+		return ""
+	return ResourceUID.get_id_path(target_uid)
 
 
-## Retrieves and updates to the latest UID based on the path
-func _update_uid_from_path() -> void:
-	if not path.is_empty() and FileAccess.file_exists(path):
-		var current_id = ResourceLoader.get_resource_uid(path)
-		if current_id != ResourceUID.INVALID_ID and current_id != uid:
-			uid = current_id
+## Gets the current UID from the path
+static func get_uid_from_path(target_path: String) -> int:
+	if target_path.is_empty() or not FileAccess.file_exists(target_path):
+		return ResourceUID.INVALID_ID
+	return ResourceLoader.get_resource_uid(target_path)
 
 
 # ------------- [Public Method] -------------
 ## Initializes data using the specified path and UID, ensuring consistency
-func initialize(target_path: String, target_uid: int) -> void:
+static func initialize(sc_name: String, target_path: String, target_uid: int) -> SMgrDataScene:
+	var final_path: String = ""
+	var final_uid: int = ResourceUID.INVALID_ID
+
+	# Resolve information (Validation Priority)
 	# Prioritize resolution by UID (resilient to file movement)
-	if target_uid != ResourceUID.INVALID_ID:
-		var path_by_uid := ResourceUID.get_id_path(target_uid)
-		if not path_by_uid.is_empty():
-			path = path_by_uid
-			uid = target_uid
-			return
+	var path_by_uid := get_path_from_uid(target_uid)
+	if not path_by_uid.is_empty():
+		final_path = path_by_uid
+		final_uid = target_uid
 
-	# If UID is invalid, attempt to retrieve UID from the path
-	if not target_path.is_empty() and FileAccess.file_exists(target_path):
-		var id_from_path := ResourceLoader.get_resource_uid(target_path)
+	# Search by path only if not resolved by UID
+	else:
+		var id_from_path := get_uid_from_path(target_path)
 		if id_from_path != ResourceUID.INVALID_ID:
-			path = target_path
-			uid = id_from_path
-			return
+			final_path = target_path
+			final_uid = id_from_path
+		elif not target_path.is_empty():
+			if not FileAccess.file_exists(target_path):
+				printerr("Scene Manager: Entry is broken (File not found): ", target_path)
+			else:
+				printerr("Scene Manager: Could not resolve UID for path: ", target_path)
 
-		# Special case where path exists but UID cannot be generated
-		printerr("Scene Manager: Could not resolve UID for path: ", target_path)
+	# Instantiate only if valid information is determined
+	if not final_path.is_empty():
+		var ret := SMgrDataScene.new()
+		ret.name = sc_name
+		# Assign finalized values directly to avoid redundant setter execution
+		ret.path = final_path
+		ret.uid = final_uid
+		return ret
 
-	# Case where the file is not found
-	if not target_path.is_empty() and not FileAccess.file_exists(target_path):
-		printerr("Scene Manager: Entry is broken (File not found): ", target_path)
-
-	path = target_path
-	uid = target_uid
+	return null
