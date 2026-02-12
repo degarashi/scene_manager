@@ -97,6 +97,10 @@ static func _scan_project_for_invalid_ids(path: String) -> int:
 	if not dir:
 		return 0
 
+	# If .gdignore exists in the directory, skip scanning this folder
+	if dir.file_exists(".gdignore"):
+		return 0
+
 	dir.list_dir_begin()
 	var file_name: String = dir.get_next()
 
