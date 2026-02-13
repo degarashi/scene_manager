@@ -16,7 +16,7 @@ const _ICON_COLLAPSE_BUTTON = preload("uid://bd6ob6pgam1gt")
 const _ALL_SECTION_NAME = "All"
 
 var _ps := preload("uid://dn6eh4s0h8jhi")
-var _manager_data: SMgrData
+var _manager_data: SMgrDataEditor
 ## For file monitoring
 var _last_modified_time: int = 0
 var _connect_ebus: bool
@@ -111,7 +111,7 @@ func _do_save() -> void:
 
 func _get_scenes(recv: Array[SMgrDataScene], section_name: String) -> void:
 	assert(recv.is_empty())
-	recv.append_array(_manager_data.get_scenes_with_section(section_name))
+	recv.append_array(_manager_data.get_data().get_scenes_with_section(section_name))
 
 
 func _get_scenes_by_type(recv: Array[SMgrDataScene], type: int) -> void:
@@ -121,21 +121,21 @@ func _get_scenes_by_type(recv: Array[SMgrDataScene], type: int) -> void:
 	# such as 0: all, 1: categorized, 2: uncategorized, etc.
 	match type:
 		0:
-			recv.append_array(_manager_data.get_scenes_all())
+			recv.append_array(_manager_data.get_data().get_scenes_all())
 		1:
-			recv.append_array(_manager_data.get_scenes_categorized())
+			recv.append_array(_manager_data.get_data().get_scenes_categorized())
 		2:
-			recv.append_array(_manager_data.get_scenes_uncategorized())
+			recv.append_array(_manager_data.get_data().get_scenes_uncategorized())
 
 
 func _get_scene_info(recv: Array[SMgrDataScene], uid: int) -> void:
 	assert(recv.is_empty())
-	recv.append(_manager_data.get_scene_from_uid(uid))
+	recv.append(_manager_data.get_data().get_scene_from_uid(uid))
 
 
 func _has_scene_by_name(recv: Array[bool], scene_name: String) -> void:
 	assert(recv.is_empty())
-	recv.append(_manager_data.get_scene_by_name(scene_name) != null)
+	recv.append(_manager_data.get_data().get_scene_by_name(scene_name) != null)
 
 
 func _change_scene_name(uid: int, scene_name: String) -> void:
@@ -144,7 +144,7 @@ func _change_scene_name(uid: int, scene_name: String) -> void:
 
 func _get_scene_enums(recv: Array[String]) -> void:
 	assert(recv.is_empty())
-	var tmp := _manager_data.get_scenes_all()
+	var tmp := _manager_data.get_data().get_scenes_all()
 	for scene in tmp:
 		recv.append(SceneManagerUtils.sanitize_as_enum_string(scene.name))
 
@@ -162,7 +162,7 @@ func connect_ebus() -> void:
 	_EBUS.get_section_names.connect(
 		func(recv: Array) -> void:
 			assert(recv.is_empty())
-			recv.append_array(_manager_data.get_sections_list())
+			recv.append_array(_manager_data.get_data().get_sections_list())
 	)
 	_EBUS.add_scene_to_section.connect(
 		func(uid: int, section_name: String) -> void:
@@ -223,7 +223,7 @@ func _reload_ui_includes() -> void:
 		child.reparent(_garbage_bin)
 		child.queue_free()
 
-	for path in _manager_data.get_include_list():
+	for path in _manager_data.get_data().get_include_list():
 		_add_include_item(path)
 
 
@@ -243,7 +243,7 @@ func _reload_ui_scenes() -> void:
 	prim_sec.setup(_ALL_SECTION_NAME)
 	prim_sec.on_remove.connect(_on_section_remove)
 
-	for section in _manager_data.get_sections_list():
+	for section in _manager_data.get_data().get_sections_list():
 		var sec: SMgrSection = _SECONDARY_SECTION_SCENE.instantiate()
 		_section_tab_cont.add_child(sec)
 		sec.setup(section)
@@ -266,7 +266,11 @@ func _cleanup_manager_data() -> void:
 func _reload_data() -> void:
 	_cleanup_manager_data()
 
-	_manager_data = ResourceLoader.load(_ps.scene_data_path)
+	var raw_data: SMgrData = ResourceLoader.load(_ps.scene_data_path)
+	if not raw_data:
+		raw_data = SMgrData.new()
+	_manager_data = SMgrDataEditor.new(raw_data)
+
 	_manager_data.sync_with_filesystem()
 	_update_last_modified_time()
 	_manager_data.data_changed_debounced.connect(_refresh_ui)
