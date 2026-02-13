@@ -10,6 +10,7 @@ const _EBUS = preload("uid://ra25t5in8erp")
 const _EBUS_I = preload("uid://bnwpfojr6e0dh")
 const _C = preload("uid://c3vvdktou45u")
 const _AF = preload("uid://dlgh4u64a7qxk")
+const _CHK = preload("uid://bfsxxd1vc4jm7")
 const _ICON_EXPAND_BUTTON = preload("uid://t6iu67x15d3")
 const _ICON_COLLAPSE_BUTTON = preload("uid://bd6ob6pgam1gt")
 const _ALL_SECTION_NAME = "All"
@@ -343,10 +344,9 @@ func _on_refresh_button_up() -> void:
 func _on_save_delay_timer_timeout() -> void:
 	_do_save_when_auto()
 
-
 # --- Invalid SceneId Detection ---
 func _on_check_invalid_ids_button_button_up() -> void:
-	_AF.check_invalid_ids()
+	_CHK.check_invalid_ids()
 
 
 func _on_refresh_uid_button_button_up() -> void:
