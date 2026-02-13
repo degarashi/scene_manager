@@ -27,7 +27,6 @@ const SCENE_DATA_HEADER: String = """#
 extends Node
 
 """
-const AF = preload("uid://dlgh4u64a7qxk")
 
 ## List of directory paths to include
 @export var _include_list: Array[String]
