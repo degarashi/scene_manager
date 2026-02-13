@@ -11,6 +11,7 @@ signal load_failed
 signal scene_loaded(scene_id: Scenes.Id)
 ## Emitted when the entire transition (including visual effects) is finished.
 signal scene_transition_completed(scene_id: Scenes.Id)
+signal on_game_end
 
 # ------------- [Constants] -------------
 const _C = preload("uid://c3vvdktou45u")
@@ -320,6 +321,7 @@ func reload_current_scene(options := SceneLoadOptions.new()) -> bool:
 func exit_game(fade_time: float = 1.0) -> void:
 	_transition_player.set_clickable(false)
 	await _transition_player.fade_out(fade_time)
+	on_game_end.emit()
 	get_tree().quit(0)
 
 
