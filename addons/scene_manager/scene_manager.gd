@@ -25,13 +25,13 @@ const _RESOURCE_LOADER = preload("uid://dabq3s83q0iku")
 # ------------- [Defines] -------------
 ## Internal class to hold entries of loaded scenes.
 class _SceneEntry:
-	var container_node: Control
+	var container_node: CanvasLayer
 	var scene_node: Node
 
 	## Initialize the instance.
 	## @param p_container The parent wrapper node.
 	## @param p_scene The main scene node.
-	func _init(p_container: Control, p_scene: Node) -> void:
+	func _init(p_container: CanvasLayer, p_scene: Node) -> void:
 		assert(p_container != null, "SceneEntry: container_node cannot be null.")
 		assert(p_scene != null, "SceneEntry: scene_node cannot be null.")
 		container_node = p_container
@@ -105,17 +105,10 @@ func _on_loader_progress_changed(_path: String, percent: int) -> void:
 		load_percent_changed.emit(percent)
 
 
-func _create_ui_wrapper(node_name: String) -> Control:
+func _create_ui_wrapper(node_name: String) -> CanvasLayer:
 	assert(not node_name.is_empty(), "Scene Manager: wrapper node name cannot be empty.")
-	var wrapper := Control.new()
+	var wrapper := CanvasLayer.new()
 	wrapper.name = node_name
-
-	# Set to expand across the whole screen (Full Rect).
-	wrapper.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-
-	# The wrapper itself should not block mouse events.
-	wrapper.mouse_filter = Control.MOUSE_FILTER_IGNORE
-
 	return wrapper
 
 
