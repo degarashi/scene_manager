@@ -5,6 +5,7 @@ extends Resource
 const _C = preload("uid://c3vvdktou45u")
 const DEFAULT_CLICKABLE_FLAG = false
 static var _ps := preload("uid://dn6eh4s0h8jhi")
+static var _empty_cb := func(_arg: Node) -> void: pass
 
 @export_group("Hierarchy")
 ## Where in the node structure the new scene will load.
@@ -20,10 +21,20 @@ static var _ps := preload("uid://dn6eh4s0h8jhi")
 ## Whether or not to block mouse input during the scene load.
 @export var clickable: bool = DEFAULT_CLICKABLE_FLAG
 
+var pre_wrap_cb: Callable
+var pre_node_cb: Callable
+
 
 ## Helper (static method) to get default values from project settings, etc.
 static func get_default_settings() -> SMgrProjectSettings:
 	return _ps
+
+
+func call_pre_cb(wrap_node: Node, node: Node) -> void:
+	if pre_wrap_cb.is_valid():
+		pre_wrap_cb.call(wrap_node)
+	if pre_node_cb.is_valid():
+		pre_node_cb.call(node)
 
 
 ## Creates options for loading a scene.
@@ -32,6 +43,8 @@ func _init(
 	p_clickable: bool = DEFAULT_CLICKABLE_FLAG,
 	p_fade_out: float = -1.0,
 	p_fade_in: float = -1.0,
+	p_pre_wrap_cb: Callable = _empty_cb,
+	p_pre_node_cb: Callable = _empty_cb,
 ) -> void:
 	# Logic for determining default values
 	var settings := get_default_settings()
@@ -52,6 +65,9 @@ func _init(
 		fade_in_time = p_fade_in
 	elif settings != null:
 		fade_in_time = settings.fade_in_time
+
+	pre_wrap_cb = p_pre_wrap_cb
+	pre_node_cb = p_pre_node_cb
 
 
 ## Create a deep copy of the SceneLoadOptions instance.
