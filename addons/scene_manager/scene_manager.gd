@@ -198,10 +198,10 @@ func get_history_count() -> int:
 ## Discards the current main scene and switches to a new one. (Main Routine)
 func switch_to_scene(
 	scene: Scenes.Id, add_to_back: bool, options := SceneLoadOptions.new()
-) -> void:
+) -> Node:
 	if scene == Scenes.Id.NONE:
 		push_warning("Scene Manager: switch_to_scene called with NONE.")
-		return
+		return null
 
 	# --- Transition Start ---
 	_transition_player.set_clickable(options.clickable)
@@ -219,11 +219,12 @@ func switch_to_scene(
 			"Scene Manager: Failed to instantiate switch_to_scene: %s" % Scenes.Id.find_key(scene)
 		)
 		_transition_player.set_clickable(true)
-		return
+		return null
 
 	var parent_node := _create_ui_wrapper(options.node_name)
-	get_tree().root.add_child(parent_node)
 	parent_node.add_child(new_scene_node)
+	options.call_pre_cb(parent_node, new_scene_node)
+	get_tree().root.add_child(parent_node)
 
 	# --- Register and Finalize ---
 	_loaded_scene_map[scene] = _SceneEntry.new(parent_node, new_scene_node)
@@ -233,19 +234,20 @@ func switch_to_scene(
 	await _transition_player.fade_in(options.fade_out_time)
 	_transition_player.set_clickable(true)
 	scene_transition_completed.emit(scene)
+	return new_scene_node
 
 
 ## Adds a scene while keeping the current scene. (Additive Routine)
-func add_scene(scene: Scenes.Id, options := SceneLoadOptions.new()) -> void:
+func add_scene(scene: Scenes.Id, options := SceneLoadOptions.new()) -> Node:
 	if scene == Scenes.Id.NONE:
 		push_warning("Scene Manager: add_scene called with NONE.")
-		return
+		return null
 
 	if _loaded_scene_map.has(scene):
 		push_warning(
 			"Scene Manager: Scene %s is already loaded (additive)." % Scenes.Id.find_key(scene)
 		)
-		return
+		return null
 
 	# Additive mode: No fading, only name conflict resolution
 	_unload_scene(options.node_name, false)
@@ -253,15 +255,17 @@ func add_scene(scene: Scenes.Id, options := SceneLoadOptions.new()) -> void:
 	var new_scene_node := _create_scene_instance_blocking(scene)
 	if not new_scene_node:
 		push_error("Scene Manager: Failed to instantiate add_scene: %s" % Scenes.Id.find_key(scene))
-		return
+		return null
 
 	var parent_node := _create_ui_wrapper(options.node_name)
-	get_tree().root.add_child(parent_node)
 	parent_node.add_child(new_scene_node)
+	get_tree().root.add_child(parent_node)
+	options.call_pre_cb(parent_node, new_scene_node)
 
 	# Register additive scene
 	_loaded_scene_map[scene] = _SceneEntry.new(parent_node, new_scene_node)
 	scene_loaded.emit(scene)
+	return new_scene_node
 
 
 func load_previous_scene(options := SceneLoadOptions.new()) -> bool:
@@ -375,12 +379,13 @@ func instantiate_async_result() -> void:
 	if res:
 		var scene_node := res.instantiate()
 		scene_node.scene_file_path = path
-
 		# Temporary additive attachment
 		var tmp_name := _to_tmp_name(_reserved_options.node_name)
 		var parent_node := _create_ui_wrapper(tmp_name)
-		get_tree().root.add_child(parent_node)
 		parent_node.add_child(scene_node)
+		_reserved_options.call_pre_cb(parent_node, scene_node)
+
+		get_tree().root.add_child(parent_node)
 
 		# Place it right behind the loading screen (which is at the top).
 		var root := get_tree().root
@@ -408,10 +413,10 @@ static func _from_tmp_name(tmp_name: String) -> String:
 ## is completely ready and functional to change the active scene.[br]
 ## This is used in the `load_scene_with_transition` flow and uses the reserved information for
 ## switching scenes.
-func activate_prepared_scene() -> void:
+func activate_prepared_scene() -> Node:
 	if _reserved_scene_id == Scenes.Id.NONE:
 		push_warning("activate_prepared_scene called but no scene is reserved.")
-		return
+		return null
 	assert(
 		_loaded_scene_map.has(_reserved_scene_id), "Scene Manager: Reserved scene entry missing."
 	)
@@ -441,6 +446,7 @@ func activate_prepared_scene() -> void:
 
 	await _transition_player.fade_in(_reserved_options.fade_in_time)
 
+	var ret := _loaded_scene_map[_reserved_scene_id].scene_node
 	# Reset the reserved scene information now that the scene has fully loaded.
 	_reserved_scene_id = Scenes.Id.NONE
 	_reserved_options = null
@@ -448,6 +454,7 @@ func activate_prepared_scene() -> void:
 
 	_transition_player.set_clickable(true)
 	scene_transition_completed.emit(_current_scene_enum)
+	return ret
 
 
 # ------------- [Utils] -------------
