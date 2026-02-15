@@ -1,3 +1,4 @@
+class_name SMgrInstance
 extends Node
 ## Main SceneManager that handles adding and transitioning between scenes.
 
