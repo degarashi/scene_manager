@@ -232,7 +232,7 @@ func switch_to_scene(
 	_current_scene_enum = scene
 	scene_loaded.emit(scene)
 
-	await _transition_player.fade_in(options.fade_out_time)
+	await _transition_player.fade_in(options.fade_in_time)
 	_transition_player.set_clickable(true)
 	scene_transition_completed.emit(scene)
 	return new_scene_node
