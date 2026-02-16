@@ -17,10 +17,10 @@ signal on_game_end
 # ------------- [Constants] -------------
 const _C = preload("uid://c3vvdktou45u")
 const _RING_BUFFER = preload("uid://b6phac21mxnxr")
-const _INITIAL_FADE_IN_TIME = 1.0
 const _LOADING_NODE_NAME: String = "===Transition==="
 const _TRANSITION_PLAYER = preload("uid://2iy8wfgenjka")
 const _RESOURCE_LOADER = preload("uid://dabq3s83q0iku")
+@export var _initial_fade_in_time = 1.0
 
 
 # ------------- [Defines] -------------
@@ -132,7 +132,7 @@ func _on_initial_setup() -> void:
 		push_warning("Initial scene not found in DB (Scenes.Id.NONE).")
 
 	_transition_player.set_clickable(false)
-	await _transition_player.fade_in(_INITIAL_FADE_IN_TIME)
+	await _transition_player.fade_in(_initial_fade_in_time)
 	_transition_player.set_clickable(true)
 	scene_transition_completed.emit(_current_scene_enum)
 
