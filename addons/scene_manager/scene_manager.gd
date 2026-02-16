@@ -22,6 +22,7 @@ const _TRANSITION_PLAYER = preload("uid://2iy8wfgenjka")
 const _RESOURCE_LOADER = preload("uid://dabq3s83q0iku")
 @export var _initial_fade_in_time = 1.0
 @export var _actual_scene_container_path: NodePath = "/root"
+@export var _wrap_initial_scene := true
 
 
 # ------------- [Defines] -------------
@@ -122,22 +123,24 @@ func _get_actual_scene_container() -> Node:
 
 
 func _on_initial_setup() -> void:
-	var default_wrapper := _create_ui_wrapper(_C.DEFAULT_TREE_NODE_NAME)
-	_get_actual_scene_container().add_child(default_wrapper)
+	if _wrap_initial_scene:
+		## Wrap current_scene and place it under management
+		var default_wrapper := _create_ui_wrapper(_C.DEFAULT_TREE_NODE_NAME)
+		_get_actual_scene_container().add_child(default_wrapper)
 
-	var scene_node := get_tree().current_scene
-	assert(scene_node != null, "Scene Manager: current_scene is null during initial setup.")
-	scene_node.reparent(default_wrapper)
+		var scene_node := get_tree().current_scene
+		assert(scene_node != null, "Scene Manager: current_scene is null during initial setup.")
+		scene_node.reparent(default_wrapper)
 
-	# Don't map a NONE scene as that shouldn't be here. It's possible to reach here
-	# if the loaded scene wasn't part of the enums and loaded some other way.
-	var current_path := scene_node.scene_file_path
-	_current_scene_enum = _scene_db.get_scene_enum_by_path(current_path)
-	if _current_scene_enum != Scenes.Id.NONE:
-		_loaded_scene_map[_current_scene_enum] = _SceneEntry.new(default_wrapper, scene_node)
-	else:
-		push_warning("Initial scene not found in DB (Scenes.Id.NONE).")
+		# Find Scenes.Id enum by current scene's path
+		var current_path := scene_node.scene_file_path
+		_current_scene_enum = _scene_db.get_scene_enum_by_path(current_path)
+		if _current_scene_enum != Scenes.Id.NONE:
+			_loaded_scene_map[_current_scene_enum] = _SceneEntry.new(default_wrapper, scene_node)
+		else:
+			push_warning("Initial scene not found in DB (Scenes.Id.NONE).")
 
+	# Initial fade-in effect
 	_transition_player.set_clickable(false)
 	await _transition_player.fade_in(_initial_fade_in_time)
 	_transition_player.set_clickable(true)
