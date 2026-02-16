@@ -21,6 +21,7 @@ const _LOADING_NODE_NAME: String = "===Transition==="
 const _TRANSITION_PLAYER = preload("uid://2iy8wfgenjka")
 const _RESOURCE_LOADER = preload("uid://dabq3s83q0iku")
 @export var _initial_fade_in_time = 1.0
+@export var _actual_scene_container_path: NodePath = "/root"
 
 
 # ------------- [Defines] -------------
@@ -113,15 +114,23 @@ func _create_ui_wrapper(node_name: String) -> CanvasLayer:
 	return wrapper
 
 
+func _get_actual_scene_container() -> Node:
+	var target_node := get_node_or_null(_actual_scene_container_path)
+	if target_node:
+		return target_node
+	push_warning(
+		"Scene Manager: _actual_scene_container_path is invalid. Falling back to root node."
+	)
+	return get_tree().root
+
+
 ## Initial setup: moves the current scene to the manager's control.
 func _on_initial_setup() -> void:
 	var scene_node := get_tree().current_scene
 	assert(scene_node != null, "Scene Manager: current_scene is null during initial setup.")
 
-	var root := get_tree().root
 	var default_wrapper := _create_ui_wrapper(_C.DEFAULT_TREE_NODE_NAME)
-
-	root.add_child(default_wrapper)
+	_get_actual_scene_container().add_child(default_wrapper)
 	scene_node.reparent(default_wrapper)
 
 	# Don't map a NONE scene as that shouldn't be here. It's possible to reach here
@@ -140,9 +149,8 @@ func _on_initial_setup() -> void:
 ## Frees all scenes under a specified parent node and removes them from the map.
 ## @param node_name Name of the parent node to release.
 func _unload_scene(node_name: String, should_found: bool = true) -> void:
-	# If a node with the specified name exists directly under root, remove it.
-	var root := get_tree().root
-	var target_node := root.get_node_or_null(node_name)
+	# If a node with the specified name exists directly under scene container node, remove it.
+	var target_node := _get_actual_scene_container().get_node_or_null(node_name)
 	if not target_node:
 		if should_found:
 			push_warning(
@@ -168,7 +176,7 @@ func _remove_node_safely(target_node: Node) -> void:
 	assert(_trash_node != null, "Scene Manager: trash_node is not initialized.")
 
 	# Move to trash and then remove
-	# (This will immediately release the name directly under root)
+	# (This will immediately release the name directly under scene container node)
 	target_node.reparent(_trash_node)
 	# Change the name just in case
 	target_node.name = "dying_" + str(target_node.get_instance_id())
@@ -225,7 +233,7 @@ func switch_to_scene(
 	var parent_node := _create_ui_wrapper(options.node_name)
 	parent_node.add_child(new_scene_node)
 	options.call_pre_cb(parent_node, new_scene_node)
-	get_tree().root.add_child(parent_node)
+	_get_actual_scene_container().add_child(parent_node)
 
 	# --- Register and Finalize ---
 	_loaded_scene_map[scene] = _SceneEntry.new(parent_node, new_scene_node)
@@ -260,7 +268,7 @@ func add_scene(scene: Scenes.Id, options := SceneLoadOptions.new()) -> Node:
 
 	var parent_node := _create_ui_wrapper(options.node_name)
 	parent_node.add_child(new_scene_node)
-	get_tree().root.add_child(parent_node)
+	_get_actual_scene_container().add_child(parent_node)
 	options.call_pre_cb(parent_node, new_scene_node)
 
 	# Register additive scene
@@ -386,11 +394,11 @@ func instantiate_async_result() -> void:
 		parent_node.add_child(scene_node)
 		_reserved_options.call_pre_cb(parent_node, scene_node)
 
-		get_tree().root.add_child(parent_node)
+		var target_node := _get_actual_scene_container()
+		target_node.add_child(parent_node)
 
 		# Place it right behind the loading screen (which is at the top).
-		var root := get_tree().root
-		root.move_child(parent_node, root.get_child_count() - 2)
+		target_node.move_child(parent_node, target_node.get_child_count() - 2)
 
 		_loaded_scene_map[_reserved_scene_id] = _SceneEntry.new(parent_node, scene_node)
 	else:
