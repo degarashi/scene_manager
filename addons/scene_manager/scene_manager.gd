@@ -121,7 +121,6 @@ func _get_actual_scene_container() -> Node:
 	return get_tree().root
 
 
-## Initial setup: moves the current scene to the manager's control.
 func _on_initial_setup() -> void:
 	var default_wrapper := _create_ui_wrapper(_C.DEFAULT_TREE_NODE_NAME)
 	_get_actual_scene_container().add_child(default_wrapper)
