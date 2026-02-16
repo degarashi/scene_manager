@@ -79,9 +79,6 @@ func _ready() -> void:
 	_scene_db = load(PS.scene_data_path)
 	assert(_scene_db != null, "Scene Manager: Failed to load scene database resource.")
 
-	var current_path := get_tree().current_scene.scene_file_path
-	_current_scene_enum = _scene_db.get_scene_enum_by_path(current_path)
-
 	_on_initial_setup.call_deferred()
 
 
@@ -126,15 +123,17 @@ func _get_actual_scene_container() -> Node:
 
 ## Initial setup: moves the current scene to the manager's control.
 func _on_initial_setup() -> void:
-	var scene_node := get_tree().current_scene
-	assert(scene_node != null, "Scene Manager: current_scene is null during initial setup.")
-
 	var default_wrapper := _create_ui_wrapper(_C.DEFAULT_TREE_NODE_NAME)
 	_get_actual_scene_container().add_child(default_wrapper)
+
+	var scene_node := get_tree().current_scene
+	assert(scene_node != null, "Scene Manager: current_scene is null during initial setup.")
 	scene_node.reparent(default_wrapper)
 
 	# Don't map a NONE scene as that shouldn't be here. It's possible to reach here
 	# if the loaded scene wasn't part of the enums and loaded some other way.
+	var current_path := scene_node.scene_file_path
+	_current_scene_enum = _scene_db.get_scene_enum_by_path(current_path)
 	if _current_scene_enum != Scenes.Id.NONE:
 		_loaded_scene_map[_current_scene_enum] = _SceneEntry.new(default_wrapper, scene_node)
 	else:
