@@ -62,12 +62,10 @@ func _enable_plugin() -> void:
 	var needs_scan := _setup_default_data()
 
 	if needs_scan:
-		print("b")
 		# If scan is required, wait for completion (filesystem_changed) before registering autoloads
 		var fs := EditorInterface.get_resource_filesystem()
 		fs.filesystem_changed.connect(_register_autoloads, CONNECT_ONE_SHOT)
 	else:
-		print("c")
 		# If files already exist, register immediately
 		_register_autoloads()
 
@@ -77,15 +75,12 @@ func _disable_plugin() -> void:
 
 
 func _setup_default_data() -> bool:
-	print("A")
 	if not FileAccess.file_exists(_ps.scene_data_path) or not FileAccess.file_exists(_ps.scene_path):
-		print("B")
 		var source_dir: String = "res://addons/scene_manager/default_data/"
 		var dir: DirAccess = DirAccess.open(source_dir)
 		if dir:
 			dir.list_dir_begin()
 			var file_name: String = dir.get_next()
-			print(file_name)
 			while file_name != "":
 				if not dir.current_is_dir():
 					var source_path: String = source_dir.path_join(file_name)
