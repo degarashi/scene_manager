@@ -69,8 +69,8 @@ var _transition_player: Node = null
 # ------------- [Callbacks] -------------
 func _ready() -> void:
 	_init_resourece_loader()
-	_init_trash_node()
 	_init_effector()
+	_init_trash_node()
 
 	var PS := preload("uid://dn6eh4s0h8jhi")
 	# SMgrData is a Resource, so read it with the loader
