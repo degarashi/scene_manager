@@ -20,8 +20,10 @@ func set_clickable(clickable: bool) -> void:
 
 ## Common playback logic.
 func _play_fade(speed: float, backwards: bool) -> void:
-	# Error if called again during a fade process.
-	assert(not _is_playing, "SceneEffector: Fade logic called while animation is already playing.")
+	# Warning if called again during a fade process.
+	if _is_playing:
+		push_warning("SceneEffector: Fade logic called while animation is already playing.")
+		return
 
 	if speed <= 0:
 		return
