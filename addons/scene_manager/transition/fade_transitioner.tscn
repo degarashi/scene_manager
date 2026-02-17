@@ -1,6 +1,6 @@
-[gd_scene load_steps=5 format=3 uid="uid://cbqttysey0hqt"]
+[gd_scene load_steps=5 format=3 uid="uid://2iy8wfgenjka"]
 
-[ext_resource type="Script" path="res://addons/scene_manager/transition/fade_transitioner.gd" id="1_rnvl1"]
+[ext_resource type="Script" uid="uid://d0iel61mgjnf5" path="res://addons/scene_manager/transition/fade_transitioner.gd" id="1_rnvl1"]
 
 [sub_resource type="Animation" id="8"]
 length = 0.001

@@ -1,4 +1,5 @@
-extends Node
+class_name FadeTransitioner
+extends ScreenTransitioner
 
 
 ## Definition of animation keys.
@@ -6,13 +7,11 @@ class _AnimKey:
 	const FADE = &"fade"
 
 
-## Flag to manage whether an animation is currently playing.
-var _is_playing: bool = false
-
 @onready var _fade_color_rect: ColorRect = %fade
 @onready var _animation_player: AnimationPlayer = %animation_player
 
 
+## [Virtual]
 func set_clickable(clickable: bool) -> void:
 	_fade_color_rect.mouse_filter = (
 		Control.MOUSE_FILTER_IGNORE if clickable else Control.MOUSE_FILTER_STOP
@@ -38,9 +37,11 @@ func _play_fade(speed: float, backwards: bool) -> void:
 	_is_playing = false
 
 
-func fade_out(speed: float) -> void:
+## [Virtual]
+func play_out(speed: float) -> void:
 	await _play_fade(speed, false)
 
 
-func fade_in(speed: float) -> void:
+## [Virtual]
+func play_in(speed: float) -> void:
 	await _play_fade(speed, true)
