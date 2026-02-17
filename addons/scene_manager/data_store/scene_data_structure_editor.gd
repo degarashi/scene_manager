@@ -180,6 +180,15 @@ func _export_scene_enum_string() -> String:
 	return ret
 
 
+func _export_category_enum_string() -> String:
+	var ret: String = ""
+	ret += "enum CategoryId {\n"
+	for c_name in _data._sections:
+		ret += "\t{0},\n".format([c_name.to_upper()])
+	ret += "}\n"
+	return ret
+
+
 # ------------- [Public Method] -------------
 func get_data() -> SMgrData:
 	return _data
@@ -193,6 +202,7 @@ func save_data(path: String, data_path: String) -> void:
 		return
 	file.store_string(SCENE_DATA_HEADER)
 	file.store_string(_export_scene_enum_string())
+	file.store_string(_export_category_enum_string())
 	file.close()
 
 	# --- save this resource itself ---
