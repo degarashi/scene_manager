@@ -5,15 +5,15 @@ extends SMgrResource
 signal on_auto_save_changed(enable: bool)
 const DEFAULT_SCENES_FILENAME = "scenes.gd"
 const DEFAULT_PATH_TO_SCENES := "res://scenes.gd"
-const DEFAULT_FADE_OUT_TIME: float = 1
-const DEFAULT_FADE_IN_TIME: float = 1
+const DEFAULT_PLAY_OUT_TIME: float = 1
+const DEFAULT_PLAY_IN_TIME: float = 1
 
 
 # Setting Paths
 class Property:
 	const SCENE_PATH = "scene_manager/scenes/scenes_path"
-	const FADE_OUT_TIME = "scene_manager/scenes/default_fade_out_time"
-	const FADE_IN_TIME = "scene_manager/scenes/default_fade_in_time"
+	const PLAY_OUT_TIME = "scene_manager/scenes/default_play_out_time"
+	const PLAY_IN_TIME = "scene_manager/scenes/default_play_in_time"
 	const AUTO_SAVE = "scene_manager/scenes/autosave"
 	const INCLUDES_VISIBLE = "scene_manager/scenes/includes_visible"
 
@@ -44,24 +44,24 @@ var scene_data_path: String:
 	get:
 		return scene_path.get_base_dir().path_join("scenes_data.tres")
 
-var fade_out_time: float:
+var play_out_time: float:
 	get:
 		return ProjectSettings.get_setting(
-			Property.FADE_OUT_TIME, DEFAULT_FADE_OUT_TIME
+			Property.PLAY_OUT_TIME, DEFAULT_PLAY_OUT_TIME
 		)
 	set(value):
-		if fade_out_time != value:
-			ProjectSettings.set_setting(Property.FADE_OUT_TIME, value)
+		if play_out_time != value:
+			ProjectSettings.set_setting(Property.PLAY_OUT_TIME, value)
 			_save()
 
-var fade_in_time: float:
+var play_in_time: float:
 	get:
 		return ProjectSettings.get_setting(
-			Property.FADE_IN_TIME, DEFAULT_FADE_IN_TIME
+			Property.PLAY_IN_TIME, DEFAULT_PLAY_IN_TIME
 		)
 	set(value):
-		if fade_in_time != value:
-			ProjectSettings.set_setting(Property.FADE_IN_TIME, value)
+		if play_in_time != value:
+			ProjectSettings.set_setting(Property.PLAY_IN_TIME, value)
 			_save()
 
 var auto_save: bool:
@@ -101,15 +101,15 @@ func setup_project_settings() -> void:
 			Key.BASIC: true,
 			Key.RESTART: true
 		},
-		Property.FADE_OUT_TIME:
+		Property.PLAY_OUT_TIME:
 		{
-			Key.DEFAULT: DEFAULT_FADE_OUT_TIME,
+			Key.DEFAULT: DEFAULT_PLAY_OUT_TIME,
 			Key.TYPE: TYPE_FLOAT,
 			Key.BASIC: true,
 		},
-		Property.FADE_IN_TIME:
+		Property.PLAY_IN_TIME:
 		{
-			Key.DEFAULT: DEFAULT_FADE_IN_TIME,
+			Key.DEFAULT: DEFAULT_PLAY_IN_TIME,
 			Key.TYPE: TYPE_FLOAT,
 			Key.BASIC: true,
 		},

@@ -10,4 +10,4 @@ func _on_reload_button_button_up() -> void:
 
 
 func _on_quit_button_button_up() -> void:
-	SceneManager.exit_game(opt.fade_out_time)
+	SceneManager.exit_game(opt.play_out_time)

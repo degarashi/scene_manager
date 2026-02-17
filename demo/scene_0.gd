@@ -11,7 +11,7 @@ func _on_begin_loading_button_pressed() -> void:
 
 
 func _on_quit_button_pressed() -> void:
-	SceneManager.exit_game(opt.fade_out_time)
+	SceneManager.exit_game(opt.play_out_time)
 
 
 func _on_begin_fake_loading_button_pressed() -> void:

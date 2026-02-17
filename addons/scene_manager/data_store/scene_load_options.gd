@@ -13,9 +13,9 @@ static var _empty_cb := func(_arg: Node) -> void: pass
 
 @export_group("Visuals")
 ## Duration of the fade out effect.
-@export var fade_out_time: float = 0.5
+@export var play_out_time: float = 0.5
 ## Duration of the fade in effect.
-@export var fade_in_time: float = 0.5
+@export var play_in_time: float = 0.5
 
 @export_group("Interaction")
 ## Whether or not to block mouse input during the scene load.
@@ -41,8 +41,8 @@ func call_pre_cb(wrap_node: Node, node: Node) -> void:
 func _init(
 	p_node: String = "",
 	p_clickable: bool = DEFAULT_CLICKABLE_FLAG,
-	p_fade_out: float = -1.0,
-	p_fade_in: float = -1.0,
+	p_play_out: float = -1.0,
+	p_play_in: float = -1.0,
 	p_pre_wrap_cb: Callable = _empty_cb,
 	p_pre_node_cb: Callable = _empty_cb,
 ) -> void:
@@ -56,15 +56,15 @@ func _init(
 	clickable = p_clickable
 
 	# Determine fade times (if the argument is negative, get from the settings file)
-	if p_fade_out >= 0.0:
-		fade_out_time = p_fade_out
+	if p_play_out >= 0.0:
+		play_out_time = p_play_out
 	elif settings != null:
-		fade_out_time = settings.fade_out_time
+		play_out_time = settings.play_out_time
 
-	if p_fade_in >= 0.0:
-		fade_in_time = p_fade_in
+	if p_play_in >= 0.0:
+		play_in_time = p_play_in
 	elif settings != null:
-		fade_in_time = settings.fade_in_time
+		play_in_time = settings.play_in_time
 
 	pre_wrap_cb = p_pre_wrap_cb
 	pre_node_cb = p_pre_node_cb
@@ -77,6 +77,6 @@ func copy() -> SceneLoadOptions:
 
 func _to_string() -> String:
 	return (
-		"SceneLoadOptions(node_name='%s', fade_out_time=%.2f, fade_in_time=%.2f, clickable=%s)"
-		% [node_name, fade_out_time, fade_in_time, clickable]
+		"SceneLoadOptions(node_name='%s', play_out_time=%.2f, play_in_time=%.2f, clickable=%s)"
+		% [node_name, play_out_time, play_in_time, clickable]
 	)

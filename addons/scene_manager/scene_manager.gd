@@ -19,7 +19,7 @@ const _C = preload("uid://c3vvdktou45u")
 const _RING_BUFFER = preload("uid://b6phac21mxnxr")
 const _RESOURCE_LOADER = preload("uid://dabq3s83q0iku")
 @export var _loading_node_name: String = "===Transition==="
-@export var _initial_fade_in_time = 1.0
+@export var _initial_play_in_time = 1.0
 @export var _actual_scene_container_path: NodePath = "/root"
 @export var _wrap_initial_scene := true
 @export var _transitioner_source: PackedScene = preload("uid://2iy8wfgenjka")
@@ -145,7 +145,7 @@ func _on_initial_setup() -> void:
 
 	# Initial fade-in effect
 	_transition_player.set_clickable(false)
-	await _transition_player.play_in(_initial_fade_in_time)
+	await _transition_player.play_in(_initial_play_in_time)
 	_transition_player.set_clickable(true)
 	scene_transition_completed.emit(_current_scene_enum)
 
@@ -218,7 +218,7 @@ func switch_to_scene(
 
 	# --- Transition Start ---
 	_transition_player.set_clickable(options.clickable)
-	await _transition_player.play_out(options.fade_out_time)
+	await _transition_player.play_out(options.play_out_time)
 
 	# --- Scene Replacement ---
 	# Unload everything for a clean switch
@@ -244,7 +244,7 @@ func switch_to_scene(
 	_current_scene_enum = scene
 	scene_loaded.emit(scene)
 
-	await _transition_player.play_in(options.fade_in_time)
+	await _transition_player.play_in(options.play_in_time)
 	_transition_player.set_clickable(true)
 	scene_transition_completed.emit(scene)
 	return new_scene_node
@@ -360,8 +360,8 @@ func load_scene_with_transition(
 	next_scene: Scenes.Id,
 	transition_scene: Scenes.Id,
 	add_to_back: bool = true,
-	opt_fade_in := SceneLoadOptions.new(),
-	opt_activate := opt_fade_in
+	opt_play_in := SceneLoadOptions.new(),
+	opt_activate := opt_play_in
 ) -> void:
 	assert(next_scene != Scenes.Id.NONE, "Scene Manager: next_scene cannot be NONE.")
 	assert(transition_scene != Scenes.Id.NONE, "Scene Manager: transition_scene cannot be NONE.")
@@ -371,7 +371,7 @@ func load_scene_with_transition(
 	_is_reserved_as_additive = false
 	_reserved_add_to_back = add_to_back
 
-	var trans_options := opt_fade_in.copy()
+	var trans_options := opt_play_in.copy()
 	trans_options.node_name = _loading_node_name
 
 	add_scene(transition_scene, trans_options)
@@ -435,7 +435,7 @@ func activate_prepared_scene() -> Node:
 	)
 
 	_transition_player.set_clickable(_reserved_options.clickable)
-	await _transition_player.play_out(_reserved_options.fade_out_time)
+	await _transition_player.play_out(_reserved_options.play_out_time)
 
 	# Remove the loading screen
 	_unload_scene(_loading_node_name)
@@ -457,7 +457,7 @@ func activate_prepared_scene() -> Node:
 
 		_current_scene_enum = _reserved_scene_id
 
-	await _transition_player.play_in(_reserved_options.fade_in_time)
+	await _transition_player.play_in(_reserved_options.play_in_time)
 
 	var ret := _loaded_scene_map[_reserved_scene_id].scene_node
 	# Reset the reserved scene information now that the scene has fully loaded.
