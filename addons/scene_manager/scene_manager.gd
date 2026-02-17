@@ -17,9 +17,9 @@ signal on_game_end
 # ------------- [Constants] -------------
 const _C = preload("uid://c3vvdktou45u")
 const _RING_BUFFER = preload("uid://b6phac21mxnxr")
-const _LOADING_NODE_NAME: String = "===Transition==="
 const _TRANSITION_PLAYER = preload("uid://2iy8wfgenjka")
 const _RESOURCE_LOADER = preload("uid://dabq3s83q0iku")
+@export var _loading_node_name: String = "===Transition==="
 @export var _initial_fade_in_time = 1.0
 @export var _actual_scene_container_path: NodePath = "/root"
 @export var _wrap_initial_scene := true
@@ -369,7 +369,7 @@ func load_scene_with_transition(
 	_reserved_add_to_back = add_to_back
 
 	var trans_options := opt_fade_in.copy()
-	trans_options.node_name = _LOADING_NODE_NAME
+	trans_options.node_name = _loading_node_name
 
 	add_scene(transition_scene, trans_options)
 
@@ -435,7 +435,7 @@ func activate_prepared_scene() -> Node:
 	await _transition_player.fade_out(_reserved_options.fade_out_time)
 
 	# Remove the loading screen
-	_unload_scene(_LOADING_NODE_NAME)
+	_unload_scene(_loading_node_name)
 
 	if not _is_reserved_as_additive:
 		# Remove everything except _reserved scene
