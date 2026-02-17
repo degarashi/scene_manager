@@ -63,15 +63,12 @@ var _transition_player: Node = null
 @onready var _history_stack := _RING_BUFFER.new()
 
 ## ResourceLoaderMgr instance
-@onready var _loader_mgr := _RESOURCE_LOADER.new()
+@onready var _loader_mgr: _RESOURCE_LOADER
 
 
 # ------------- [Callbacks] -------------
 func _ready() -> void:
-	# Add ResourceLoaderMgr as a child to let it process
-	add_child(_loader_mgr)
-	_loader_mgr.progress_changed.connect(_on_loader_progress_changed)
-
+	_init_resourece_loader()
 	_init_trash_node()
 	_init_effector()
 
@@ -84,6 +81,13 @@ func _ready() -> void:
 
 
 # ------------- [Private Methods] -------------
+func _init_resourece_loader() -> void:
+	_loader_mgr = _RESOURCE_LOADER.new()
+	_loader_mgr.name = "ResourceLoader"
+	_loader_mgr.progress_changed.connect(_on_loader_progress_changed)
+	add_child(_loader_mgr)
+
+
 func _init_effector() -> void:
 	_transition_player = _TRANSITION_PLAYER.instantiate()
 	_transition_player.name = "TransitionPlayer"
