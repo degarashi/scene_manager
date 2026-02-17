@@ -21,7 +21,7 @@ config/icon="res://icon.svg"
 [autoload]
 
 Scenes="*res://scenes.gd"
-SceneManager="*res://addons/scene_manager/scene_manager.gd"
+SceneManager="*res://addons/scene_manager/scene_manager.tscn"
 
 [debug]
 
