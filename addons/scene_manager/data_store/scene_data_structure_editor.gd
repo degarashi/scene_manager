@@ -168,15 +168,15 @@ func _scan_and_collect_uids(dir_path: String, collected_uids: Array[int]) -> voi
 		file_name = dir.get_next()
 
 
-func _export_enum_gd_string() -> String:
-	var ret: String = SCENE_DATA_HEADER
+func _export_scene_enum_string() -> String:
+	var ret: String = ""
 	ret += CommentKey.ENUM + "\n"
-	ret += "enum Id \\\n{ \n\tNONE = -1,"
+	ret += "enum Id {\n" + "\tNONE = -1,\n"
 
 	for uid in _data._scenes:
 		var sc_name := _data._scenes[uid].name
-		ret += "\n\t%s," % sc_name.to_upper()
-	ret += "\n}\n"
+		ret += "\t{0},\n".format([sc_name.to_upper()])
+	ret += "}\n"
 	return ret
 
 
@@ -191,7 +191,8 @@ func save_data(path: String, data_path: String) -> void:
 	if not file:
 		printerr("Scene Manager Error: Failed to open file for writing at '%s'." % path)
 		return
-	file.store_string(_export_enum_gd_string())
+	file.store_string(SCENE_DATA_HEADER)
+	file.store_string(_export_scene_enum_string())
 	file.close()
 
 	# --- save this resource itself ---
