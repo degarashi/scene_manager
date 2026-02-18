@@ -19,11 +19,16 @@ script = ExtResource("6")
 [node name="MainContainer" type="VBoxContainer" parent="."]
 layout_mode = 2
 
-[node name="Scenes" type="ScrollContainer" parent="MainContainer"]
+[node name="VSplitContainer" type="VSplitContainer" parent="MainContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="CategoryTabContainer" type="TabContainer" parent="MainContainer/Scenes"]
+[node name="Scenes" type="ScrollContainer" parent="MainContainer/VSplitContainer"]
+custom_minimum_size = Vector2(0, 222)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="CategoryTabContainer" type="TabContainer" parent="MainContainer/VSplitContainer/Scenes"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -31,77 +36,61 @@ size_flags_vertical = 3
 current_tab = 0
 drag_to_rearrange_enabled = true
 
-[node name="AddCategoryContainer" type="MarginContainer" parent="MainContainer"]
-layout_mode = 2
-size_flags_vertical = 8
-
-[node name="AddCategoryContainer" type="HBoxContainer" parent="MainContainer/AddCategoryContainer"]
-layout_mode = 2
-
-[node name="CategoryNameToAdd" type="LineEdit" parent="MainContainer/AddCategoryContainer/AddCategoryContainer"]
+[node name="MiscTab" type="TabContainer" parent="MainContainer/VSplitContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_horizontal = 3
-size_flags_stretch_ratio = 3.0
+size_flags_vertical = 3
+current_tab = 0
 
-[node name="AddCategoryButton" type="Button" parent="MainContainer/AddCategoryContainer/AddCategoryContainer"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-disabled = true
-text = "+ Category"
-
-[node name="Separator" type="HSeparator" parent="MainContainer"]
-layout_mode = 2
-
-[node name="IncludeListScroll" type="VBoxContainer" parent="MainContainer"]
+[node name="Include" type="VBoxContainer" parent="MainContainer/VSplitContainer/MiscTab"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 size_flags_stretch_ratio = 0.3
+metadata/_tab_index = 0
 
-[node name="Container" type="VBoxContainer" parent="MainContainer/IncludeListScroll"]
+[node name="Container" type="VBoxContainer" parent="MainContainer/VSplitContainer/MiscTab/Include"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="Title" type="HBoxContainer" parent="MainContainer/IncludeListScroll/Container"]
+[node name="Title" type="HBoxContainer" parent="MainContainer/VSplitContainer/MiscTab/Include/Container"]
 layout_mode = 2
 
-[node name="Padding" type="Control" parent="MainContainer/IncludeListScroll/Container/Title"]
+[node name="Padding" type="Control" parent="MainContainer/VSplitContainer/MiscTab/Include/Container/Title"]
 custom_minimum_size = Vector2(28, 28)
 layout_mode = 2
 
-[node name="Scenes" type="Label" parent="MainContainer/IncludeListScroll/Container/Title"]
+[node name="Scenes" type="Label" parent="MainContainer/VSplitContainer/MiscTab/Include/Container/Title"]
 layout_mode = 2
 text = "Includes:"
 
-[node name="Includes" type="ScrollContainer" parent="MainContainer/IncludeListScroll/Container"]
+[node name="Includes" type="ScrollContainer" parent="MainContainer/VSplitContainer/MiscTab/Include/Container"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="IncludeList" type="VBoxContainer" parent="MainContainer/IncludeListScroll/Container/Includes"]
+[node name="IncludeList" type="VBoxContainer" parent="MainContainer/VSplitContainer/MiscTab/Include/Container/Includes"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="IncludeAddPanel" type="VBoxContainer" parent="MainContainer/IncludeListScroll"]
+[node name="IncludeAddPanel" type="VBoxContainer" parent="MainContainer/VSplitContainer/MiscTab/Include"]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="IncludeInteractiveSectionContainer" type="MarginContainer" parent="MainContainer/IncludeListScroll/IncludeAddPanel"]
+[node name="IncludeInteractiveSectionContainer" type="MarginContainer" parent="MainContainer/VSplitContainer/MiscTab/Include/IncludeAddPanel"]
 layout_mode = 2
 size_flags_vertical = 8
 
-[node name="AddIncludeContainer" type="HBoxContainer" parent="MainContainer/IncludeListScroll/IncludeAddPanel/IncludeInteractiveSectionContainer"]
+[node name="AddIncludeContainer" type="HBoxContainer" parent="MainContainer/VSplitContainer/MiscTab/Include/IncludeAddPanel/IncludeInteractiveSectionContainer"]
 layout_mode = 2
 
-[node name="DialogAddIncludeContainer" type="HBoxContainer" parent="MainContainer/IncludeListScroll/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer"]
+[node name="DialogAddIncludeContainer" type="HBoxContainer" parent="MainContainer/VSplitContainer/MiscTab/Include/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="FileDialog" type="FileDialog" parent="MainContainer/IncludeListScroll/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer"]
+[node name="FileDialog" type="FileDialog" parent="MainContainer/VSplitContainer/MiscTab/Include/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer"]
 unique_name_in_owner = true
 title = "Open a File or Directory"
 size = Vector2i(348, 180)
@@ -109,21 +98,21 @@ ok_button_text = "Open"
 file_mode = 3
 filters = PackedStringArray("*.tscn")
 
-[node name="FileDialogButton" type="Button" parent="MainContainer/IncludeListScroll/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer"]
+[node name="FileDialogButton" type="Button" parent="MainContainer/VSplitContainer/MiscTab/Include/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer"]
 custom_minimum_size = Vector2(28, 28)
 layout_mode = 2
 icon = ExtResource("3")
 
-[node name="AddressEdit" type="LineEdit" parent="MainContainer/IncludeListScroll/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer"]
+[node name="AddressEdit" type="LineEdit" parent="MainContainer/VSplitContainer/MiscTab/Include/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="DialogAddIncludeContainer2" type="HBoxContainer" parent="MainContainer/IncludeListScroll/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer"]
+[node name="DialogAddIncludeContainer2" type="HBoxContainer" parent="MainContainer/VSplitContainer/MiscTab/Include/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="AddIncludeButton" type="Button" parent="MainContainer/IncludeListScroll/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer2"]
+[node name="AddIncludeButton" type="Button" parent="MainContainer/VSplitContainer/MiscTab/Include/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer2"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -131,7 +120,35 @@ tooltip_text = "Adds folder/file to include in the scene data."
 disabled = true
 text = "Add"
 
-[node name="HideIncludeButton" type="Button" parent="MainContainer/IncludeListScroll/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer2"]
+[node name="Separator" type="HSeparator" parent="MainContainer/VSplitContainer/MiscTab/Include/IncludeAddPanel"]
+layout_mode = 2
+
+[node name="Category" type="VBoxContainer" parent="MainContainer/VSplitContainer/MiscTab"]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 1
+
+[node name="AddCategoryContainer" type="MarginContainer" parent="MainContainer/VSplitContainer/MiscTab/Category"]
+layout_mode = 2
+size_flags_vertical = 8
+
+[node name="AddCategoryContainer" type="HBoxContainer" parent="MainContainer/VSplitContainer/MiscTab/Category/AddCategoryContainer"]
+layout_mode = 2
+
+[node name="CategoryNameToAdd" type="LineEdit" parent="MainContainer/VSplitContainer/MiscTab/Category/AddCategoryContainer/AddCategoryContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 3.0
+
+[node name="AddCategoryButton" type="Button" parent="MainContainer/VSplitContainer/MiscTab/Category/AddCategoryContainer/AddCategoryContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+disabled = true
+text = "+ Category"
+
+[node name="HideIncludeButton" type="Button" parent="MainContainer"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(28, 28)
 layout_mode = 2
@@ -140,9 +157,6 @@ focus_mode = 0
 icon = ExtResource("4_vqnpn")
 icon_alignment = 1
 metadata/enabled = true
-
-[node name="Separator" type="HSeparator" parent="MainContainer/IncludeListScroll/IncludeAddPanel"]
-layout_mode = 2
 
 [node name="InteractiveSectionContainer" type="VBoxContainer" parent="MainContainer"]
 layout_mode = 2
@@ -175,14 +189,6 @@ unique_name_in_owner = true
 layout_mode = 2
 disabled = true
 
-[node name="UnhideIncludeButton" type="Button" parent="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer/SaveRefreshContainer/SaveContainer"]
-unique_name_in_owner = true
-visible = false
-layout_mode = 2
-focus_mode = 0
-icon = ExtResource("4_vqnpn")
-metadata/enabled = true
-
 [node name="AutoSaveRefreshContainer" type="HBoxContainer" parent="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer"]
 layout_mode = 2
 size_flags_vertical = 3
@@ -214,17 +220,16 @@ unique_name_in_owner = true
 wait_time = 0.05
 one_shot = true
 
-[connection signal="text_changed" from="MainContainer/AddCategoryContainer/AddCategoryContainer/CategoryNameToAdd" to="." method="_on_category_name_text_changed"]
-[connection signal="button_up" from="MainContainer/AddCategoryContainer/AddCategoryContainer/AddCategoryButton" to="." method="_on_add_category_button_up"]
-[connection signal="dir_selected" from="MainContainer/IncludeListScroll/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer/FileDialog" to="." method="_on_file_dialog_dir_file_selected"]
-[connection signal="file_selected" from="MainContainer/IncludeListScroll/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer/FileDialog" to="." method="_on_file_dialog_dir_file_selected"]
-[connection signal="button_up" from="MainContainer/IncludeListScroll/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer/FileDialogButton" to="." method="_on_file_dialog_button_button_up"]
-[connection signal="text_changed" from="MainContainer/IncludeListScroll/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer/AddressEdit" to="." method="_on_address_text_changed"]
-[connection signal="button_up" from="MainContainer/IncludeListScroll/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer2/AddIncludeButton" to="." method="_on_add_include_button_button_up"]
-[connection signal="button_up" from="MainContainer/IncludeListScroll/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer2/HideIncludeButton" to="." method="_on_hide_button_up"]
+[connection signal="dir_selected" from="MainContainer/VSplitContainer/MiscTab/Include/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer/FileDialog" to="." method="_on_file_dialog_dir_file_selected"]
+[connection signal="file_selected" from="MainContainer/VSplitContainer/MiscTab/Include/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer/FileDialog" to="." method="_on_file_dialog_dir_file_selected"]
+[connection signal="button_up" from="MainContainer/VSplitContainer/MiscTab/Include/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer/FileDialogButton" to="." method="_on_file_dialog_button_button_up"]
+[connection signal="text_changed" from="MainContainer/VSplitContainer/MiscTab/Include/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer/AddressEdit" to="." method="_on_address_text_changed"]
+[connection signal="button_up" from="MainContainer/VSplitContainer/MiscTab/Include/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer2/AddIncludeButton" to="." method="_on_add_include_button_button_up"]
+[connection signal="text_changed" from="MainContainer/VSplitContainer/MiscTab/Category/AddCategoryContainer/AddCategoryContainer/CategoryNameToAdd" to="." method="_on_category_name_text_changed"]
+[connection signal="button_up" from="MainContainer/VSplitContainer/MiscTab/Category/AddCategoryContainer/AddCategoryContainer/AddCategoryButton" to="." method="_on_add_category_button_up"]
+[connection signal="button_up" from="MainContainer/HideIncludeButton" to="." method="_on_hide_button_up"]
 [connection signal="button_up" from="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer/SaveRefreshContainer/RefreshButton" to="." method="_on_refresh_button_up"]
 [connection signal="button_up" from="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer/SaveRefreshContainer/SaveContainer/SaveButton" to="." method="_on_save_button_button_up"]
-[connection signal="button_up" from="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer/SaveRefreshContainer/SaveContainer/UnhideIncludeButton" to="." method="_on_hide_button_up"]
 [connection signal="button_up" from="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer/AutoSaveRefreshContainer/CheckInvalidIdsButton" to="." method="_on_check_invalid_ids_button_button_up"]
 [connection signal="button_up" from="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer/AutoSaveRefreshContainer/RefreshUidButton" to="." method="_on_refresh_uid_button_button_up"]
 [connection signal="timeout" from="SaveDelayTimer" to="." method="_on_save_delay_timer_timeout"]

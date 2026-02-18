@@ -33,12 +33,10 @@ var _connect_ebus: bool
 @onready var _address_edit: LineEdit = %AddressEdit
 @onready var _file_dialog: FileDialog = %FileDialog
 @onready var _hide_include_button: Button = %HideIncludeButton
-@onready var _unhide_include_button: Button = %UnhideIncludeButton
 @onready var _add_include_button: Button = %AddIncludeButton
 
 @onready var _include_path_list: Control = %IncludeList
-@onready var _include_list_scroll: Container = %IncludeListScroll
-@onready var _include_add_panel: Container = %IncludeAddPanel
+@onready var _misc_tab: TabContainer = %MiscTab
 
 @onready var _garbage_bin: Control = %GarbageBin
 
@@ -325,13 +323,10 @@ func _validate_category_input() -> void:
 	_add_category_button.disabled = _category_name_edit.text.is_empty()
 
 
-func _show_includes_list(value: bool) -> void:
-	var icon: Texture2D = _ICON_COLLAPSE_BUTTON if value else _ICON_EXPAND_BUTTON
+func _show_includes_list(show: bool) -> void:
+	var icon: Texture2D = _ICON_COLLAPSE_BUTTON if show else _ICON_EXPAND_BUTTON
 	_hide_include_button.icon = icon
-	_unhide_include_button.icon = icon
-	_include_list_scroll.visible = value
-	_include_add_panel.visible = value
-	_unhide_include_button.visible = !value
+	_misc_tab.visible = show
 
 
 func _on_hide_button_up() -> void:
@@ -346,6 +341,7 @@ func _on_refresh_button_up() -> void:
 
 func _on_save_delay_timer_timeout() -> void:
 	_do_save_when_auto()
+
 
 # --- Invalid SceneId Detection ---
 func _on_check_invalid_ids_button_button_up() -> void:
