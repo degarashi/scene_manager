@@ -284,12 +284,28 @@ func remove_include_path(scene_path: String) -> void:
 	data_changed.emit()
 
 
-## Adds a new category
+## Adds a new category (Case-insensitive check)
 ## @param category_name Name of the category to add
 func add_category(category_name: String) -> void:
-	if not category_name.is_empty() and not _data._categories.has(category_name):
-		_data._categories.append(category_name)
-		data_changed.emit()
+	var new_name := category_name.strip_edges()
+	if new_name.is_empty():
+		return
+
+	# Check existing list case-insensitively
+	for existing_name in _data._categories:
+		if existing_name.to_lower() == new_name.to_lower():
+			push_warning(
+				"Scene Manager: Category '%s' already exists (case-insensitive)." % new_name
+			)
+			return
+
+	# Also check for duplicates with default section names
+	if new_name.to_lower() == SMgrMainPanel.ALL_CATEGORY_NAME.to_lower():
+		push_warning("Scene Manager: '%s' is a reserved category name." % new_name)
+		return
+
+	_data._categories.append(new_name)
+	data_changed.emit()
 
 
 ## Removes a category and clears its references from all associated scenes
