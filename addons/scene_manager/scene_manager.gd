@@ -260,16 +260,22 @@ func switch_to_scene(
 
 
 ## Adds a scene while keeping the current scene. (Additive Routine)
-func add_scene(scene: Scenes.Id, options := SceneLoadOptions.new()) -> Node:
+func add_scene(
+	scene: Scenes.Id, remove_old: bool = false, options := SceneLoadOptions.new()
+) -> Node:
 	if scene == Scenes.Id.NONE:
 		push_warning("Scene Manager: add_scene called with NONE.")
 		return null
 
 	if _loaded_scene_map.has(scene):
-		push_warning(
-			"Scene Manager: Scene %s is already loaded (additive)." % Scenes.Id.find_key(scene)
-		)
-		return null
+		if not remove_old:
+			push_warning(
+				"Scene Manager: Scene %s is already loaded (additive)." % Scenes.Id.find_key(scene)
+			)
+			return null
+		# Find the node name associated with this ID to unload it specifically
+		var old_node_name := _loaded_scene_map[scene].container_node.name
+		_unload_scene(old_node_name)
 
 	# Additive mode: No fading, only name conflict resolution
 	_unload_scene(options.node_name, false)
@@ -369,6 +375,7 @@ func load_scene_with_transition(
 	next_scene: Scenes.Id,
 	transition_scene: Scenes.Id,
 	add_to_back: bool = true,
+	remove_old: bool = false,
 	opt_play_in := SceneLoadOptions.new(),
 	opt_activate := opt_play_in
 ) -> void:
@@ -383,7 +390,7 @@ func load_scene_with_transition(
 	var trans_options := opt_play_in.copy()
 	trans_options.node_name = _loading_node_name
 
-	add_scene(transition_scene, trans_options)
+	add_scene(transition_scene, remove_old, trans_options)
 
 
 func instantiate_async_result() -> void:
