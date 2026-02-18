@@ -171,11 +171,12 @@ func _scan_and_collect_uids(dir_path: String, collected_uids: Array[int]) -> voi
 func _export_scene_enum_string() -> String:
 	var ret: String = ""
 	ret += CommentKey.ENUM + "\n"
-	ret += "enum Id {\n" + "\tNONE = -1,\n"
+	ret += "enum Id {\n"
+	ret += "\tNONE = {0},\n".format([ResourceUID.INVALID_ID])
 
 	for uid in _data._scenes:
 		var sc_name := _data._scenes[uid].name
-		ret += "\t{0},\n".format([sc_name.to_upper()])
+		ret += "\t{0} = {1},\n".format([sc_name.to_upper(), uid])
 	ret += "}\n"
 	return ret
 

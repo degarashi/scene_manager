@@ -10,23 +10,15 @@ extends Resource
 ## List of section (category) names
 @export var _sections: Array[String]
 
+
 # ------------- [Private Method] -------------
 func _get_scene_from_enum(scene: Scenes.Id) -> SMgrDataScene:
 	if scene == Scenes.Id.NONE:
 		return null
-	var key_str: String = Scenes.Id.keys()[scene + 1]
-	for uid in _scenes:
-		var sc := _scenes[uid]
-		if SceneManagerUtils.sanitize_as_enum_string(sc.name) == key_str:
-			return sc
-	assert(
-		false,
-		(
-			"Scene Manager: Could not find SMgrDataScene for Enum ID '%s'. " % key_str
-			+ "Data might be out of sync."
-		)
-	)
-	return null
+
+	# If the enum's underlying value is a UID, it can be retrieved directly from the dictionary.
+	# Since 'scene' is an int (64-bit), it matches the keys in _scenes.
+	return _scenes.get(scene, null)
 
 
 ## Internal method to extract scenes into an array based on a comparison function
@@ -61,10 +53,15 @@ func get_scene_path_from_enum(scene: Scenes.Id) -> String:
 ## @param path Full path of the scene
 ## @return Corresponding Id
 func get_scene_enum_by_path(path: String) -> Scenes.Id:
-	for uid in _scenes:
-		if _scenes[uid].path == path:
-			var enum_name := SceneManagerUtils.sanitize_as_enum_string(_scenes[uid].name)
-			return Scenes.Id.get(enum_name, Scenes.Id.NONE)
+	# Retrieve the UID (int) directly from the path
+	var uid := ResourceLoader.get_resource_uid(path)
+	if uid == ResourceUID.INVALID_ID:
+		return Scenes.Id.NONE
+
+	# Check if the UID exists in the managed scenes dictionary
+	if _scenes.has(uid):
+		return uid as Scenes.Id
+
 	return Scenes.Id.NONE
 
 
