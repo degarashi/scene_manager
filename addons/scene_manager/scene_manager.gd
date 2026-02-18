@@ -492,3 +492,7 @@ func get_reserved_scene() -> Scenes.Id:
 ## Returns the reserved load options for the reserved scene.
 func get_reserved_load_option() -> SceneLoadOptions:
 	return _reserved_options
+
+
+func get_scene_data() -> SMgrData:
+	return _scene_db
