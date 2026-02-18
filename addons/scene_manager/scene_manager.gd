@@ -453,6 +453,10 @@ func activate_prepared_scene() -> Node:
 	_transition_player.set_clickable(_reserved_options.clickable)
 	await _transition_player.play_out(_reserved_options.play_out_time)
 
+	# --- Category Comparison ---
+	# Calculate category differences before updating _current_scene_enum
+	var category_diff := _scene_db.compare_scene_categories(_current_scene_enum, _reserved_scene_id)
+
 	# Remove the loading screen
 	_unload_scene(_loading_node_name)
 
@@ -472,6 +476,10 @@ func activate_prepared_scene() -> Node:
 		cont.name = _from_tmp_name(cont.name)
 
 		_current_scene_enum = _reserved_scene_id
+
+	# Emit category change signal along with scene_loaded (for consistency with switch_to_scene)
+	category_changed.emit(category_diff)
+	scene_loaded.emit(_current_scene_enum)
 
 	await _transition_player.play_in(_reserved_options.play_in_time)
 
