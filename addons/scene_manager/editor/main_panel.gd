@@ -13,7 +13,7 @@ const _AF = preload("uid://dlgh4u64a7qxk")
 const _CHK = preload("uid://bfsxxd1vc4jm7")
 const _ICON_EXPAND_BUTTON = preload("uid://t6iu67x15d3")
 const _ICON_COLLAPSE_BUTTON = preload("uid://bd6ob6pgam1gt")
-const _ALL_CATEGORY_NAME = "All"
+const ALL_CATEGORY_NAME = "All"
 
 var _ps := preload("uid://dn6eh4s0h8jhi")
 var _manager_data: SMgrDataEditor
@@ -239,7 +239,7 @@ func _reload_ui_scenes() -> void:
 
 	var prim_cat: SMgrSection = _PRIMARY_CATEGORY_SCENE.instantiate()
 	_category_tab_cont.add_child(prim_cat)
-	prim_cat.setup(_ALL_CATEGORY_NAME)
+	prim_cat.setup(ALL_CATEGORY_NAME)
 	prim_cat.on_remove.connect(_on_category_remove)
 
 	for category in _manager_data.get_data().get_categories_list():
