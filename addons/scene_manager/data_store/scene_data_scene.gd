@@ -5,8 +5,8 @@ extends Resource
 # ------------- [Exports] -------------
 ## Identifier name of the scene (used for Enums, etc.)
 @export var name: String
-## List of sections this scene belongs to
-@export var sections: Array[String]
+## List of categories this scene belongs to
+@export var categories: Array[String]
 
 @export var path: String
 @export var uid: int = ResourceUID.INVALID_ID

@@ -11,8 +11,8 @@ var _mouse_is_over_path: bool
 var _scene_uid: int
 var _previous_name: String
 
-# Dictionary to hold the state when the menu was opened { "SectionName": bool (checked) }
-var _initial_sections_state: Dictionary = {}
+# Dictionary to hold the state when the menu was opened { "CategoryName": bool (checked) }
+var _initial_categories_state: Dictionary = {}
 
 @onready var _popup_menu: PopupMenu = %popup_menu
 @onready var _scene_name_edit: LineEdit = %scene_name_edit
@@ -68,29 +68,29 @@ func _on_scene_path_mouse_exited() -> void:
 
 func _on_popup_button_button_up() -> void:
 	var idx: int = 0
-	var sections: Array[String]
-	_EBUS.get_section_names.emit(sections)
+	var categories: Array[String]
+	_EBUS.get_category_names.emit(categories)
 
 	_popup_menu.clear()
-	_initial_sections_state.clear()
+	_initial_categories_state.clear()
 
 	_popup_menu.add_separator("Categories")
 	idx += 1
 
-	# Get which sections the current path belongs to
+	# Get which categories the current path belongs to
 	var recv: Array[SMgrDataScene]
 	_EBUS.get_scene_info.emit(recv, _scene_uid)
-	var current_sects := recv[0].sections
+	var current_categories := recv[0].categories
 
-	for section_name in sections:
-		_popup_menu.add_check_item(section_name)
+	for category_name in categories:
+		_popup_menu.add_check_item(category_name)
 		_popup_menu.set_item_id(idx, _MENU_ID_CATEGORY)
 
-		var is_checked: bool = section_name in current_sects
+		var is_checked: bool = category_name in current_categories
 		_popup_menu.set_item_checked(idx, is_checked)
 
 		# Save the state when opened
-		_initial_sections_state[section_name] = is_checked
+		_initial_categories_state[category_name] = is_checked
 		idx += 1
 
 	_popup_menu.reset_size()
@@ -112,20 +112,20 @@ func _on_popup_menu_popup_hide() -> void:
 		if _popup_menu.get_item_id(i) != _MENU_ID_CATEGORY:
 			continue
 
-		var section_name := _popup_menu.get_item_text(i)
+		var category_name := _popup_menu.get_item_text(i)
 		var is_now_checked := _popup_menu.is_item_checked(i)
-		var was_checked: bool = _initial_sections_state.get(section_name, false)
+		var was_checked: bool = _initial_categories_state.get(category_name, false)
 
 		if is_now_checked == was_checked:
 			# No change
 			continue
 
 		if is_now_checked:
-			# OFF -> ON: Add to section
-			_EBUS.add_scene_to_section.emit(_scene_uid, section_name)
+			# OFF -> ON: Add to category
+			_EBUS.add_scene_to_category.emit(_scene_uid, category_name)
 		else:
-			# ON -> OFF: Remove from section
-			_EBUS.remove_scene_from_section.emit(_scene_uid, section_name)
+			# ON -> OFF: Remove from category
+			_EBUS.remove_scene_from_category.emit(_scene_uid, category_name)
 
 
 func _on_scene_name_changed(new_name: String) -> void:

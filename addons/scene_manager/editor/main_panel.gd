@@ -4,8 +4,8 @@ extends MarginContainer
 
 # Scene item, include item prefabs
 const _INCLUDE_ITEM_SCENE = preload("uid://ciaqe7l3hugns")
-const _PRIMARY_SECTION_SCENE = preload("uid://cf1lsul5kbw85")
-const _SECONDARY_SECTION_SCENE = preload("uid://y7ksk521w5au")
+const _PRIMARY_CATEGORY_SCENE = preload("uid://cf1lsul5kbw85")
+const _SECONDARY_CATEGORY_SCENE = preload("uid://y7ksk521w5au")
 const _EBUS = preload("uid://ra25t5in8erp")
 const _EBUS_I = preload("uid://bnwpfojr6e0dh")
 const _C = preload("uid://c3vvdktou45u")
@@ -13,7 +13,7 @@ const _AF = preload("uid://dlgh4u64a7qxk")
 const _CHK = preload("uid://bfsxxd1vc4jm7")
 const _ICON_EXPAND_BUTTON = preload("uid://t6iu67x15d3")
 const _ICON_COLLAPSE_BUTTON = preload("uid://bd6ob6pgam1gt")
-const _ALL_SECTION_NAME = "All"
+const _ALL_CATEGORY_NAME = "All"
 
 var _ps := preload("uid://dn6eh4s0h8jhi")
 var _manager_data: SMgrDataEditor
@@ -23,11 +23,11 @@ var _connect_ebus: bool
 
 @onready var _save_delay_timer: Timer = %SaveDelayTimer
 
-@onready var _section_tab_cont: TabContainer = %section_tab_container
+@onready var _category_tab_cont: TabContainer = %category_tab_container
 
-# --- add section ---
-@onready var _add_section_button: Button = %add_section_button
-@onready var _section_name_edit: LineEdit = %section_name_to_add
+# --- add category ---
+@onready var _add_category_button: Button = %add_category_button
+@onready var _category_name_edit: LineEdit = %category_name_to_add
 
 # --- include list ---
 @onready var _address_edit: LineEdit = %address_edit
@@ -109,9 +109,9 @@ func _do_save() -> void:
 	_update_last_modified_time()
 
 
-func _get_scenes(recv: Array[SMgrDataScene], section_name: String) -> void:
+func _get_scenes(recv: Array[SMgrDataScene], category_name: String) -> void:
 	assert(recv.is_empty())
-	recv.append_array(_manager_data.get_data().get_scenes_with_section(section_name))
+	recv.append_array(_manager_data.get_data().get_scenes_with_category(category_name))
 
 
 func _get_scenes_by_type(recv: Array[SMgrDataScene], type: int) -> void:
@@ -159,18 +159,18 @@ func connect_ebus() -> void:
 	_EBUS.get_scenes_categorized.connect(_get_scenes_by_type.bind(1))
 	_EBUS.get_scenes_uncategorized.connect(_get_scenes_by_type.bind(2))
 
-	_EBUS.get_section_names.connect(
+	_EBUS.get_category_names.connect(
 		func(recv: Array) -> void:
 			assert(recv.is_empty())
-			recv.append_array(_manager_data.get_data().get_sections_list())
+			recv.append_array(_manager_data.get_data().get_categories_list())
 	)
-	_EBUS.add_scene_to_section.connect(
-		func(uid: int, section_name: String) -> void:
-			_manager_data.add_scene_to_section(uid, section_name)
+	_EBUS.add_scene_to_category.connect(
+		func(uid: int, category_name: String) -> void:
+			_manager_data.add_scene_to_category(uid, category_name)
 	)
-	_EBUS.remove_scene_from_section.connect(
-		func(uid: int, section_name: String) -> void:
-			_manager_data.remove_scene_from_section(uid, section_name)
+	_EBUS.remove_scene_from_category.connect(
+		func(uid: int, category_name: String) -> void:
+			_manager_data.remove_scene_from_category(uid, category_name)
 	)
 	_EBUS.has_scene_by_name.connect(_has_scene_by_name)
 	_EBUS.change_scene_name.connect(_change_scene_name)
@@ -188,12 +188,12 @@ func _disconnect_ebus() -> void:
 	_EBUS.get_scenes_categorized.disconnect(_get_scenes_by_type)
 	_EBUS.get_scenes_uncategorized.disconnect(_get_scenes_by_type)
 
-	for c in _EBUS.get_section_names.get_connections():
-		_EBUS.get_section_names.disconnect(c.callable)
-	for c in _EBUS.add_scene_to_section.get_connections():
-		_EBUS.add_scene_to_section.disconnect(c.callable)
-	for c in _EBUS.remove_scene_from_section.get_connections():
-		_EBUS.remove_scene_from_section.disconnect(c.callable)
+	for c in _EBUS.get_category_names.get_connections():
+		_EBUS.get_category_names.disconnect(c.callable)
+	for c in _EBUS.add_scene_to_category.get_connections():
+		_EBUS.add_scene_to_category.disconnect(c.callable)
+	for c in _EBUS.remove_scene_from_category.get_connections():
+		_EBUS.remove_scene_from_category.disconnect(c.callable)
 
 	_EBUS.has_scene_by_name.disconnect(_has_scene_by_name)
 	_EBUS.change_scene_name.disconnect(_change_scene_name)
@@ -227,27 +227,26 @@ func _reload_ui_includes() -> void:
 		_add_include_item(path)
 
 
-func _on_section_remove(section_name: String) -> void:
-	_manager_data.remove_section(section_name)
+func _on_category_remove(category_name: String) -> void:
+	_manager_data.remove_category(category_name)
 
 
 func _reload_ui_scenes() -> void:
 	# --- Tabs ---
-	for child in _section_tab_cont.get_children():
+	for child in _category_tab_cont.get_children():
 		child.reparent(_garbage_bin)
 		child.queue_free()
 
-	# Obtain and update the scene internally via EventBus
-	var prim_sec: SMgrSection = _PRIMARY_SECTION_SCENE.instantiate()
-	_section_tab_cont.add_child(prim_sec)
-	prim_sec.setup(_ALL_SECTION_NAME)
-	prim_sec.on_remove.connect(_on_section_remove)
+	var prim_cat: SMgrSection = _PRIMARY_CATEGORY_SCENE.instantiate()
+	_category_tab_cont.add_child(prim_cat)
+	prim_cat.setup(_ALL_CATEGORY_NAME)
+	prim_cat.on_remove.connect(_on_category_remove)
 
-	for section in _manager_data.get_data().get_sections_list():
-		var sec: SMgrSection = _SECONDARY_SECTION_SCENE.instantiate()
-		_section_tab_cont.add_child(sec)
-		sec.setup(section)
-		sec.on_remove.connect(_on_section_remove)
+	for category in _manager_data.get_data().get_categories_list():
+		var cat: SMgrSection = _SECONDARY_CATEGORY_SCENE.instantiate()
+		_category_tab_cont.add_child(cat)
+		cat.setup(category)
+		cat.on_remove.connect(_on_category_remove)
 
 
 func _refresh_ui() -> void:
@@ -311,19 +310,19 @@ func _validate_include_path() -> void:
 		_add_include_button.disabled = true
 
 
-func _on_add_section_button_up() -> void:
-	if not _section_name_edit.text.is_empty():
-		_manager_data.add_section(_section_name_edit.text)
-		_section_name_edit.text = ""
-		_validate_section_input()
+func _on_add_category_button_up() -> void:
+	if not _category_name_edit.text.is_empty():
+		_manager_data.add_category(_category_name_edit.text)
+		_category_name_edit.text = ""
+		_validate_category_input()
 
 
-func _on_section_name_text_changed(_new_text: String) -> void:
-	_validate_section_input()
+func _on_category_name_text_changed(_new_text: String) -> void:
+	_validate_category_input()
 
 
-func _validate_section_input() -> void:
-	_add_section_button.disabled = _section_name_edit.text.is_empty()
+func _validate_category_input() -> void:
+	_add_category_button.disabled = _category_name_edit.text.is_empty()
 
 
 func _show_includes_list(value: bool) -> void:

@@ -184,7 +184,7 @@ func _export_scene_enum_string() -> String:
 func _export_category_enum_string() -> String:
 	var ret: String = ""
 	ret += "enum CategoryId {\n"
-	for c_name in _data._sections:
+	for c_name in _data._categories:
 		ret += "\t{0},\n".format([c_name.to_upper()])
 	ret += "}\n"
 	return ret
@@ -236,26 +236,26 @@ func change_scene_name(uid: int, new_name: String) -> void:
 			data_changed.emit()
 
 
-## Removes a specific section assignment from a scene
+## Removes a specific category assignment from a scene
 ## @param uid Scene UID (int)
-## @param section_name Name of the section to remove
-func remove_scene_from_section(uid: int, section_name: String) -> void:
+## @param category_name Name of the category to remove
+func remove_scene_from_category(uid: int, category_name: String) -> void:
 	if _data._scenes.has(uid):
 		var sc: SMgrDataScene = _data._scenes[uid]
-		var idx := sc.sections.find(section_name)
+		var idx := sc.categories.find(category_name)
 		if idx != -1:
-			sc.sections.remove_at(idx)
+			sc.categories.remove_at(idx)
 			data_changed.emit()
 
 
-## Assigns a scene to a specific section
+## Assigns a scene to a specific category
 ## @param uid Scene UID (int)
-## @param section_name Name of the section to assign
-func add_scene_to_section(uid: int, section_name: String) -> void:
+## @param category_name Name of the category to assign
+func add_scene_to_category(uid: int, category_name: String) -> void:
 	if _data._scenes.has(uid):
 		var sc: SMgrDataScene = _data._scenes[uid]
-		if not section_name in sc.sections:
-			sc.sections.append(section_name)
+		if not category_name in sc.categories:
+			sc.categories.append(category_name)
 			data_changed.emit()
 
 
@@ -284,28 +284,28 @@ func remove_include_path(scene_path: String) -> void:
 	data_changed.emit()
 
 
-## Adds a new section
-## @param section_name Name of the section to add
-func add_section(section_name: String) -> void:
-	if not section_name.is_empty() and not _data._sections.has(section_name):
-		_data._sections.append(section_name)
+## Adds a new category
+## @param category_name Name of the category to add
+func add_category(category_name: String) -> void:
+	if not category_name.is_empty() and not _data._categories.has(category_name):
+		_data._categories.append(category_name)
 		data_changed.emit()
 
 
-## Removes a section and clears its references from all associated scenes
-## @param section_name Name of the section to remove
-func remove_section(section_name: String) -> void:
-	if _data._sections.has(section_name):
-		_data._sections.erase(section_name)
+## Removes a category and clears its references from all associated scenes
+## @param category_name Name of the category to remove
+func remove_category(category_name: String) -> void:
+	if _data._categories.has(category_name):
+		_data._categories.erase(category_name)
 	else:
-		printerr("Scene Manager Error: Cannot remove section '%s'." % section_name)
+		printerr("Scene Manager Error: Cannot remove category '%s'." % category_name)
 		return
 
 	for uid in _data._scenes:
 		var scene_info: SMgrDataScene = _data._scenes[uid]
-		var index := scene_info.sections.find(section_name)
+		var index := scene_info.categories.find(category_name)
 		if index != -1:
-			scene_info.sections.remove_at(index)
+			scene_info.categories.remove_at(index)
 	data_changed.emit()
 
 

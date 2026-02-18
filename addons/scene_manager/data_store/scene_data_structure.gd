@@ -7,8 +7,8 @@ extends Resource
 @export var _include_list: Array[String]
 ## Dictionary of scene data objects keyed by scene UID (int)
 @export var _scenes: Dictionary[int, SMgrDataScene]
-## List of section (category) names
-@export var _sections: Array[String]
+## List of category names
+@export var _categories: Array[String]
 
 
 # ------------- [Private Method] -------------
@@ -71,10 +71,10 @@ func get_include_list() -> Array[String]:
 	return _include_list
 
 
-## Retrieves the full list of sections
-## @return Array of section names
-func get_sections_list() -> Array[String]:
-	return _sections
+## Retrieves the full list of categories
+## @return Array of category names
+func get_categories_list() -> Array[String]:
+	return _categories
 
 
 ## Retrieves all registered scenes
@@ -86,20 +86,20 @@ func get_scenes_all() -> Array[SMgrDataScene]:
 ## Retrieves scenes that are not categorized
 ## @return Array of scene data
 func get_scenes_uncategorized() -> Array[SMgrDataScene]:
-	return _get_scenes(func(sc: SMgrDataScene) -> bool: return sc.sections.is_empty())
+	return _get_scenes(func(sc: SMgrDataScene) -> bool: return sc.categories.is_empty())
 
 
 ## Retrieves scenes that are categorized
 ## @return Array of scene data
 func get_scenes_categorized() -> Array[SMgrDataScene]:
-	return _get_scenes(func(sc: SMgrDataScene) -> bool: return not sc.sections.is_empty())
+	return _get_scenes(func(sc: SMgrDataScene) -> bool: return not sc.categories.is_empty())
 
 
-## Retrieves scenes belonging to a specific section
-## @param section_name Name of the section to search for
+## Retrieves scenes belonging to a specific category
+## @param category_name Name of the category to search for
 ## @return Array of scene data
-func get_scenes_with_section(section_name: String) -> Array[SMgrDataScene]:
-	return _get_scenes(func(sc: SMgrDataScene) -> bool: return section_name in sc.sections)
+func get_scenes_with_category(category_name: String) -> Array[SMgrDataScene]:
+	return _get_scenes(func(sc: SMgrDataScene) -> bool: return category_name in sc.categories)
 
 
 ## Retrieves scene data by specifying a name
