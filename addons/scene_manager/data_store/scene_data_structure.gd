@@ -150,3 +150,22 @@ func get_scene_ids_by_category(category_id: Scenes.CategoryId) -> Array[Scenes.I
 		return []
 	# Always perform case-insensitive search when using Enum
 	return get_scene_ids_with_category_name(category_name, true)
+
+
+## Retrieves a list of category Enums (CategoryId) belonging to a specific scene Enum (Id)
+## @param scene_id Scenes.Id
+## @return Array of Scenes.CategoryId
+func get_category_ids_by_scene(scene_id: Scenes.Id) -> Array[Scenes.CategoryId]:
+	var category_ids: Array[Scenes.CategoryId] = []
+	var sc := _get_scene_from_enum(scene_id)
+
+	if not sc:
+		return []
+
+	for c_name in sc.categories:
+		# Convert category string name back to its corresponding Enum value
+		var c_id: int = Scenes.CategoryId.get(c_name.to_upper(), -1)
+		if c_id != -1:
+			category_ids.append(c_id as Scenes.CategoryId)
+
+	return category_ids
