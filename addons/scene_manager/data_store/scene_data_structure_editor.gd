@@ -109,10 +109,10 @@ func _register_scene_file(full_path: String) -> int:
 	# Handle duplicate names to ensure unique Enum keys
 	var existing_names: Array[String] = []
 	for s in _data._scenes.values():
-		existing_names.append(s.name)
+		existing_names.append(s.name.to_upper())
 
 	var counter: int = 1
-	while scene_name in existing_names:
+	while scene_name.to_upper() in existing_names:
 		scene_name = base_name + str(counter)
 		counter += 1
 
