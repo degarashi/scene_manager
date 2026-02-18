@@ -97,8 +97,21 @@ func get_scenes_categorized() -> Array[SMgrDataScene]:
 
 ## Retrieves scenes belonging to a specific category
 ## @param category_name Name of the category to search for
+## @param case_insensitive Whether to ignore case (default: false)
 ## @return Array of scene data
-func get_scenes_with_category(category_name: String) -> Array[SMgrDataScene]:
+func get_scenes_with_category(
+	category_name: String, case_insensitive := false
+) -> Array[SMgrDataScene]:
+	if case_insensitive:
+		var lower_name := category_name.to_lower()
+		return _get_scenes(
+			func(sc: SMgrDataScene) -> bool:
+				# Check if there is a lowercase match in the category list of each scene
+				for c in sc.categories:
+					if c.to_lower() == lower_name:
+						return true
+				return false
+		)
 	return _get_scenes(func(sc: SMgrDataScene) -> bool: return category_name in sc.categories)
 
 
@@ -111,3 +124,29 @@ func get_scene_by_name(scene_name: String) -> SMgrDataScene:
 		if sc.name == scene_name:
 			return sc
 	return null
+
+
+## Retrieves a list of scene Enums (Id) belonging to a category name
+## @param category_name Category name
+## @param case_insensitive Whether to ignore case
+## @return Array of Scenes.Id
+func get_scene_ids_with_category_name(
+	category_name: String, case_insensitive := false
+) -> Array[Scenes.Id]:
+	var ret: Array[Scenes.Id] = []
+	var scenes_data := get_scenes_with_category(category_name, case_insensitive)
+	for sc in scenes_data:
+		# Cast UID to Scenes.Id and store it
+		ret.append(sc.uid as Scenes.Id)
+	return ret
+
+
+## Retrieves a list of scene Enums (Id) belonging to a category Enum (CategoryId)
+## @param category_id Categories.CategoryId
+## @return Array of Scenes.Id
+func get_scene_ids_by_category(category_id: Scenes.CategoryId) -> Array[Scenes.Id]:
+	var category_name := Scenes.CategoryId.find_key(category_id)
+	if category_name.is_empty():
+		return []
+	# Always perform case-insensitive search when using Enum
+	return get_scene_ids_with_category_name(category_name, true)
