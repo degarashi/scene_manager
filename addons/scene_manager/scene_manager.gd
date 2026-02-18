@@ -14,6 +14,8 @@ signal scene_loaded(scene_id: Scenes.Id)
 signal scene_transition_completed(scene_id: Scenes.Id)
 signal on_game_end
 
+signal category_changed(diff: SMgrData.CategoryDiff)
+
 # ------------- [Constants] -------------
 const _C = preload("uid://c3vvdktou45u")
 const _RING_BUFFER = preload("uid://b6phac21mxnxr")
@@ -220,6 +222,10 @@ func switch_to_scene(
 	_transition_player.set_clickable(options.clickable)
 	await _transition_player.play_out(options.play_out_time)
 
+	# --- Category Comparison ---
+	# Calculate category differences before updating _current_scene_enum
+	var category_diff := _scene_db.compare_scene_categories(_current_scene_enum, scene)
+
 	# --- Scene Replacement ---
 	# Unload everything for a clean switch
 	_unload_all_nodes()
@@ -242,6 +248,9 @@ func switch_to_scene(
 	# --- Register and Finalize ---
 	_loaded_scene_map[scene] = _SceneEntry.new(parent_node, new_scene_node)
 	_current_scene_enum = scene
+
+	# Emit category change signal along with scene_loaded
+	category_changed.emit(category_diff)
 	scene_loaded.emit(scene)
 
 	await _transition_player.play_in(options.play_in_time)
