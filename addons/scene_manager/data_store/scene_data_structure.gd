@@ -169,3 +169,38 @@ func get_category_ids_by_scene(scene_id: Scenes.Id) -> Array[Scenes.CategoryId]:
 			category_ids.append(c_id as Scenes.CategoryId)
 
 	return category_ids
+
+
+## Result object for comparing categories between two scenes
+class CategoryDiff:
+	var added: Array[Scenes.CategoryId] = []
+	var removed: Array[Scenes.CategoryId] = []
+	var unchanged: Array[Scenes.CategoryId] = []
+
+	func _init(
+		current_cats: Array[Scenes.CategoryId], target_cats: Array[Scenes.CategoryId]
+	) -> void:
+		# Identify removed and unchanged categories
+		for c in current_cats:
+			if c in target_cats:
+				unchanged.append(c)
+			else:
+				removed.append(c)
+
+		# Identify added categories
+		for c in target_cats:
+			if not c in current_cats:
+				added.append(c)
+
+	func _to_string() -> String:
+		return "Added: %s, Removed: %s, Unchanged: %s" % [added, removed, unchanged]
+
+
+## Compares categories between two scenes and returns the difference as an object
+## @param current_id The scene ID to compare from
+## @param target_id The scene ID to compare to
+## @return CategoryDiff object containing 'added', 'removed', and 'unchanged' arrays
+func compare_scene_categories(current_id: Scenes.Id, target_id: Scenes.Id) -> CategoryDiff:
+	var current_cats := get_category_ids_by_scene(current_id)
+	var target_cats := get_category_ids_by_scene(target_id)
+	return CategoryDiff.new(current_cats, target_cats)
