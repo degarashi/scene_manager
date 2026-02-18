@@ -8,7 +8,7 @@
 [ext_resource type="PackedScene" uid="uid://lx7kbuk7ui2m" path="res://addons/scene_manager/editor/auto_save_button.tscn" id="6_efl6f"]
 [ext_resource type="Texture2D" uid="uid://bu5cjmgtiiwfp" path="res://addons/scene_manager/icons/GuiCheckedDisabled.svg" id="7_r2ecj"]
 
-[node name="root_container" type="MarginContainer"]
+[node name="RootContainer" type="MarginContainer"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -16,14 +16,14 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("6")
 
-[node name="main_container" type="VBoxContainer" parent="."]
+[node name="MainContainer" type="VBoxContainer" parent="."]
 layout_mode = 2
 
-[node name="scenes" type="ScrollContainer" parent="main_container"]
+[node name="Scenes" type="ScrollContainer" parent="MainContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="category_tab_container" type="TabContainer" parent="main_container/scenes"]
+[node name="CategoryTabContainer" type="TabContainer" parent="MainContainer/Scenes"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -31,77 +31,77 @@ size_flags_vertical = 3
 current_tab = 0
 drag_to_rearrange_enabled = true
 
-[node name="add_category_container" type="MarginContainer" parent="main_container"]
+[node name="AddCategoryContainer" type="MarginContainer" parent="MainContainer"]
 layout_mode = 2
 size_flags_vertical = 8
 
-[node name="add_category_container" type="HBoxContainer" parent="main_container/add_category_container"]
+[node name="AddCategoryContainer" type="HBoxContainer" parent="MainContainer/AddCategoryContainer"]
 layout_mode = 2
 
-[node name="category_name_to_add" type="LineEdit" parent="main_container/add_category_container/add_category_container"]
+[node name="CategoryNameToAdd" type="LineEdit" parent="MainContainer/AddCategoryContainer/AddCategoryContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 3.0
 
-[node name="add_category_button" type="Button" parent="main_container/add_category_container/add_category_container"]
+[node name="AddCategoryButton" type="Button" parent="MainContainer/AddCategoryContainer/AddCategoryContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 disabled = true
 text = "+ Category"
 
-[node name="separator" type="HSeparator" parent="main_container"]
+[node name="Separator" type="HSeparator" parent="MainContainer"]
 layout_mode = 2
 
-[node name="include_list_scroll" type="VBoxContainer" parent="main_container"]
+[node name="IncludeListScroll" type="VBoxContainer" parent="MainContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 size_flags_stretch_ratio = 0.3
 
-[node name="container" type="VBoxContainer" parent="main_container/include_list_scroll"]
+[node name="Container" type="VBoxContainer" parent="MainContainer/IncludeListScroll"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="_title" type="HBoxContainer" parent="main_container/include_list_scroll/container"]
+[node name="Title" type="HBoxContainer" parent="MainContainer/IncludeListScroll/Container"]
 layout_mode = 2
 
-[node name="padding" type="Control" parent="main_container/include_list_scroll/container/_title"]
+[node name="Padding" type="Control" parent="MainContainer/IncludeListScroll/Container/Title"]
 custom_minimum_size = Vector2(28, 28)
 layout_mode = 2
 
-[node name="scenes" type="Label" parent="main_container/include_list_scroll/container/_title"]
+[node name="Scenes" type="Label" parent="MainContainer/IncludeListScroll/Container/Title"]
 layout_mode = 2
 text = "Includes:"
 
-[node name="includes" type="ScrollContainer" parent="main_container/include_list_scroll/container"]
+[node name="Includes" type="ScrollContainer" parent="MainContainer/IncludeListScroll/Container"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="include_list" type="VBoxContainer" parent="main_container/include_list_scroll/container/includes"]
+[node name="IncludeList" type="VBoxContainer" parent="MainContainer/IncludeListScroll/Container/Includes"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="include_add_panel" type="VBoxContainer" parent="main_container/include_list_scroll"]
+[node name="IncludeAddPanel" type="VBoxContainer" parent="MainContainer/IncludeListScroll"]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="include_interactive_section_container" type="MarginContainer" parent="main_container/include_list_scroll/include_add_panel"]
+[node name="IncludeInteractiveSectionContainer" type="MarginContainer" parent="MainContainer/IncludeListScroll/IncludeAddPanel"]
 layout_mode = 2
 size_flags_vertical = 8
 
-[node name="add_include_container" type="HBoxContainer" parent="main_container/include_list_scroll/include_add_panel/include_interactive_section_container"]
+[node name="AddIncludeContainer" type="HBoxContainer" parent="MainContainer/IncludeListScroll/IncludeAddPanel/IncludeInteractiveSectionContainer"]
 layout_mode = 2
 
-[node name="dialog_add_include_container" type="HBoxContainer" parent="main_container/include_list_scroll/include_add_panel/include_interactive_section_container/add_include_container"]
+[node name="DialogAddIncludeContainer" type="HBoxContainer" parent="MainContainer/IncludeListScroll/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="file_dialog" type="FileDialog" parent="main_container/include_list_scroll/include_add_panel/include_interactive_section_container/add_include_container/dialog_add_include_container"]
+[node name="FileDialog" type="FileDialog" parent="MainContainer/IncludeListScroll/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer"]
 unique_name_in_owner = true
 title = "Open a File or Directory"
 size = Vector2i(348, 180)
@@ -109,21 +109,21 @@ ok_button_text = "Open"
 file_mode = 3
 filters = PackedStringArray("*.tscn")
 
-[node name="file_dialog_button" type="Button" parent="main_container/include_list_scroll/include_add_panel/include_interactive_section_container/add_include_container/dialog_add_include_container"]
+[node name="FileDialogButton" type="Button" parent="MainContainer/IncludeListScroll/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer"]
 custom_minimum_size = Vector2(28, 28)
 layout_mode = 2
 icon = ExtResource("3")
 
-[node name="address_edit" type="LineEdit" parent="main_container/include_list_scroll/include_add_panel/include_interactive_section_container/add_include_container/dialog_add_include_container"]
+[node name="AddressEdit" type="LineEdit" parent="MainContainer/IncludeListScroll/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="dialog_add_include_container2" type="HBoxContainer" parent="main_container/include_list_scroll/include_add_panel/include_interactive_section_container/add_include_container"]
+[node name="DialogAddIncludeContainer2" type="HBoxContainer" parent="MainContainer/IncludeListScroll/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="add_include_button" type="Button" parent="main_container/include_list_scroll/include_add_panel/include_interactive_section_container/add_include_container/dialog_add_include_container2"]
+[node name="AddIncludeButton" type="Button" parent="MainContainer/IncludeListScroll/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer2"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -131,7 +131,7 @@ tooltip_text = "Adds folder/file to include in the scene data."
 disabled = true
 text = "Add"
 
-[node name="hide_include_button" type="Button" parent="main_container/include_list_scroll/include_add_panel/include_interactive_section_container/add_include_container/dialog_add_include_container2"]
+[node name="HideIncludeButton" type="Button" parent="MainContainer/IncludeListScroll/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer2"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(28, 28)
 layout_mode = 2
@@ -141,24 +141,24 @@ icon = ExtResource("4_vqnpn")
 icon_alignment = 1
 metadata/enabled = true
 
-[node name="separator" type="HSeparator" parent="main_container/include_list_scroll/include_add_panel"]
+[node name="Separator" type="HSeparator" parent="MainContainer/IncludeListScroll/IncludeAddPanel"]
 layout_mode = 2
 
-[node name="interactive_section_container" type="VBoxContainer" parent="main_container"]
+[node name="InteractiveSectionContainer" type="VBoxContainer" parent="MainContainer"]
 layout_mode = 2
 
-[node name="margin_refresh_save_container" type="MarginContainer" parent="main_container/interactive_section_container"]
+[node name="MarginRefreshSaveContainer" type="MarginContainer" parent="MainContainer/InteractiveSectionContainer"]
 layout_mode = 2
 size_flags_vertical = 0
 
-[node name="refresh_save_container" type="VBoxContainer" parent="main_container/interactive_section_container/margin_refresh_save_container"]
+[node name="RefreshSaveContainer" type="VBoxContainer" parent="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer"]
 layout_mode = 2
 
-[node name="save_refresh_container" type="HBoxContainer" parent="main_container/interactive_section_container/margin_refresh_save_container/refresh_save_container"]
+[node name="SaveRefreshContainer" type="HBoxContainer" parent="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="refresh_button" type="Button" parent="main_container/interactive_section_container/margin_refresh_save_container/refresh_save_container/save_refresh_container"]
+[node name="RefreshButton" type="Button" parent="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer/SaveRefreshContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -166,16 +166,16 @@ tooltip_text = "Reloads the scene data file and refreshes the UI."
 text = "Refresh"
 icon = ExtResource("5_2r30m")
 
-[node name="save_container" type="HBoxContainer" parent="main_container/interactive_section_container/margin_refresh_save_container/refresh_save_container/save_refresh_container"]
+[node name="SaveContainer" type="HBoxContainer" parent="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer/SaveRefreshContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="save_button" parent="main_container/interactive_section_container/margin_refresh_save_container/refresh_save_container/save_refresh_container/save_container" instance=ExtResource("5_efl6f")]
+[node name="SaveButton" parent="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer/SaveRefreshContainer/SaveContainer" instance=ExtResource("5_efl6f")]
 unique_name_in_owner = true
 layout_mode = 2
 disabled = true
 
-[node name="unhide_include_button" type="Button" parent="main_container/interactive_section_container/margin_refresh_save_container/refresh_save_container/save_refresh_container/save_container"]
+[node name="UnhideIncludeButton" type="Button" parent="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer/SaveRefreshContainer/SaveContainer"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
@@ -183,28 +183,28 @@ focus_mode = 0
 icon = ExtResource("4_vqnpn")
 metadata/enabled = true
 
-[node name="auto_save_refresh_container" type="HBoxContainer" parent="main_container/interactive_section_container/margin_refresh_save_container/refresh_save_container"]
+[node name="AutoSaveRefreshContainer" type="HBoxContainer" parent="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="check_invalid_ids_button" type="Button" parent="main_container/interactive_section_container/margin_refresh_save_container/refresh_save_container/auto_save_refresh_container"]
+[node name="CheckInvalidIdsButton" type="Button" parent="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer/AutoSaveRefreshContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 tooltip_text = "Detect invalid SceneIds used in scripts within the project."
 text = "Check Invalid Ids"
 
-[node name="refresh_uid_button" type="Button" parent="main_container/interactive_section_container/margin_refresh_save_container/refresh_save_container/auto_save_refresh_container"]
+[node name="RefreshUidButton" type="Button" parent="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer/AutoSaveRefreshContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Refresh UID of \"Scenes.gd\""
 
-[node name="auto_save_button" parent="main_container/interactive_section_container/margin_refresh_save_container/refresh_save_container/auto_save_refresh_container" instance=ExtResource("6_efl6f")]
+[node name="AutoSaveButton" parent="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer/AutoSaveRefreshContainer" instance=ExtResource("6_efl6f")]
 unique_name_in_owner = true
 layout_mode = 2
 icon = ExtResource("7_r2ecj")
 
-[node name="garbage_bin" type="Control" parent="."]
+[node name="GarbageBin" type="Control" parent="."]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
@@ -214,17 +214,17 @@ unique_name_in_owner = true
 wait_time = 0.05
 one_shot = true
 
-[connection signal="text_changed" from="main_container/add_category_container/add_category_container/category_name_to_add" to="." method="_on_category_name_text_changed"]
-[connection signal="button_up" from="main_container/add_category_container/add_category_container/add_category_button" to="." method="_on_add_category_button_up"]
-[connection signal="dir_selected" from="main_container/include_list_scroll/include_add_panel/include_interactive_section_container/add_include_container/dialog_add_include_container/file_dialog" to="." method="_on_file_dialog_dir_file_selected"]
-[connection signal="file_selected" from="main_container/include_list_scroll/include_add_panel/include_interactive_section_container/add_include_container/dialog_add_include_container/file_dialog" to="." method="_on_file_dialog_dir_file_selected"]
-[connection signal="button_up" from="main_container/include_list_scroll/include_add_panel/include_interactive_section_container/add_include_container/dialog_add_include_container/file_dialog_button" to="." method="_on_file_dialog_button_button_up"]
-[connection signal="text_changed" from="main_container/include_list_scroll/include_add_panel/include_interactive_section_container/add_include_container/dialog_add_include_container/address_edit" to="." method="_on_address_text_changed"]
-[connection signal="button_up" from="main_container/include_list_scroll/include_add_panel/include_interactive_section_container/add_include_container/dialog_add_include_container2/add_include_button" to="." method="_on_add_include_button_button_up"]
-[connection signal="button_up" from="main_container/include_list_scroll/include_add_panel/include_interactive_section_container/add_include_container/dialog_add_include_container2/hide_include_button" to="." method="_on_hide_button_up"]
-[connection signal="button_up" from="main_container/interactive_section_container/margin_refresh_save_container/refresh_save_container/save_refresh_container/refresh_button" to="." method="_on_refresh_button_up"]
-[connection signal="button_up" from="main_container/interactive_section_container/margin_refresh_save_container/refresh_save_container/save_refresh_container/save_container/save_button" to="." method="_on_save_button_button_up"]
-[connection signal="button_up" from="main_container/interactive_section_container/margin_refresh_save_container/refresh_save_container/save_refresh_container/save_container/unhide_include_button" to="." method="_on_hide_button_up"]
-[connection signal="button_up" from="main_container/interactive_section_container/margin_refresh_save_container/refresh_save_container/auto_save_refresh_container/check_invalid_ids_button" to="." method="_on_check_invalid_ids_button_button_up"]
-[connection signal="button_up" from="main_container/interactive_section_container/margin_refresh_save_container/refresh_save_container/auto_save_refresh_container/refresh_uid_button" to="." method="_on_refresh_uid_button_button_up"]
+[connection signal="text_changed" from="MainContainer/AddCategoryContainer/AddCategoryContainer/CategoryNameToAdd" to="." method="_on_category_name_text_changed"]
+[connection signal="button_up" from="MainContainer/AddCategoryContainer/AddCategoryContainer/AddCategoryButton" to="." method="_on_add_category_button_up"]
+[connection signal="dir_selected" from="MainContainer/IncludeListScroll/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer/FileDialog" to="." method="_on_file_dialog_dir_file_selected"]
+[connection signal="file_selected" from="MainContainer/IncludeListScroll/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer/FileDialog" to="." method="_on_file_dialog_dir_file_selected"]
+[connection signal="button_up" from="MainContainer/IncludeListScroll/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer/FileDialogButton" to="." method="_on_file_dialog_button_button_up"]
+[connection signal="text_changed" from="MainContainer/IncludeListScroll/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer/AddressEdit" to="." method="_on_address_text_changed"]
+[connection signal="button_up" from="MainContainer/IncludeListScroll/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer2/AddIncludeButton" to="." method="_on_add_include_button_button_up"]
+[connection signal="button_up" from="MainContainer/IncludeListScroll/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer2/HideIncludeButton" to="." method="_on_hide_button_up"]
+[connection signal="button_up" from="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer/SaveRefreshContainer/RefreshButton" to="." method="_on_refresh_button_up"]
+[connection signal="button_up" from="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer/SaveRefreshContainer/SaveContainer/SaveButton" to="." method="_on_save_button_button_up"]
+[connection signal="button_up" from="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer/SaveRefreshContainer/SaveContainer/UnhideIncludeButton" to="." method="_on_hide_button_up"]
+[connection signal="button_up" from="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer/AutoSaveRefreshContainer/CheckInvalidIdsButton" to="." method="_on_check_invalid_ids_button_button_up"]
+[connection signal="button_up" from="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer/AutoSaveRefreshContainer/RefreshUidButton" to="." method="_on_refresh_uid_button_button_up"]
 [connection signal="timeout" from="SaveDelayTimer" to="." method="_on_save_delay_timer_timeout"]

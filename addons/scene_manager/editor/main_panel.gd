@@ -23,24 +23,24 @@ var _connect_ebus: bool
 
 @onready var _save_delay_timer: Timer = %SaveDelayTimer
 
-@onready var _category_tab_cont: TabContainer = %category_tab_container
+@onready var _category_tab_cont: TabContainer = %CategoryTabContainer
 
 # --- add category ---
-@onready var _add_category_button: Button = %add_category_button
-@onready var _category_name_edit: LineEdit = %category_name_to_add
+@onready var _add_category_button: Button = %AddCategoryButton
+@onready var _category_name_edit: LineEdit = %CategoryNameToAdd
 
 # --- include list ---
-@onready var _address_edit: LineEdit = %address_edit
-@onready var _file_dialog: FileDialog = %file_dialog
-@onready var _hide_include_button: Button = %hide_include_button
-@onready var _unhide_include_button: Button = %unhide_include_button
-@onready var _add_include_button: Button = %add_include_button
+@onready var _address_edit: LineEdit = %AddressEdit
+@onready var _file_dialog: FileDialog = %FileDialog
+@onready var _hide_include_button: Button = %HideIncludeButton
+@onready var _unhide_include_button: Button = %UnhideIncludeButton
+@onready var _add_include_button: Button = %AddIncludeButton
 
-@onready var _include_path_list: Control = %include_list
-@onready var _include_list_scroll: Container = %include_list_scroll
-@onready var _include_add_panel: Container = %include_add_panel
+@onready var _include_path_list: Control = %IncludeList
+@onready var _include_list_scroll: Container = %IncludeListScroll
+@onready var _include_add_panel: Container = %IncludeAddPanel
 
-@onready var _garbage_bin: Control = %garbage_bin
+@onready var _garbage_bin: Control = %GarbageBin
 
 
 func _ready() -> void:
