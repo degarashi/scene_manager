@@ -255,6 +255,9 @@ func _reload_ui_scenes() -> void:
 
 
 func _refresh_ui() -> void:
+	if not is_inside_tree():
+		return
+
 	_reload_ui_scenes()
 	_reload_ui_includes()
 
