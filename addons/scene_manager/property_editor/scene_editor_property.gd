@@ -2,7 +2,6 @@
 extends EditorProperty
 
 const DUPLICATE_LINE_EDIT: StyleBox = preload("res://addons/scene_manager/themes/line_edit_duplicate.tres")
-const EBUS_I = preload("uid://bnwpfojr6e0dh")
 
 # The main control for editing the property.
 var property_control: SceneLineEdit = preload("res://addons/scene_manager/property_editor/scene_line_edit.tscn").instantiate()
