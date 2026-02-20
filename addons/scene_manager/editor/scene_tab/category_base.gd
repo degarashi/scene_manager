@@ -37,3 +37,7 @@ func activate(category_id: int) -> void:
 
 func _on_remove_list_button_up() -> void:
 	on_remove.emit(_category_id)
+
+
+func get_category_id() -> int:
+	return _category_id
