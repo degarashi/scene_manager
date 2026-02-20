@@ -3,7 +3,6 @@ extends Button
 
 const _ICON_CHECKBOX_ON = preload("uid://c1ps4ed6wrx51")
 const _ICON_CHECKBOX_OFF = preload("uid://bu5cjmgtiiwfp")
-const _EBUS := preload("uid://ra25t5in8erp")
 var _ps := preload("uid://dn6eh4s0h8jhi")
 
 
