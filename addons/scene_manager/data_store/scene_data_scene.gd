@@ -4,12 +4,30 @@ extends Resource
 
 # ------------- [Exports] -------------
 ## Identifier name of the scene (used for Enums, etc.)
-@export var name: String
-## List of categories this scene belongs to
-@export var categories: Array[int]
+@export var name: String:
+	set(value):
+		if name != value:
+			name = value
+			emit_changed()
 
-@export var path: String
-@export var uid: int = ResourceUID.INVALID_ID
+## List of categories this scene belongs to
+@export var categories: Array[int]:
+	set(value):
+		if categories != value:
+			categories = value
+			emit_changed()
+
+@export var path: String:
+	set(value):
+		if path != value:
+			path = value
+			emit_changed()
+
+@export var uid: int = ResourceUID.INVALID_ID:
+	set(value):
+		if uid != value:
+			uid = value
+			emit_changed()
 
 
 # ------------- [Static Helper Methods] -------------
