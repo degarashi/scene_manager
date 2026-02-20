@@ -1,8 +1,7 @@
 @tool
-class_name SMgrSecondarySection
-extends SMgrSection
+extends SMgrCategoryGUIBase
 
-var _subs: SMgrSubSection
+var _subs: SMgrSection
 
 
 func _ready() -> void:
@@ -18,7 +17,7 @@ func _refresh_ui() -> void:
 
 	# get data by a signal
 	var recv: Array[SMgrDataScene]
-	_EBUS.get_scenes.emit(recv, _section_name)
+	_ebus_editor.get_scenes.emit(recv, _category_id)
 
 	if recv.is_empty():
 		return
@@ -29,10 +28,10 @@ func _refresh_ui() -> void:
 	)
 
 	for sc: SMgrDataScene in recv:
-		var item: SMgrSceneItem = _SCENE_ITEM.instantiate() as SMgrSceneItem
+		var item: SMgrSceneItem = _SCENE_ITEM.instantiate()
 		_subs.add_item(item)
-		item.setup(sc.uid)
+		item.activate(sc.uid)
 
 
-func _setup() -> void:
+func _prepare() -> void:
 	_refresh_ui()

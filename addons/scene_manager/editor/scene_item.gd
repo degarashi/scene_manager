@@ -4,26 +4,26 @@ extends HBoxContainer
 
 const _MENU_ID_CATEGORY = 0
 const _THEME_DUPLICATE_LINE_EDIT: StyleBox = preload("uid://21mjw515mptn")
-const _EBUS = preload("uid://ra25t5in8erp")
 const _C = preload("uid://c3vvdktou45u")
 
+@export var _ebus_editor: SMgrEbusEditor
 var _mouse_is_over_path: bool
 var _scene_uid: int
 var _previous_name: String
 
-# Dictionary to hold the state when the menu was opened { "CategoryName": bool (checked) }
-var _initial_categories_state: Dictionary = {}
+# Dictionary to hold the state when the menu was opened
+var _initial_categories_state: Dictionary[int, bool] = {}
 
 @onready var _popup_menu: PopupMenu = %popup_menu
 @onready var _scene_name_edit: LineEdit = %scene_name_edit
 @onready var _scene_path_edit: LineEdit = %scene_path
 
 
-func setup(sc_uid: int) -> void:
+func activate(sc_uid: int) -> void:
 	_scene_uid = sc_uid
 
 	var recv: Array[SMgrDataScene]
-	_EBUS.get_scene_info.emit(recv, sc_uid)
+	_ebus_editor.get_scene_info.emit(recv, sc_uid)
 	var info: SMgrDataScene = recv[0]
 	_scene_name_edit.text = info.name
 
@@ -67,30 +67,34 @@ func _on_scene_path_mouse_exited() -> void:
 
 
 func _on_popup_button_button_up() -> void:
-	var idx: int = 0
-	var categories: Array[String]
-	_EBUS.get_category_names.emit(categories)
-
 	_popup_menu.clear()
 	_initial_categories_state.clear()
 
+	var idx: int = 0
 	_popup_menu.add_separator("Categories")
 	idx += 1
 
 	# Get which categories the current path belongs to
 	var recv: Array[SMgrDataScene]
-	_EBUS.get_scene_info.emit(recv, _scene_uid)
+	_ebus_editor.get_scene_info.emit(recv, _scene_uid)
 	var current_categories := recv[0].categories
 
-	for category_name in categories:
-		_popup_menu.add_check_item(category_name)
-		_popup_menu.set_item_id(idx, _MENU_ID_CATEGORY)
+	var all_categories_id: Array[int]
+	_ebus_editor.get_categories.emit(all_categories_id)
+	for category_id in all_categories_id:
+		var recv2: Array[SMgrCategoryData]
+		_ebus_editor.get_category_by_id.emit(recv2, category_id)
+		var cat := recv2[0]
 
-		var is_checked: bool = category_name in current_categories
+		_popup_menu.add_check_item(cat.name)
+		_popup_menu.set_item_id(idx, _MENU_ID_CATEGORY)
+		_popup_menu.set_item_metadata(idx, category_id)
+
+		var is_checked: bool = category_id in current_categories
 		_popup_menu.set_item_checked(idx, is_checked)
 
 		# Save the state when opened
-		_initial_categories_state[category_name] = is_checked
+		_initial_categories_state[category_id] = is_checked
 		idx += 1
 
 	_popup_menu.reset_size()
@@ -112,9 +116,13 @@ func _on_popup_menu_popup_hide() -> void:
 		if _popup_menu.get_item_id(i) != _MENU_ID_CATEGORY:
 			continue
 
-		var category_name := _popup_menu.get_item_text(i)
+		var category_id: int = _popup_menu.get_item_metadata(i)
+		var recv: Array[SMgrCategoryData]
+		_ebus_editor.get_category_by_id.emit(recv, category_id)
+		var cat := recv[0]
+
 		var is_now_checked := _popup_menu.is_item_checked(i)
-		var was_checked: bool = _initial_categories_state.get(category_name, false)
+		var was_checked: bool = _initial_categories_state.get(category_id, false)
 
 		if is_now_checked == was_checked:
 			# No change
@@ -122,10 +130,10 @@ func _on_popup_menu_popup_hide() -> void:
 
 		if is_now_checked:
 			# OFF -> ON: Add to category
-			_EBUS.add_scene_to_category.emit(_scene_uid, category_name)
+			_ebus_editor.add_scene_to_category.emit(_scene_uid, category_id)
 		else:
 			# ON -> OFF: Remove from category
-			_EBUS.remove_scene_from_category.emit(_scene_uid, category_name)
+			_ebus_editor.remove_scene_from_category.emit(_scene_uid, category_id)
 
 
 func _on_scene_name_changed(new_name: String) -> void:
@@ -137,7 +145,7 @@ func _on_scene_name_changed(new_name: String) -> void:
 
 func _check_name_duplication(name_str: String) -> bool:
 	var recv: Array[bool]
-	_EBUS.has_scene_by_name.emit(recv, name_str)
+	_ebus_editor.scene_name_duplication_check.emit(recv, name_str)
 	return recv[0]
 
 
@@ -164,7 +172,7 @@ func _submit_scene_name() -> void:
 	else:
 		_scene_name_edit.text = new_name
 		_previous_name = new_name
-		_EBUS.change_scene_name.emit(_scene_uid, new_name)
+		_ebus_editor.change_scene_name.emit(_scene_uid, new_name)
 	_remove_custom_theme()
 
 

@@ -1,6 +1,5 @@
 @tool
-class_name SMgrPrimarySection
-extends SMgrSection
+extends SMgrCategoryGUIBase
 
 
 class _Name:
@@ -8,12 +7,12 @@ class _Name:
 	const CATEGORIZED = "Categorized"
 
 
-var _categorized_sec: SMgrSubSection
-var _uncategorized_sec: SMgrSubSection
+var _categorized_sec: SMgrSection
+var _uncategorized_sec: SMgrSection
 
 
-func _create_sub_section(base_name: String) -> SMgrSubSection:
-	var sub: SMgrSubSection = _SUB_SECTION.instantiate()
+func _create_sub_section(base_name: String) -> SMgrSection:
+	var sub: SMgrSection = _SUB_SECTION.instantiate()
 	_subsection_cont.add_child(sub)
 	sub.setup(base_name)
 	sub.open()
@@ -30,7 +29,7 @@ func _ready() -> void:
 	_uncategorized_sec = _create_sub_section(_Name.UNCATEGORIZED)
 
 
-func _update_sub_section(target_sec: SMgrSubSection, signal_obj: Signal) -> void:
+func _update_sub_section(target_sec: SMgrSection, signal_obj: Signal) -> void:
 	assert(target_sec)
 	target_sec.clear_list()
 
@@ -49,13 +48,13 @@ func _update_sub_section(target_sec: SMgrSubSection, signal_obj: Signal) -> void
 	for sc in recv:
 		var item: SMgrSceneItem = _SCENE_ITEM.instantiate()
 		target_sec.add_item(item)
-		item.setup(sc.uid)
+		item.activate(sc.uid)
 
 
 func _refresh_ui() -> void:
-	_update_sub_section(_categorized_sec, _EBUS.get_scenes_categorized)
-	_update_sub_section(_uncategorized_sec, _EBUS.get_scenes_uncategorized)
+	_update_sub_section(_categorized_sec, _ebus_editor.get_scenes_categorized)
+	_update_sub_section(_uncategorized_sec, _ebus_editor.get_scenes_uncategorized)
 
 
-func _setup() -> void:
+func _prepare() -> void:
 	_refresh_ui()

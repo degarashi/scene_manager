@@ -1,5 +1,5 @@
 @tool
-class_name SMgrSubSection
+class_name SMgrSection
 extends Control
 
 const _OPEN_ICON = preload("uid://c7o4wjygnjhjc")

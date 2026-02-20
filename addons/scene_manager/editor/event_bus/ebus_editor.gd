@@ -1,26 +1,29 @@
 @tool
 class_name SMgrEbusEditor
-extends SMgrResource
+extends SMgrEventBusBase
 
-signal change_scene_name(uid: int, scene_name: String)
-signal add_scene_to_category(uid: int, category_name: String)
-signal remove_scene_from_category(uid: int, category_name: String)
+# --- Manipulate ---
+signal change_scene_name(scene_id: int, scene_name: String)
+signal add_scene_to_category(scene_id: int, category_id: int)
+signal remove_scene_from_category(scene_id: int, category_id: int)
 
 # --- Notify ---
 signal on_dirty_flag_changed(dirty: bool)
 
 # --- Getter ---
-signal has_scene_by_name(recv: Array[bool], scene_name: String)
+# for duplication check
+signal scene_name_duplication_check(recv: Array[bool], scene_name: String)
 signal get_dirty_flag(recv: Array[bool])
 
 # You can freely obtain and refer to the scene, but change the data through the interface
-signal get_scene_info(recv: Array[SMgrDataScene], uid: int)
-signal get_scenes(recv: Array[SMgrDataScene], category_name: String)
+signal get_scene_info(recv: Array[SMgrDataScene], scene_id: int)
+signal get_scenes(recv: Array[SMgrDataScene], category_id: int)
 signal get_scenes_all(recv: Array[SMgrDataScene])
 signal get_scenes_uncategorized(recv: Array[SMgrDataScene])
 signal get_scenes_categorized(recv: Array[SMgrDataScene])
 
-signal get_category_names(recv: Array[String])
+signal get_categories(recv: Array[int])
+signal get_category_by_id(recv: Array[SMgrCategoryData], category_id: int)
 
 
 func disconnect_all_signals() -> void:

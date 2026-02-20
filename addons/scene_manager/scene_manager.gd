@@ -223,12 +223,15 @@ func switch_to_scene(
 	await _transition_player.play_out(options.play_out_time)
 
 	# --- Category Comparison ---
-	# Calculate category differences before updating _current_scene_enum
-	var category_diff := _scene_db.compare_scene_categories(_current_scene_enum, scene)
+	var category_diff: SMgrData.CategoryDiff = _scene_db.compare_scene_categories(
+		_current_scene_enum, scene
+	)
 
 	# --- Scene Replacement ---
 	# Unload everything for a clean switch
 	_unload_all_nodes()
+
+	# Add to history
 	if add_to_back and _current_scene_enum != Scenes.Id.NONE:
 		_history_stack.push(_current_scene_enum)
 

@@ -3,3 +3,4 @@ class_name SMgrConstants
 
 ## Default node name to be used for scenes
 const DEFAULT_TREE_NODE_NAME: String = "World"
+const ALL_CATEGORY_NAME = "All"

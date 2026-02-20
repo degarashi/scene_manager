@@ -2,4 +2,4 @@
 class_name SMgrEbusInspector
 extends SMgrResource
 
-signal get_scene_enums(recv: Array[String])
+signal get_scene_enums_as_string(recv: Array[String])

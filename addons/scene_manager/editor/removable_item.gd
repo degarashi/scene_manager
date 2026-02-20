@@ -2,7 +2,14 @@
 class_name SMgrRemovableItem
 extends HBoxContainer
 
-signal on_remove(node: SMgrRemovableItem)
+signal on_remove(opt_val: Variant)
+
+var _opt_val: Variant
+
+
+func prepare(text: String, opt_val: Variant) -> void:
+	_opt_val = opt_val
+	set_item_string(text)
 
 
 func set_item_string(text: String) -> void:
@@ -15,4 +22,4 @@ func get_item_string() -> String:
 
 
 func _on_remove_button_up() -> void:
-	on_remove.emit(self)
+	on_remove.emit(_opt_val)

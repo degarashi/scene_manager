@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://b75ms1lprcrgd"]
+[gd_scene load_steps=4 format=3 uid="uid://b75ms1lprcrgd"]
 
-[ext_resource type="Script" uid="uid://dano25hhw3wol" path="res://addons/scene_manager/editor/section.gd" id="1_homsn"]
+[ext_resource type="Script" uid="uid://dano25hhw3wol" path="res://addons/scene_manager/editor/scene_tab/category_base.gd" id="1_homsn"]
 [ext_resource type="Texture2D" uid="uid://36xdho566h28" path="res://addons/scene_manager/icons/ImportFail.svg" id="2_61flc"]
+[ext_resource type="Resource" uid="uid://ra25t5in8erp" path="res://addons/scene_manager/editor/event_bus/ebus_editor.tres" id="2_u5pvp"]
 
 [node name="section" type="VBoxContainer"]
 anchors_preset = 15
@@ -10,6 +11,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_homsn")
+_ebus_editor = ExtResource("2_u5pvp")
 
 [node name="_title" type="HBoxContainer" parent="."]
 layout_mode = 2

@@ -6,20 +6,20 @@ extends MarginContainer
 const _INCLUDE_ITEM_SCENE = preload("uid://ciaqe7l3hugns")
 const _PRIMARY_CATEGORY_SCENE = preload("uid://cf1lsul5kbw85")
 const _SECONDARY_CATEGORY_SCENE = preload("uid://y7ksk521w5au")
-const _EBUS = preload("uid://ra25t5in8erp")
-const _EBUS_I = preload("uid://bnwpfojr6e0dh")
 const _C = preload("uid://c3vvdktou45u")
 const _AF = preload("uid://dlgh4u64a7qxk")
 const _CHK = preload("uid://bfsxxd1vc4jm7")
 const _ICON_EXPAND_BUTTON = preload("uid://t6iu67x15d3")
 const _ICON_COLLAPSE_BUTTON = preload("uid://bd6ob6pgam1gt")
-const ALL_CATEGORY_NAME = "All"
 
+@export var _ebus_editor: SMgrEbusEditor
+@export var _ebus_ins: SMgrEbusInspector
 var _ps := preload("uid://dn6eh4s0h8jhi")
 var _manager_data: SMgrDataEditor
 ## For file monitoring
 var _last_modified_time: int = 0
-var _connect_ebus: bool
+var _connect_ebus: bool = false
+var _reg_ent: Array[RegEnt]
 
 @onready var _save_delay_timer: Timer = %SaveDelayTimer
 
@@ -41,8 +41,69 @@ var _connect_ebus: bool
 @onready var _garbage_bin: Control = %GarbageBin
 
 
+func _ebus_cb_base(recv: Array, proc: Callable) -> void:
+	assert(recv.is_empty())
+	recv.append_array(proc.call(_manager_data.get_data()))
+	print(proc.call(_manager_data.get_data()))
+
+
+func _ebus_get_scenes_all(recv: Array[SMgrDataScene]) -> void:
+	_ebus_cb_base(recv, func(mgr): return mgr.get_scenes_all())
+
+
+func _ebus_get_scenes_categorized(recv: Array[SMgrDataScene]) -> void:
+	_ebus_cb_base(recv, func(mgr): return mgr.get_scenes_categorized())
+
+
+func _ebus_get_scenes_uncategorized(recv: Array[SMgrDataScene]) -> void:
+	_ebus_cb_base(recv, func(mgr): return mgr.get_scenes_uncategorized())
+
+
+func _ebus_get_categories(recv: Array[int]) -> void:
+	_ebus_cb_base(recv, func(mgr): return mgr.get_categories_all_ids())
+
+
+func _ebus_get_category_by_id(recv: Array[SMgrCategoryData], category_id: int) -> void:
+	_ebus_cb_base(recv, func(mgr): return [mgr.get_category_from_id(category_id)])
+
+
+func _ebus_add_scene_to_category(scene_id: int, category_id: int) -> void:
+	_manager_data.add_scene_to_category(scene_id, category_id)
+
+
+func _ebus_remove_scene_from_category(scene_id: int, category_id: int) -> void:
+	_manager_data.remove_scene_from_category(scene_id, category_id)
+
+
+func _ebus_get_scenes(recv: Array[SMgrDataScene], category_id: int) -> void:
+	_ebus_cb_base(recv, func(mgr): return mgr.get_scenes_by_category_id(category_id))
+
+
+func _ebus_get_scene_info(recv: Array[SMgrDataScene], scene_id: int) -> void:
+	_ebus_cb_base(recv, func(mgr): return [mgr.get_scene_from_uid(scene_id)])
+
+
+func _ebus_duplicate_name_check(recv: Array[bool], scene_name: String) -> void:
+	_ebus_cb_base(recv, func(mgr): return [mgr.get_scene_by_name(scene_name) != null])
+
+
+func _ebus_change_scene_name(scene_id: int, scene_name: String) -> void:
+	_manager_data.change_scene_name(scene_id, scene_name)
+
+
+func _ebus_get_scene_enums_as_string(recv: Array[String]) -> void:
+	assert(recv.is_empty())
+	var scene_all := _manager_data.get_data().get_scenes_all()
+	for scene in scene_all:
+		recv.append(SceneManagerUtils.sanitize_as_enum_string(scene.name))
+
+
+func _ebus_get_dirty_flag(recv: Array[bool]) -> void:
+	assert(recv.is_empty())
+	recv.append(_manager_data.get_dirty_flag())
+
+
 func _ready() -> void:
-	_connect_ebus = false
 	_reload_data()
 	_refresh_ui()
 
@@ -54,6 +115,11 @@ func _ready() -> void:
 		fs.filesystem_changed.connect(_on_filesystem_changed)
 
 	_update_last_modified_time()
+
+
+func _remove_node_safely(node: Node) -> void:
+	node.reparent(_garbage_bin)
+	node.queue_free()
 
 
 func _exit_tree() -> void:
@@ -78,12 +144,7 @@ func _on_dirty_flag_changed(dirty: bool) -> void:
 	if dirty:
 		_trigger_save()
 
-	_EBUS.on_dirty_flag_changed.emit(dirty)
-
-
-func _get_dirty_flag(recv: Array[bool]) -> void:
-	assert(recv.is_empty())
-	recv.append(_manager_data.get_dirty_flag())
+	_ebus_editor.on_dirty_flag_changed.emit(dirty)
 
 
 func _on_save_button_button_up() -> void:
@@ -107,143 +168,90 @@ func _do_save() -> void:
 	_update_last_modified_time()
 
 
-func _get_scenes(recv: Array[SMgrDataScene], category_name: String) -> void:
-	assert(recv.is_empty())
-	recv.append_array(_manager_data.get_data().get_scenes_with_category(category_name))
+class RegEnt:
+	var sig: Signal
+	var proc: Callable
 
+	func _init(p_sig: Signal, p_proc: Callable) -> void:
+		sig = p_sig
+		proc = p_proc
 
-func _get_scenes_by_type(recv: Array[SMgrDataScene], type: int) -> void:
-	assert(recv.is_empty())
+	func connect_it() -> void:
+		sig.connect(proc)
 
-	# Sort according to internal data structure,
-	# such as 0: all, 1: categorized, 2: uncategorized, etc.
-	match type:
-		0:
-			recv.append_array(_manager_data.get_data().get_scenes_all())
-		1:
-			recv.append_array(_manager_data.get_data().get_scenes_categorized())
-		2:
-			recv.append_array(_manager_data.get_data().get_scenes_uncategorized())
-
-
-func _get_scene_info(recv: Array[SMgrDataScene], uid: int) -> void:
-	assert(recv.is_empty())
-	recv.append(_manager_data.get_data().get_scene_from_uid(uid))
-
-
-func _has_scene_by_name(recv: Array[bool], scene_name: String) -> void:
-	assert(recv.is_empty())
-	recv.append(_manager_data.get_data().get_scene_by_name(scene_name) != null)
-
-
-func _change_scene_name(uid: int, scene_name: String) -> void:
-	_manager_data.change_scene_name(uid, scene_name)
-
-
-func _get_scene_enums(recv: Array[String]) -> void:
-	assert(recv.is_empty())
-	var tmp := _manager_data.get_data().get_scenes_all()
-	for scene in tmp:
-		recv.append(SceneManagerUtils.sanitize_as_enum_string(scene.name))
+	func disconnect_it() -> void:
+		sig.disconnect(proc)
 
 
 func connect_ebus() -> void:
 	_connect_ebus = true
-
-	_EBUS.get_scenes.connect(_get_scenes)
-	_EBUS.get_scene_info.connect(_get_scene_info)
-	# Bind arguments to common methods and connect
-	_EBUS.get_scenes_all.connect(_get_scenes_by_type.bind(0))
-	_EBUS.get_scenes_categorized.connect(_get_scenes_by_type.bind(1))
-	_EBUS.get_scenes_uncategorized.connect(_get_scenes_by_type.bind(2))
-
-	_EBUS.get_category_names.connect(
-		func(recv: Array) -> void:
-			assert(recv.is_empty())
-			recv.append_array(_manager_data.get_data().get_categories_list())
-	)
-	_EBUS.add_scene_to_category.connect(
-		func(uid: int, category_name: String) -> void:
-			_manager_data.add_scene_to_category(uid, category_name)
-	)
-	_EBUS.remove_scene_from_category.connect(
-		func(uid: int, category_name: String) -> void:
-			_manager_data.remove_scene_from_category(uid, category_name)
-	)
-	_EBUS.has_scene_by_name.connect(_has_scene_by_name)
-	_EBUS.change_scene_name.connect(_change_scene_name)
-	_EBUS.get_dirty_flag.connect(_get_dirty_flag)
-	_EBUS_I.get_scene_enums.connect(_get_scene_enums)
+	_reg_ent = [
+		RegEnt.new(_ebus_editor.get_scenes, _ebus_get_scenes),
+		RegEnt.new(_ebus_editor.get_scene_info, _ebus_get_scene_info),
+		RegEnt.new(_ebus_editor.get_scenes_all, _ebus_get_scenes_all),
+		RegEnt.new(_ebus_editor.get_scenes_categorized, _ebus_get_scenes_categorized),
+		RegEnt.new(_ebus_editor.get_scenes_uncategorized, _ebus_get_scenes_uncategorized),
+		RegEnt.new(_ebus_editor.get_categories, _ebus_get_categories),
+		RegEnt.new(_ebus_editor.get_category_by_id, _ebus_get_category_by_id),
+		RegEnt.new(_ebus_editor.add_scene_to_category, _ebus_add_scene_to_category),
+		RegEnt.new(_ebus_editor.remove_scene_from_category, _ebus_remove_scene_from_category),
+		RegEnt.new(_ebus_editor.scene_name_duplication_check, _ebus_duplicate_name_check),
+		RegEnt.new(_ebus_editor.change_scene_name, _ebus_change_scene_name),
+		RegEnt.new(_ebus_editor.get_dirty_flag, _ebus_get_dirty_flag),
+		RegEnt.new(_ebus_ins.get_scene_enums_as_string, _ebus_get_scene_enums_as_string)
+	]
+	for ent in _reg_ent:
+		ent.connect_it()
 
 
 func _disconnect_ebus() -> void:
 	if not _connect_ebus:
 		return
-
-	_EBUS.get_scenes.disconnect(_get_scenes)
-	_EBUS.get_scene_info.disconnect(_get_scene_info)
-	_EBUS.get_scenes_all.disconnect(_get_scenes_by_type)
-	_EBUS.get_scenes_categorized.disconnect(_get_scenes_by_type)
-	_EBUS.get_scenes_uncategorized.disconnect(_get_scenes_by_type)
-
-	for c in _EBUS.get_category_names.get_connections():
-		_EBUS.get_category_names.disconnect(c.callable)
-	for c in _EBUS.add_scene_to_category.get_connections():
-		_EBUS.add_scene_to_category.disconnect(c.callable)
-	for c in _EBUS.remove_scene_from_category.get_connections():
-		_EBUS.remove_scene_from_category.disconnect(c.callable)
-
-	_EBUS.has_scene_by_name.disconnect(_has_scene_by_name)
-	_EBUS.change_scene_name.disconnect(_change_scene_name)
-	_EBUS.get_dirty_flag.disconnect(_get_dirty_flag)
-	_EBUS_I.get_scene_enums.disconnect(_get_scene_enums)
+	for ent in _reg_ent:
+		ent.disconnect_it()
 	_connect_ebus = false
 
 
 func _remove_include_path(item: SMgrRemovableItem) -> void:
 	var item_ent := item.get_item_string()
-	item.reparent(_garbage_bin)
-	item.queue_free()
+	_remove_node_safely(item)
 
 	_manager_data.remove_include_path(item_ent)
 
 
 func _add_include_item(path: String) -> void:
 	var item: SMgrRemovableItem = _INCLUDE_ITEM_SCENE.instantiate()
-	_include_path_list.add_child(item)
-
-	item.set_item_string(path)
+	item.prepare(path, item)
 	item.on_remove.connect(_remove_include_path)
+	_include_path_list.add_child(item)
 
 
 func _reload_ui_includes() -> void:
 	for child in _include_path_list.get_children():
-		child.reparent(_garbage_bin)
-		child.queue_free()
+		_remove_node_safely(child)
 
 	for path in _manager_data.get_data().get_include_list():
 		_add_include_item(path)
 
 
-func _on_category_remove(category_name: String) -> void:
-	_manager_data.remove_category(category_name)
+func _on_category_remove(category_id: int) -> void:
+	_manager_data.remove_category(category_id)
 
 
 func _reload_ui_scenes() -> void:
 	# --- Tabs ---
 	for child in _category_tab_cont.get_children():
-		child.reparent(_garbage_bin)
-		child.queue_free()
+		_remove_node_safely(child)
 
-	var prim_cat: SMgrSection = _PRIMARY_CATEGORY_SCENE.instantiate()
+	var prim_cat: SMgrCategoryGUIBase = _PRIMARY_CATEGORY_SCENE.instantiate()
 	_category_tab_cont.add_child(prim_cat)
-	prim_cat.setup(ALL_CATEGORY_NAME)
+	prim_cat.prepare(ResourceUID.INVALID_ID)
 	prim_cat.on_remove.connect(_on_category_remove)
 
-	for category in _manager_data.get_data().get_categories_list():
-		var cat: SMgrSection = _SECONDARY_CATEGORY_SCENE.instantiate()
+	for category_id in _manager_data.get_data().get_categories_all_ids():
+		var cat: SMgrCategoryGUIBase = _SECONDARY_CATEGORY_SCENE.instantiate()
 		_category_tab_cont.add_child(cat)
-		cat.setup(category)
+		cat.prepare(category_id)
 		cat.on_remove.connect(_on_category_remove)
 
 
@@ -272,7 +280,7 @@ func _reload_data() -> void:
 	_update_last_modified_time()
 	_manager_data.data_changed_debounced.connect(_refresh_ui)
 	_manager_data.on_dirty_flag_changed.connect(_on_dirty_flag_changed)
-	_EBUS.on_dirty_flag_changed.emit(false)
+	_ebus_editor.on_dirty_flag_changed.emit(false)
 
 
 func _on_file_dialog_button_button_up() -> void:

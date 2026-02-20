@@ -6,7 +6,8 @@
 extends Node
 
 # [Scene Enum]
-enum Id \
-{
+enum Id {
 	NONE = -1,
+}
+enum CategoryId {
 }

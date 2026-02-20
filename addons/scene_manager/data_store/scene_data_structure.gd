@@ -7,8 +7,8 @@ extends Resource
 @export var _include_list: Array[String]
 ## Dictionary of scene data objects keyed by scene UID (int)
 @export var _scenes: Dictionary[int, SMgrDataScene]
-## List of category names
-@export var _categories: Array[String]
+## Dictionary of category data objects keyed by category UID (int)
+@export var _categories: Dictionary[int, SMgrCategoryData]
 
 
 # ------------- [Private Method] -------------
@@ -72,9 +72,16 @@ func get_include_list() -> Array[String]:
 
 
 ## Retrieves the full list of categories
-## @return Array of category names
-func get_categories_list() -> Array[String]:
-	return _categories
+func get_categories_list() -> Array[SMgrCategoryData]:
+	var ret: Array[SMgrCategoryData] = []
+	for uid in _categories:
+		ret.append(_categories[uid])
+	return ret
+
+
+## Retrieves category data by its ID
+func get_category_from_id(category_id: int) -> SMgrCategoryData:
+	return _categories.get(category_id, null)
 
 
 ## Retrieves all registered scenes
@@ -95,6 +102,13 @@ func get_scenes_categorized() -> Array[SMgrDataScene]:
 	return _get_scenes(func(sc: SMgrDataScene) -> bool: return not sc.categories.is_empty())
 
 
+## Retrieves scenes belonging to a specific category ID
+## @param category_id The ID of the category (Scenes.CategoryId)
+## @return Array of scene data objects
+func get_scenes_by_category_id(category_id: Scenes.CategoryId) -> Array[SMgrDataScene]:
+	return _get_scenes(func(sc: SMgrDataScene) -> bool: return int(category_id) in sc.categories)
+
+
 ## Retrieves scenes belonging to a specific category
 ## @param category_name Name of the category to search for
 ## @param case_insensitive Whether to ignore case (default: false)
@@ -102,17 +116,23 @@ func get_scenes_categorized() -> Array[SMgrDataScene]:
 func get_scenes_with_category(
 	category_name: String, case_insensitive := false
 ) -> Array[SMgrDataScene]:
-	if case_insensitive:
-		var lower_name := category_name.to_lower()
-		return _get_scenes(
-			func(sc: SMgrDataScene) -> bool:
-				# Check if there is a lowercase match in the category list of each scene
-				for c in sc.categories:
-					if c.to_lower() == lower_name:
+	var target_lower := category_name.to_lower()
+
+	return _get_scenes(
+		func(sc: SMgrDataScene) -> bool:
+			for c_id in sc.categories:
+				var category := get_category_from_id(c_id)
+				if not category:
+					continue
+
+				if case_insensitive:
+					if category.name.to_lower() == target_lower:
 						return true
-				return false
-		)
-	return _get_scenes(func(sc: SMgrDataScene) -> bool: return category_name in sc.categories)
+				else:
+					if category.name == category_name:
+						return true
+			return false
+	)
 
 
 ## Retrieves scene data by specifying a name
@@ -145,11 +165,13 @@ func get_scene_ids_with_category_name(
 ## @param category_id Categories.CategoryId
 ## @return Array of Scenes.Id
 func get_scene_ids_by_category(category_id: Scenes.CategoryId) -> Array[Scenes.Id]:
-	var category_name := Scenes.CategoryId.find_key(category_id)
-	if category_name.is_empty():
-		return []
-	# Always perform case-insensitive search when using Enum
-	return get_scene_ids_with_category_name(category_name, true)
+	# category_id (int) がそのまま _categories のキーであるため、直接判定可能
+	var ret: Array[Scenes.Id] = []
+	for uid in _scenes:
+		var sc: SMgrDataScene = _scenes[uid]
+		if int(category_id) in sc.categories:
+			ret.append(uid as Scenes.Id)
+	return ret
 
 
 ## Retrieves a list of category Enums (CategoryId) belonging to a specific scene Enum (Id)
@@ -162,11 +184,9 @@ func get_category_ids_by_scene(scene_id: Scenes.Id) -> Array[Scenes.CategoryId]:
 	if not sc:
 		return []
 
-	for c_name in sc.categories:
-		# Convert category string name back to its corresponding Enum value
-		var c_id: int = Scenes.CategoryId.get(c_name.to_upper(), -1)
-		if c_id != -1:
-			category_ids.append(c_id as Scenes.CategoryId)
+	for c_id in sc.categories:
+		# sc.categories に入っている ID はそのまま CategoryId としてキャスト可能
+		category_ids.append(c_id as Scenes.CategoryId)
 
 	return category_ids
 
@@ -204,3 +224,12 @@ func compare_scene_categories(current_id: Scenes.Id, target_id: Scenes.Id) -> Ca
 	var current_cats := get_category_ids_by_scene(current_id)
 	var target_cats := get_category_ids_by_scene(target_id)
 	return CategoryDiff.new(current_cats, target_cats)
+
+
+## Retrieves a list of all category IDs (CategoryId)
+## @return Array of Scenes.CategoryId
+func get_categories_all_ids() -> Array[Scenes.CategoryId]:
+	var ret: Array[Scenes.CategoryId] = []
+	for c_id in _categories:
+		ret.append(c_id)
+	return ret

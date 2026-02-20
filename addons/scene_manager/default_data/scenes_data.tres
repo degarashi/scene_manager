@@ -1,7 +1,8 @@
-[gd_resource type="Resource" script_class="SMgrData" load_steps=3 format=3 uid="uid://b3fe1plyih5fa"]
+[gd_resource type="Resource" script_class="SMgrData" load_steps=4 format=3 uid="uid://b3fe1plyih5fa"]
 
-[ext_resource type="Script" uid="uid://cweru83312e1d" path="res://addons/scene_manager/data_store/scene_data_scene.gd" id="1_a1hep"]
-[ext_resource type="Script" uid="uid://dfpylmwx6ab2x" path="res://addons/scene_manager/data_store/scene_data_structure.gd" id="2_wx7rs"]
+[ext_resource type="Script" uid="uid://dkgianueskq8e" path="res://addons/scene_manager/data_store/category_data.gd" id="1_5rdhb"]
+[ext_resource type="Script" uid="uid://cweru83312e1d" path="res://addons/scene_manager/data_store/scene_data_scene.gd" id="2_var2l"]
+[ext_resource type="Script" uid="uid://dfpylmwx6ab2x" path="res://addons/scene_manager/data_store/scene_data_structure.gd" id="3_131ia"]
 
 [resource]
-script = ExtResource("2_wx7rs")
+script = ExtResource("3_131ia")

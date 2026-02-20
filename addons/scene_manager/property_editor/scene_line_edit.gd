@@ -2,14 +2,14 @@
 class_name SceneLineEdit
 extends LineEdit
 
-const EBUS_I = preload("uid://bnwpfojr6e0dh")
+@export var _ebus_ins: SMgrEbusInspector
 @export var autocomplete: AutoCompleteAssistant
 
 
 ## Generates strings from the enum to feed into the autocomplete list
 func generate_autocomplete() -> void:
 	var str_list: Array[String]
-	EBUS_I.get_scene_enums.emit(str_list)
+	_ebus_ins.get_scene_enums_as_string.emit(str_list)
 	str_list.sort()
 
 	autocomplete.load_terms(str_list, true)
