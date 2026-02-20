@@ -44,7 +44,6 @@ var _reg_ent: Array[RegEnt]
 func _ebus_cb_base(recv: Array, proc: Callable) -> void:
 	assert(recv.is_empty())
 	recv.append_array(proc.call(_manager_data.get_data()))
-	print(proc.call(_manager_data.get_data()))
 
 
 func _ebus_get_scenes_all(recv: Array[SMgrDataScene]) -> void:
