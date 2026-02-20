@@ -1,0 +1,29 @@
+[gd_scene load_steps=3 format=3 uid="uid://db0et8bmevjww"]
+
+[ext_resource type="Script" uid="uid://bo434a87u2aec" path="res://addons/scene_manager/editor/widget/category_edit.gd" id="1_7tx63"]
+[ext_resource type="Resource" uid="uid://ra25t5in8erp" path="res://addons/scene_manager/editor/event_bus/ebus_editor.tres" id="2_7tx63"]
+
+[node name="CategoryEdit" type="VBoxContainer"]
+offset_right = 199.0
+offset_bottom = 31.0
+script = ExtResource("1_7tx63")
+_ebus_editor = ExtResource("2_7tx63")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Layer Priority:"
+horizontal_alignment = 1
+
+[node name="LayerPriorityBox" type="SpinBox" parent="HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -10000.0
+max_value = 10000.0
+value = 1.0
+rounded = true
+alignment = 1
