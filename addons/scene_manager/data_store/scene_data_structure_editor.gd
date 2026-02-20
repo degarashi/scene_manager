@@ -311,7 +311,8 @@ func add_category(category_name: String) -> void:
 		return
 
 	var new_data := SMgrCategoryData.new(new_name)
-	_data._categories[new_data.get_instance_id()] = new_data
+	var category_id := new_name.hash()
+	_data._categories[category_id] = new_data
 	data_changed.emit()
 
 

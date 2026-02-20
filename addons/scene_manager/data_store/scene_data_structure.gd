@@ -7,7 +7,7 @@ extends Resource
 @export var _include_list: Array[String]
 ## Dictionary of scene data objects keyed by scene UID (int)
 @export var _scenes: Dictionary[int, SMgrDataScene]
-## Dictionary of category data objects keyed by category UID (int)
+## Dictionary of category data objects keyed by category-name's Hash (int)
 @export var _categories: Dictionary[int, SMgrCategoryData]
 
 
@@ -74,8 +74,8 @@ func get_include_list() -> Array[String]:
 ## Retrieves the full list of categories
 func get_categories_list() -> Array[SMgrCategoryData]:
 	var ret: Array[SMgrCategoryData] = []
-	for uid in _categories:
-		ret.append(_categories[uid])
+	for id in _categories:
+		ret.append(_categories[id])
 	return ret
 
 
@@ -165,12 +165,12 @@ func get_scene_ids_with_category_name(
 ## @param category_id Categories.CategoryId
 ## @return Array of Scenes.Id
 func get_scene_ids_by_category(category_id: Scenes.CategoryId) -> Array[Scenes.Id]:
-	# category_id (int) がそのまま _categories のキーであるため、直接判定可能
+	# category-id is the key of _categories, so it can be determined directly
 	var ret: Array[Scenes.Id] = []
-	for uid in _scenes:
-		var sc: SMgrDataScene = _scenes[uid]
+	for id in _scenes:
+		var sc: SMgrDataScene = _scenes[id]
 		if int(category_id) in sc.categories:
-			ret.append(uid as Scenes.Id)
+			ret.append(id as Scenes.Id)
 	return ret
 
 
@@ -185,8 +185,8 @@ func get_category_ids_by_scene(scene_id: Scenes.Id) -> Array[Scenes.CategoryId]:
 		return []
 
 	for c_id in sc.categories:
-		# sc.categories に入っている ID はそのまま CategoryId としてキャスト可能
-		category_ids.append(c_id as Scenes.CategoryId)
+		# The id in sc.categories can be directly cast as category-id
+		category_ids.append(c_id)
 
 	return category_ids
 
