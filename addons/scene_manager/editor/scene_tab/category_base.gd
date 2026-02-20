@@ -28,7 +28,8 @@ func prepare(category_id: int) -> void:
 		# get category-name from id
 		var recv: Array[SMgrCategoryData]
 		_ebus_editor.get_category_by_id.emit(recv, category_id)
-		name = recv[0].name
+		if not recv.is_empty():
+			name = recv[0].name
 	_prepare()
 
 
