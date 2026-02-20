@@ -5,9 +5,9 @@
 [ext_resource type="Resource" uid="uid://bnwpfojr6e0dh" path="res://addons/scene_manager/event_bus/ebus_inspector.tres" id="3_tcp4f"]
 [ext_resource type="Texture2D" uid="uid://bd6ob6pgam1gt" path="res://addons/scene_manager/icons/Collapse.svg" id="4_vqnpn"]
 [ext_resource type="Texture2D" uid="uid://ceksw4v7wfgdq" path="res://addons/scene_manager/icons/Reload.svg" id="5_2r30m"]
-[ext_resource type="PackedScene" uid="uid://bur1hh1ahy063" path="res://addons/scene_manager/editor/save_button.tscn" id="5_efl6f"]
+[ext_resource type="PackedScene" path="res://addons/scene_manager/editor/widget/save_button.tscn" id="5_efl6f"]
 [ext_resource type="Script" uid="uid://bp7a48n3n7idd" path="res://addons/scene_manager/editor/main_panel.gd" id="6"]
-[ext_resource type="PackedScene" uid="uid://lx7kbuk7ui2m" path="res://addons/scene_manager/editor/auto_save_button.tscn" id="6_efl6f"]
+[ext_resource type="PackedScene" path="res://addons/scene_manager/editor/widget/auto_save_button.tscn" id="6_efl6f"]
 
 [node name="RootContainer" type="MarginContainer"]
 anchors_preset = 15
