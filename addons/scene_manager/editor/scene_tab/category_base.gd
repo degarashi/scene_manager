@@ -15,11 +15,11 @@ var _category_id: int
 @onready var _unsaved_label: Label = %unsaved_label
 
 
-func _prepare() -> void:
+func _activate() -> void:
 	pass
 
 
-func prepare(category_id: int) -> void:
+func activate(category_id: int) -> void:
 	_category_id = category_id
 
 	if category_id == ResourceUID.INVALID_ID:
@@ -30,7 +30,7 @@ func prepare(category_id: int) -> void:
 		_ebus_editor.get_category_by_id.emit(recv, category_id)
 		if not recv.is_empty():
 			name = recv[0].name
-	_prepare()
+	_activate()
 
 
 func _on_remove_list_button_up() -> void:

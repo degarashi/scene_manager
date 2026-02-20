@@ -56,5 +56,5 @@ func _refresh_ui() -> void:
 	_update_sub_section(_uncategorized_sec, _ebus_editor.get_scenes_uncategorized)
 
 
-func _prepare() -> void:
+func _activate() -> void:
 	_refresh_ui()

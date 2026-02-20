@@ -33,5 +33,5 @@ func _refresh_ui() -> void:
 		item.activate(sc.uid)
 
 
-func _prepare() -> void:
+func _activate() -> void:
 	_refresh_ui()

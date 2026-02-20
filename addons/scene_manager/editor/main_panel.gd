@@ -244,13 +244,13 @@ func _reload_ui_scenes() -> void:
 
 	var prim_cat: SMgrCategoryGUIBase = _PRIMARY_CATEGORY_SCENE.instantiate()
 	_category_tab_cont.add_child(prim_cat)
-	prim_cat.prepare(ResourceUID.INVALID_ID)
+	prim_cat.activate(ResourceUID.INVALID_ID)
 	prim_cat.on_remove.connect(_on_category_remove)
 
 	for category_id in _manager_data.get_data().get_categories_all_ids():
 		var cat: SMgrCategoryGUIBase = _SECONDARY_CATEGORY_SCENE.instantiate()
 		_category_tab_cont.add_child(cat)
-		cat.prepare(category_id)
+		cat.activate(category_id)
 		cat.on_remove.connect(_on_category_remove)
 
 
