@@ -167,6 +167,11 @@ func _do_save() -> void:
 	_update_last_modified_time()
 
 
+func _on_category_tab_container_tab_changed(tab: int) -> void:
+	var cat_tab: SMgrCategoryGUIBase = _category_tab_cont.get_child(tab)
+	_ebus_editor.on_category_selected.emit(cat_tab.get_category_id())
+
+
 class RegEnt:
 	var sig: Signal
 	var proc: Callable

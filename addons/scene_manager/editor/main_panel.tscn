@@ -1,13 +1,15 @@
-[gd_scene load_steps=9 format=3 uid="uid://crnf0w0s44hxx"]
+[gd_scene load_steps=11 format=3 uid="uid://crnf0w0s44hxx"]
 
 [ext_resource type="Resource" uid="uid://ra25t5in8erp" path="res://addons/scene_manager/editor/event_bus/ebus_editor.tres" id="2_di26o"]
 [ext_resource type="Texture2D" uid="uid://bh5qft2w2580j" path="res://addons/scene_manager/icons/FileDialog.svg" id="3"]
 [ext_resource type="Resource" uid="uid://bnwpfojr6e0dh" path="res://addons/scene_manager/event_bus/ebus_inspector.tres" id="3_tcp4f"]
+[ext_resource type="PackedScene" uid="uid://db0et8bmevjww" path="res://addons/scene_manager/editor/widget/category_edit.tscn" id="4_tcp4f"]
 [ext_resource type="Texture2D" uid="uid://bd6ob6pgam1gt" path="res://addons/scene_manager/icons/Collapse.svg" id="4_vqnpn"]
 [ext_resource type="Texture2D" uid="uid://ceksw4v7wfgdq" path="res://addons/scene_manager/icons/Reload.svg" id="5_2r30m"]
-[ext_resource type="PackedScene" path="res://addons/scene_manager/editor/widget/save_button.tscn" id="5_efl6f"]
+[ext_resource type="PackedScene" uid="uid://c8hgso5t68dd7" path="res://addons/scene_manager/editor/widget/category_name_label.tscn" id="5_8cjhe"]
+[ext_resource type="PackedScene" uid="uid://bur1hh1ahy063" path="res://addons/scene_manager/editor/widget/save_button.tscn" id="5_efl6f"]
 [ext_resource type="Script" uid="uid://bp7a48n3n7idd" path="res://addons/scene_manager/editor/main_panel.gd" id="6"]
-[ext_resource type="PackedScene" path="res://addons/scene_manager/editor/widget/auto_save_button.tscn" id="6_efl6f"]
+[ext_resource type="PackedScene" uid="uid://lx7kbuk7ui2m" path="res://addons/scene_manager/editor/widget/auto_save_button.tscn" id="6_efl6f"]
 
 [node name="RootContainer" type="MarginContainer"]
 anchors_preset = 15
@@ -26,12 +28,15 @@ layout_mode = 2
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="Scenes" type="ScrollContainer" parent="MainContainer/VSplitContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="MainContainer/VSplitContainer"]
+layout_mode = 2
+
+[node name="Scenes" type="ScrollContainer" parent="MainContainer/VSplitContainer/VBoxContainer"]
 custom_minimum_size = Vector2(0, 222)
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="CategoryTabContainer" type="TabContainer" parent="MainContainer/VSplitContainer/Scenes"]
+[node name="CategoryTabContainer" type="TabContainer" parent="MainContainer/VSplitContainer/VBoxContainer/Scenes"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -39,14 +44,35 @@ size_flags_vertical = 3
 current_tab = 0
 drag_to_rearrange_enabled = true
 
+[node name="AddCategoryContainer" type="MarginContainer" parent="MainContainer/VSplitContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 8
+
+[node name="AddCategoryContainer" type="HBoxContainer" parent="MainContainer/VSplitContainer/VBoxContainer/AddCategoryContainer"]
+layout_mode = 2
+
+[node name="CategoryNameToAdd" type="LineEdit" parent="MainContainer/VSplitContainer/VBoxContainer/AddCategoryContainer/AddCategoryContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 3.0
+
+[node name="AddCategoryButton" type="Button" parent="MainContainer/VSplitContainer/VBoxContainer/AddCategoryContainer/AddCategoryContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+disabled = true
+text = "+ Category"
+
 [node name="MiscTab" type="TabContainer" parent="MainContainer/VSplitContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
-current_tab = 0
+current_tab = 1
 
 [node name="Include" type="VBoxContainer" parent="MainContainer/VSplitContainer/MiscTab"]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 size_flags_vertical = 3
 size_flags_stretch_ratio = 0.3
@@ -123,33 +149,18 @@ tooltip_text = "Adds folder/file to include in the scene data."
 disabled = true
 text = "Add"
 
-[node name="Separator" type="HSeparator" parent="MainContainer/VSplitContainer/MiscTab/Include/IncludeAddPanel"]
-layout_mode = 2
-
-[node name="Category" type="VBoxContainer" parent="MainContainer/VSplitContainer/MiscTab"]
-visible = false
+[node name="CategoryInfo" type="VBoxContainer" parent="MainContainer/VSplitContainer/MiscTab"]
 layout_mode = 2
 metadata/_tab_index = 1
 
-[node name="AddCategoryContainer" type="MarginContainer" parent="MainContainer/VSplitContainer/MiscTab/Category"]
-layout_mode = 2
-size_flags_vertical = 8
-
-[node name="AddCategoryContainer" type="HBoxContainer" parent="MainContainer/VSplitContainer/MiscTab/Category/AddCategoryContainer"]
+[node name="CategoryNameLabel" parent="MainContainer/VSplitContainer/MiscTab/CategoryInfo" instance=ExtResource("5_8cjhe")]
 layout_mode = 2
 
-[node name="CategoryNameToAdd" type="LineEdit" parent="MainContainer/VSplitContainer/MiscTab/Category/AddCategoryContainer/AddCategoryContainer"]
-unique_name_in_owner = true
+[node name="CategoryEdit" parent="MainContainer/VSplitContainer/MiscTab/CategoryInfo" instance=ExtResource("4_tcp4f")]
 layout_mode = 2
-size_flags_horizontal = 3
-size_flags_stretch_ratio = 3.0
 
-[node name="AddCategoryButton" type="Button" parent="MainContainer/VSplitContainer/MiscTab/Category/AddCategoryContainer/AddCategoryContainer"]
-unique_name_in_owner = true
+[node name="HSeparator2" type="HSeparator" parent="MainContainer"]
 layout_mode = 2
-size_flags_horizontal = 3
-disabled = true
-text = "+ Category"
 
 [node name="HideIncludeButton" type="Button" parent="MainContainer"]
 unique_name_in_owner = true
@@ -222,13 +233,14 @@ unique_name_in_owner = true
 wait_time = 0.05
 one_shot = true
 
+[connection signal="tab_changed" from="MainContainer/VSplitContainer/VBoxContainer/Scenes/CategoryTabContainer" to="." method="_on_category_tab_container_tab_changed"]
+[connection signal="text_changed" from="MainContainer/VSplitContainer/VBoxContainer/AddCategoryContainer/AddCategoryContainer/CategoryNameToAdd" to="." method="_on_category_name_text_changed"]
+[connection signal="button_up" from="MainContainer/VSplitContainer/VBoxContainer/AddCategoryContainer/AddCategoryContainer/AddCategoryButton" to="." method="_on_add_category_button_up"]
 [connection signal="dir_selected" from="MainContainer/VSplitContainer/MiscTab/Include/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer/FileDialog" to="." method="_on_file_dialog_dir_file_selected"]
 [connection signal="file_selected" from="MainContainer/VSplitContainer/MiscTab/Include/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer/FileDialog" to="." method="_on_file_dialog_dir_file_selected"]
 [connection signal="button_up" from="MainContainer/VSplitContainer/MiscTab/Include/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer/FileDialogButton" to="." method="_on_file_dialog_button_button_up"]
 [connection signal="text_changed" from="MainContainer/VSplitContainer/MiscTab/Include/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer/AddressEdit" to="." method="_on_address_text_changed"]
 [connection signal="button_up" from="MainContainer/VSplitContainer/MiscTab/Include/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer2/AddIncludeButton" to="." method="_on_add_include_button_button_up"]
-[connection signal="text_changed" from="MainContainer/VSplitContainer/MiscTab/Category/AddCategoryContainer/AddCategoryContainer/CategoryNameToAdd" to="." method="_on_category_name_text_changed"]
-[connection signal="button_up" from="MainContainer/VSplitContainer/MiscTab/Category/AddCategoryContainer/AddCategoryContainer/AddCategoryButton" to="." method="_on_add_category_button_up"]
 [connection signal="button_up" from="MainContainer/HideIncludeButton" to="." method="_on_hide_button_up"]
 [connection signal="button_up" from="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer/SaveRefreshContainer/RefreshButton" to="." method="_on_refresh_button_up"]
 [connection signal="button_up" from="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer/SaveRefreshContainer/SaveContainer/SaveButton" to="." method="_on_save_button_button_up"]
