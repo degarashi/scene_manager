@@ -210,6 +210,26 @@ func _unload_all_nodes() -> void:
 		_unload_scene(n_name)
 
 
+## Core routine for instantiating and placing a scene node into the tree.
+func _perform_scene_setup(scene: Scenes.Id, options: SceneLoadOptions) -> Node:
+	var new_scene_node := _create_scene_instance_blocking(scene)
+	if not new_scene_node:
+		push_error("Scene Manager: Failed to instantiate scene: %s" % Scenes.Id.find_key(scene))
+		return null
+
+	var parent_node := _create_ui_wrapper(options.node_name)
+	parent_node.add_child(new_scene_node)
+
+	# Execute user-defined callback before adding to tree
+	options.call_pre_cb(parent_node, new_scene_node)
+
+	_get_actual_scene_container().add_child(parent_node)
+	_loaded_scene_map[scene] = _SceneEntry.new(parent_node, new_scene_node)
+
+	scene_loaded.emit(scene)
+	return new_scene_node
+
+
 # ------------- [Public Methods] -------------
 func get_history_list() -> Array[Scenes.Id]:
 	return _history_stack.get_all_items()
@@ -244,7 +264,7 @@ func switch_to_scene(
 	if add_to_back and _current_scene_enum != Scenes.Id.NONE:
 		_history_stack.push(_current_scene_enum)
 
-	var new_scene_node := _create_scene_instance_blocking(scene)
+	var new_scene_node := _perform_scene_setup(scene, options)
 	if not new_scene_node:
 		push_error(
 			"Scene Manager: Failed to instantiate switch_to_scene: %s" % Scenes.Id.find_key(scene)
@@ -252,18 +272,10 @@ func switch_to_scene(
 		_transition_player.set_clickable(true)
 		return null
 
-	var parent_node := _create_ui_wrapper(options.node_name)
-	parent_node.add_child(new_scene_node)
-	options.call_pre_cb(parent_node, new_scene_node)
-	_get_actual_scene_container().add_child(parent_node)
-
-	# --- Register and Finalize ---
-	_loaded_scene_map[scene] = _SceneEntry.new(parent_node, new_scene_node)
 	_current_scene_enum = scene
 
 	# Emit category change signal along with scene_loaded
 	category_changed.emit(category_diff)
-	scene_loaded.emit(scene)
 
 	await _transition_player.play_in(options.play_in_time)
 	_transition_player.set_clickable(true)
@@ -279,33 +291,19 @@ func add_scene(
 		push_warning("Scene Manager: add_scene called with NONE.")
 		return null
 
+	# Handle existing instances of the same ID
 	if _loaded_scene_map.has(scene):
 		if not remove_old:
 			push_warning(
 				"Scene Manager: Scene %s is already loaded (additive)." % Scenes.Id.find_key(scene)
 			)
 			return null
-		# Find the node name associated with this ID to unload it specifically
-		var old_node_name := _loaded_scene_map[scene].container_node.name
-		_unload_scene(old_node_name)
+		_unload_scene(_loaded_scene_map[scene].container_node.name)
 
-	# Additive mode: No fading, only name conflict resolution
+	# Resolve name conflicts for the wrapper node
 	_unload_scene(options.node_name, false)
 
-	var new_scene_node := _create_scene_instance_blocking(scene)
-	if not new_scene_node:
-		push_error("Scene Manager: Failed to instantiate add_scene: %s" % Scenes.Id.find_key(scene))
-		return null
-
-	var parent_node := _create_ui_wrapper(options.node_name)
-	parent_node.add_child(new_scene_node)
-	_get_actual_scene_container().add_child(parent_node)
-	options.call_pre_cb(parent_node, new_scene_node)
-
-	# Register additive scene
-	_loaded_scene_map[scene] = _SceneEntry.new(parent_node, new_scene_node)
-	scene_loaded.emit(scene)
-	return new_scene_node
+	return _perform_scene_setup(scene, options)
 
 
 func load_previous_scene(options := SceneLoadOptions.new()) -> bool:
