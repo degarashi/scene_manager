@@ -179,6 +179,9 @@ func _export_scene_enum_string() -> String:
 	ret += "\tNONE = {0},\n".format([ResourceUID.INVALID_ID])
 
 	var scenes := _data.get_scenes_all()
+	# Sort alphabetically based on scene-name
+	scenes.sort_custom(func(a: SMgrDataScene, b: SMgrDataScene) -> bool: return a.name < b.name)
+
 	for sc in scenes:
 		ret += "\t{0} = {1},\n".format([sc.name.to_upper(), sc.uid])
 	ret += "}\n"
