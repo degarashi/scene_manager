@@ -44,7 +44,8 @@ func _validate_connections() -> void:
 ## Registers or updates a scene and notifies change
 func set_scene_data(uid: int, scene_data: SMgrDataScene) -> void:
 	_scenes[uid] = scene_data
-	scene_data.changed.connect(_on_any_data_changed)
+	if not scene_data.changed.is_connected(_on_any_data_changed):
+		scene_data.changed.connect(_on_any_data_changed)
 	emit_changed()
 
 
@@ -57,7 +58,8 @@ func remove_scene_data(uid: int) -> void:
 ## Registers or updates a category and notifies change
 func set_category_data(id: int, category_data: SMgrCategoryData) -> void:
 	_categories[id] = category_data
-	category_data.changed.connect(_on_any_data_changed)
+	if not category_data.changed.is_connected(_on_any_data_changed):
+		category_data.changed.connect(_on_any_data_changed)
 	emit_changed()
 
 
