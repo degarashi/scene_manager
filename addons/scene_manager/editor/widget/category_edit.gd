@@ -37,4 +37,3 @@ func _on_layer_priority_box_value_changed(value: float) -> void:
 		return
 
 	cat.layer_priority = int(value)
-	cat.emit_changed()
