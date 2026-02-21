@@ -69,6 +69,35 @@ func remove_category_data(id: int) -> void:
 		emit_changed()
 
 
+## Sorts internal dictionaries to maintain a clean serialization order.
+## Suppression of emit_changed is handled by blocking signals.
+func sort_data_structures() -> void:
+	var blocking := is_blocking_signals()
+	set_block_signals(true)
+
+	# Sort Scenes by Name
+	var scene_keys := _scenes.keys()
+	scene_keys.sort_custom(
+		func(a, b) -> bool: return _scenes[a].name.naturalnocasecmp_to(_scenes[b].name) < 0
+	)
+	var sorted_scenes: Dictionary[int, SMgrDataScene] = {}
+	for key in scene_keys:
+		sorted_scenes[key] = _scenes[key]
+	_scenes = sorted_scenes
+
+	# Sort Categories by Name
+	var category_keys := _categories.keys()
+	category_keys.sort_custom(
+		func(a, b) -> bool: return _categories[a].name.naturalnocasecmp_to(_categories[b].name) < 0
+	)
+	var sorted_categories: Dictionary[int, SMgrCategoryData] = {}
+	for key in category_keys:
+		sorted_categories[key] = _categories[key]
+	_categories = sorted_categories
+
+	set_block_signals(blocking)
+
+
 # ------------- [Private Method] -------------
 func _get_scene_from_enum(scene: Scenes.Id) -> SMgrDataScene:
 	if scene == Scenes.Id.NONE:
