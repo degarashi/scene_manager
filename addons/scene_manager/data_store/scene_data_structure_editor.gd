@@ -52,6 +52,9 @@ func _init(p_data: SMgrData) -> void:
 
 	_data = p_data
 	_init_debouncer()
+
+	# Detect changes on the SMgrData side and update its own signals and dirty flag
+	_data.changed.connect(_on_data_changed)
 	data_changed.connect(_on_data_changed)
 	_setup_filesystem_monitoring.call_deferred()
 
@@ -101,7 +104,7 @@ func _cleanup_filesystem_monitoring() -> void:
 ## @return Registered UID (even if it already existed)
 func _register_scene_file(full_path: String) -> int:
 	var uid := ResourceLoader.get_resource_uid(full_path)
-	if uid == ResourceUID.INVALID_ID or _data._scenes.has(uid):
+	if uid == ResourceUID.INVALID_ID or _data.get_scene_from_uid(uid) != null:
 		return uid
 
 	var base_name: String = full_path.get_file().get_basename()
@@ -109,7 +112,7 @@ func _register_scene_file(full_path: String) -> int:
 
 	# Handle duplicate names to ensure unique Enum keys
 	var existing_names: Array[String] = []
-	for s in _data._scenes.values():
+	for s in _data.get_scenes_all():
 		existing_names.append(s.name.to_upper())
 
 	var counter: int = 1
@@ -120,8 +123,8 @@ func _register_scene_file(full_path: String) -> int:
 	# Initialize new scene data using the factory method
 	var new_scene := SMgrDataScene.initialize(scene_name, full_path, uid)
 	if new_scene:
-		_data._scenes[uid] = new_scene
-		data_changed.emit()
+		# Register via method (emit_changed is called internally)
+		_data.set_scene_data(uid, new_scene)
 		return uid
 
 	return ResourceUID.INVALID_ID
@@ -175,9 +178,9 @@ func _export_scene_enum_string() -> String:
 	ret += "enum Id {\n"
 	ret += "\tNONE = {0},\n".format([ResourceUID.INVALID_ID])
 
-	for uid in _data._scenes:
-		var sc_name := _data._scenes[uid].name
-		ret += "\t{0} = {1},\n".format([sc_name.to_upper(), uid])
+	var scenes := _data.get_scenes_all()
+	for sc in scenes:
+		ret += "\t{0} = {1},\n".format([sc.name.to_upper(), sc.uid])
 	ret += "}\n"
 	return ret
 
@@ -185,8 +188,9 @@ func _export_scene_enum_string() -> String:
 func _export_category_enum_string() -> String:
 	var ret: String = ""
 	ret += "enum CategoryId {\n"
-	for c_uid in _data._categories:
-		var c_data: SMgrCategoryData = _data._categories[c_uid]
+	var categories := _data.get_categories_list()
+	for c_data in categories:
+		var c_uid := c_data.name.hash()
 		ret += "\t{0} = {1},\n".format([c_data.name.to_upper(), c_uid])
 	ret += "}\n"
 	return ret
@@ -231,47 +235,53 @@ func get_dirty_flag() -> bool:
 ## @param scene_id Scene UID (int)
 ## @param new_name New display name
 func change_scene_name(scene_id: int, new_name: String) -> void:
-	if _data._scenes.has(scene_id):
-		var sc: SMgrDataScene = _data._scenes[scene_id]
+	var sc := _data.get_scene_from_uid(scene_id)
+	if sc:
 		if not new_name.is_empty() and sc.name != new_name:
 			sc.name = new_name
-			data_changed.emit()
+			# emit_changed is called by the setter of SMgrDataScene itself,
+			# which is then detected via SMgrData.
 
 
 ## Removes a specific category assignment from a scene
 ## @param scene_id Scene UID (int)
 ## @param category_id ID of the category to remove
 func remove_scene_from_category(scene_id: int, category_id: int) -> void:
-	if not _data._categories.has(category_id):
+	if _data.get_category_from_id(category_id) == null:
 		return
 
-	if _data._scenes.has(scene_id):
-		var sc: SMgrDataScene = _data._scenes[scene_id]
+	var sc := _data.get_scene_from_uid(scene_id)
+	if sc:
 		var idx := sc.categories.find(category_id)
 		if idx != -1:
 			sc.categories.remove_at(idx)
-			data_changed.emit()
+			# Direct manipulation of the array does not trigger the setter,
+			# so explicit notification is required.
+			sc.emit_changed()
 
 
 ## Assigns a scene to a specific category
 ## @param scene_id Scene UID (int)
 ## @param category_id ID of the category to assign
 func add_scene_to_category(scene_id: int, category_id: int) -> void:
-	if not _data._categories.has(category_id):
+	if _data.get_category_from_id(category_id) == null:
 		return
 
-	if _data._scenes.has(scene_id):
-		var sc := _data._scenes[scene_id]
+	var sc := _data.get_scene_from_uid(scene_id)
+	if sc:
 		if not category_id in sc.categories:
 			sc.categories.append(category_id)
-			data_changed.emit()
+			sc.emit_changed()
 
 
 ## Removes an include path and unregisters all scenes under it
 ## @param scene_path Path to remove
 func remove_include_path(scene_path: String) -> void:
-	if _data._include_list.has(scene_path):
-		_data._include_list.erase(scene_path)
+	var list := _data.get_include_list()
+	if list.has(scene_path):
+		list.erase(scene_path)
+		# emit_changed is called via the setter by property assignment
+		_data._include_list = list
 	else:
 		printerr(
 			(
@@ -282,14 +292,12 @@ func remove_include_path(scene_path: String) -> void:
 		return
 
 	var ids_to_remove: Array[int] = []
-	for sc_id in _data._scenes:
-		if _data._scenes[sc_id].path.begins_with(scene_path):
-			ids_to_remove.append(sc_id)
+	for sc in _data.get_scenes_all():
+		if sc.path.begins_with(scene_path):
+			ids_to_remove.append(sc.uid)
 
 	for sc_id in ids_to_remove:
-		_data._scenes.erase(sc_id)
-
-	data_changed.emit()
+		_data.remove_scene_data(sc_id)
 
 
 ## Adds a new category (Case-insensitive check)
@@ -300,8 +308,8 @@ func add_category(category_name: String) -> void:
 		return
 
 	# Check existing list case-insensitively
-	for c_uid in _data._categories:
-		if _data._categories[c_uid].name.to_lower() == new_name.to_lower():
+	for c_data in _data.get_categories_list():
+		if c_data.name.to_lower() == new_name.to_lower():
 			push_warning("Scene Manager: Category '%s' already exists." % new_name)
 			return
 
@@ -312,28 +320,27 @@ func add_category(category_name: String) -> void:
 
 	var new_data := SMgrCategoryData.new(new_name)
 	var category_id := new_name.hash()
-	_data._categories[category_id] = new_data
-	data_changed.emit()
+	_data.set_category_data(category_id, new_data)
 
 
 func get_category_id_from_name(category_name: String) -> int:
-	for c_uid in _data._categories:
-		if _data._categories[c_uid].name == category_name:
-			return c_uid
+	for c_data in _data.get_categories_list():
+		if c_data.name == category_name:
+			return c_data.name.hash()
 	return ResourceUID.INVALID_ID
 
 
 func remove_category(category_id: int) -> void:
-	if not _data._categories.has(category_id):
+	if _data.get_category_from_id(category_id) == null:
 		printerr("Scene Manager Error: Cannot remove category ID '%d'." % category_id)
 		return
 
-	_data._categories.erase(category_id)
+	_data.remove_category_data(category_id)
 
-	for sc_id in _data._scenes:
-		var scene_info: SMgrDataScene = _data._scenes[sc_id]
-		scene_info.categories.erase(category_id)
-	data_changed.emit()
+	for sc in _data.get_scenes_all():
+		if category_id in sc.categories:
+			sc.categories.erase(category_id)
+			sc.emit_changed()
 
 
 ## Adds an include path and scans the target directory or file
@@ -350,7 +357,8 @@ func add_include_path(inc_path: String) -> bool:
 		return false
 
 	# Check for inclusion relationships
-	for existing_path in _data._include_list:
+	var list := _data.get_include_list()
+	for existing_path in list:
 		if inc_path.begins_with(existing_path):
 			push_warning(
 				"Scene Manager: Path '%s' is already covered by '%s'." % [inc_path, existing_path]
@@ -358,22 +366,20 @@ func add_include_path(inc_path: String) -> bool:
 			return false
 
 	# If the new path is a parent of existing paths, remove those sub-paths
-	var original_size := _data._include_list.size()
-	_data._include_list = _data._include_list.filter(
-		func(p: String) -> bool: return not p.begins_with(inc_path)
-	)
+	var original_size := list.size()
+	list = list.filter(func(p: String) -> bool: return not p.begins_with(inc_path))
 
-	if _data._include_list.size() < original_size:
+	if list.size() < original_size:
 		print("Scene Manager: Removed sub-paths covered by '%s'." % inc_path)
 
-	# Add to list and execute scan
-	_data._include_list.append(inc_path)
+	list.append(inc_path)
+	_data._include_list = list  # Triggers setter
+
 	if is_dir:
 		_scan_dir_recursive(inc_path)
 	else:
 		_register_scene_file(inc_path)
 
-	data_changed.emit()
 	print("Scene Manager: Successfully added path '%s'." % inc_path)
 	return true
 
@@ -381,9 +387,8 @@ func add_include_path(inc_path: String) -> bool:
 ## Rescans registered include paths, removes non-existent scenes, and registers new scenes
 func sync_with_filesystem() -> void:
 	var found_uids: Array[int] = []
-	var changed := false
 
-	for path in _data._include_list:
+	for path in _data.get_include_list():
 		if DirAccess.dir_exists_absolute(path):
 			_scan_and_collect_uids(path, found_uids)
 		elif FileAccess.file_exists(path) and path.ends_with(".tscn"):
@@ -393,27 +398,20 @@ func sync_with_filesystem() -> void:
 
 	# Remove UIDs that should be under the include list but were not found during the scan
 	var uids_to_remove: Array[int] = []
-	for uid in _data._scenes:
-		var scene_path := _data._scenes[uid].path
+	for sc in _data.get_scenes_all():
 		var is_managed := false
-		for inc_path in _data._include_list:
-			if scene_path.begins_with(inc_path):
+		for inc_path in _data.get_include_list():
+			if sc.path.begins_with(inc_path):
 				is_managed = true
 				break
 
 		# If managed but not found on the filesystem, mark for removal
-		if is_managed and not uid in found_uids:
-			uids_to_remove.append(uid)
+		if is_managed and not sc.uid in found_uids:
+			uids_to_remove.append(sc.uid)
 
 	if not uids_to_remove.is_empty():
 		for uid in uids_to_remove:
-			_data._scenes.erase(uid)
-		changed = true
-
-	# Although data_changed is emitted inside _register_scene_file when a file is added,
-	# we emit it here to ensure notification if deletions occurred.
-	if changed:
-		data_changed.emit()
+			_data.remove_scene_data(uid)
 
 
 func cleanup() -> void:
