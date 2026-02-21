@@ -84,7 +84,7 @@ func _setup_default_data() -> bool:
 			while file_name != "":
 				if not dir.current_is_dir():
 					var source_path: String = source_dir.path_join(file_name)
-					var target_path: String = "res://".path_join(file_name)
+					var target_path: String = "res://scene_manager_data".path_join(file_name)
 
 					# Copy file
 					dir.copy(source_path, target_path)

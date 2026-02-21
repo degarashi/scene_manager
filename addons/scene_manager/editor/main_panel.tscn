@@ -157,6 +157,7 @@ metadata/_tab_index = 1
 layout_mode = 2
 
 [node name="CategoryEdit" parent="MainContainer/VSplitContainer/MiscTab/CategoryInfo" instance=ExtResource("4_tcp4f")]
+visible = false
 layout_mode = 2
 
 [node name="HSeparator2" type="HSeparator" parent="MainContainer"]

@@ -3,8 +3,9 @@ class_name SMgrProjectSettings
 extends SMgrResource
 
 signal on_auto_save_changed(enable: bool)
+const DEFAULT_DATA_DIR = "res://scene_manager_data"
 const DEFAULT_SCENES_FILENAME = "scenes.gd"
-const DEFAULT_PATH_TO_SCENES := "res://scenes.gd"
+const DEFAULT_PATH_TO_SCENES := DEFAULT_DATA_DIR + "/" + DEFAULT_SCENES_FILENAME
 const DEFAULT_PLAY_OUT_TIME: float = 1
 const DEFAULT_PLAY_IN_TIME: float = 1
 
@@ -32,12 +33,11 @@ class Key:
 # Runtime Properties linked to ProjectSettings
 var scene_path: String:
 	get:
-		return ProjectSettings.get_setting(
-			Property.SCENE_PATH, DEFAULT_PATH_TO_SCENES
-		)
+		return ProjectSettings.get_setting(Property.SCENE_PATH, DEFAULT_PATH_TO_SCENES)
 	set(value):
 		if scene_path != value:
 			ProjectSettings.set_setting(Property.SCENE_PATH, value)
+			_ensure_data_dir_exists(value.get_base_dir())
 			_save()
 
 var scene_data_path: String:
@@ -46,9 +46,7 @@ var scene_data_path: String:
 
 var play_out_time: float:
 	get:
-		return ProjectSettings.get_setting(
-			Property.PLAY_OUT_TIME, DEFAULT_PLAY_OUT_TIME
-		)
+		return ProjectSettings.get_setting(Property.PLAY_OUT_TIME, DEFAULT_PLAY_OUT_TIME)
 	set(value):
 		if play_out_time != value:
 			ProjectSettings.set_setting(Property.PLAY_OUT_TIME, value)
@@ -56,9 +54,7 @@ var play_out_time: float:
 
 var play_in_time: float:
 	get:
-		return ProjectSettings.get_setting(
-			Property.PLAY_IN_TIME, DEFAULT_PLAY_IN_TIME
-		)
+		return ProjectSettings.get_setting(Property.PLAY_IN_TIME, DEFAULT_PLAY_IN_TIME)
 	set(value):
 		if play_in_time != value:
 			ProjectSettings.set_setting(Property.PLAY_IN_TIME, value)
@@ -83,6 +79,12 @@ var includes_visible: bool:
 			_save()
 
 
+func _ensure_data_dir_exists(dir_path: String) -> void:
+	if not DirAccess.dir_exists_absolute(dir_path):
+		DirAccess.make_dir_recursive_absolute(dir_path)
+		print("Scene Manager: Created data directory at ", dir_path)
+
+
 func _save() -> void:
 	var error: Error = ProjectSettings.save()
 	if error != OK:
@@ -90,6 +92,7 @@ func _save() -> void:
 
 
 func setup_project_settings() -> void:
+	_ensure_data_dir_exists(scene_path.get_base_dir())
 	# Structured configuration using constant keys
 	var settings: Dictionary[String, Dictionary] = {
 		Property.SCENE_PATH:

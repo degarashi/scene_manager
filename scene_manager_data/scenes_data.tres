@@ -1,0 +1,67 @@
+[gd_resource type="Resource" script_class="SMgrData" load_steps=12 format=3 uid="uid://dtdkat1lxfwhm"]
+
+[ext_resource type="Script" uid="uid://dkgianueskq8e" path="res://addons/scene_manager/data_store/category_data.gd" id="1_qmbw5"]
+[ext_resource type="Script" uid="uid://dfpylmwx6ab2x" path="res://addons/scene_manager/data_store/scene_data_structure.gd" id="1_qt8cn"]
+[ext_resource type="Script" uid="uid://cweru83312e1d" path="res://addons/scene_manager/data_store/scene_data_scene.gd" id="2_7yiq2"]
+
+[sub_resource type="Resource" id="Resource_0hhdr"]
+script = ExtResource("2_7yiq2")
+name = "scene_base"
+path = "res://demo/scene_base.tscn"
+uid = 286306938834776095
+
+[sub_resource type="Resource" id="Resource_g44c2"]
+script = ExtResource("2_7yiq2")
+name = "additional_0"
+path = "res://demo/additional_scene/additional_0.tscn"
+uid = 4235791306192597837
+
+[sub_resource type="Resource" id="Resource_xfgj7"]
+script = ExtResource("2_7yiq2")
+name = "fake_loading_screen"
+path = "res://demo/fake_loading_screen.tscn"
+uid = 5495634729037908381
+
+[sub_resource type="Resource" id="Resource_gxggk"]
+script = ExtResource("2_7yiq2")
+name = "loading_screen"
+path = "res://demo/loading_screen.tscn"
+uid = 3205915700789431932
+
+[sub_resource type="Resource" id="Resource_smaxp"]
+script = ExtResource("2_7yiq2")
+name = "history_viewer"
+path = "res://demo/common/history_viewer.tscn"
+uid = 8019339775020489802
+
+[sub_resource type="Resource" id="Resource_qubph"]
+script = ExtResource("2_7yiq2")
+name = "scene_1"
+path = "res://demo/scene_1.tscn"
+uid = 7784575442615425582
+
+[sub_resource type="Resource" id="Resource_jshqp"]
+script = ExtResource("2_7yiq2")
+name = "scene_0"
+path = "res://demo/scene_0.tscn"
+uid = 3167048368848614594
+
+[sub_resource type="Resource" id="Resource_7csv1"]
+script = ExtResource("2_7yiq2")
+name = "scene_2"
+path = "res://demo/scene_2.tscn"
+uid = 5390443888696816947
+
+[resource]
+script = ExtResource("1_qt8cn")
+_include_list = Array[String](["res://demo"])
+_scenes = Dictionary[int, ExtResource("2_7yiq2")]({
+286306938834776095: SubResource("Resource_0hhdr"),
+3167048368848614594: SubResource("Resource_jshqp"),
+3205915700789431932: SubResource("Resource_gxggk"),
+4235791306192597837: SubResource("Resource_g44c2"),
+5390443888696816947: SubResource("Resource_7csv1"),
+5495634729037908381: SubResource("Resource_xfgj7"),
+7784575442615425582: SubResource("Resource_qubph"),
+8019339775020489802: SubResource("Resource_smaxp")
+})

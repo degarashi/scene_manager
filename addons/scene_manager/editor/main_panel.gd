@@ -278,9 +278,18 @@ func _cleanup_manager_data() -> void:
 func _reload_data() -> void:
 	_cleanup_manager_data()
 
+	# Check if the directory exists (just to be sure)
+	var target_dir := _ps.scene_path.get_base_dir()
+	if not DirAccess.dir_exists_absolute(target_dir):
+		DirAccess.make_dir_recursive_absolute(target_dir)
+
 	var raw_data: SMgrData = ResourceLoader.load(_ps.scene_data_path)
 	if not raw_data:
+		# Creating for the first time
 		raw_data = SMgrData.new()
+		# Save as a resource and confirm the path
+		ResourceSaver.save(raw_data, _ps.scene_data_path)
+
 	_manager_data = SMgrDataEditor.new(raw_data)
 
 	_manager_data.sync_with_filesystem()
