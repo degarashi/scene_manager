@@ -43,18 +43,27 @@ class _SceneEntry:
 		scene_node = p_scene
 
 
+## Internal class to hold reservation info for asynchronous loading.
+class _ReservedInfo:
+	var scene_id: Scenes.Id = Scenes.Id.NONE
+	var options: SceneLoadOptions
+	var is_additive: bool = false
+	var add_to_back: bool = false
+
+	func clear() -> void:
+		scene_id = Scenes.Id.NONE
+		options = null
+		is_additive = false
+		add_to_back = false
+
+
 # ------------- [Private Variable] -------------
 var _scene_db: SMgrData
 ## ID of the scene currently being loaded.
 var _load_scene_id: Scenes.Id = Scenes.Id.NONE
 
-# Reservation info for asynchronous loading
-var _reserved_scene_id: Scenes.Id = Scenes.Id.NONE
-## Load options for the reserved scene.
-var _reserved_options: SceneLoadOptions
-var _is_reserved_as_additive: bool = false
-## Whether the reserved scene should be added to history when activated.
-var _reserved_add_to_back: bool = false
+## Reservation info for asynchronous loading.
+var _reserved := _ReservedInfo.new()
 
 ## Scenes currently present in the field (Key: Scene-Id, Value: _SceneEntry).
 var _loaded_scene_map: Dictionary[Scenes.Id, _SceneEntry] = {}
@@ -385,10 +394,10 @@ func load_scene_with_transition(
 	assert(next_scene != Scenes.Id.NONE, "Scene Manager: next_scene cannot be NONE.")
 	assert(transition_scene != Scenes.Id.NONE, "Scene Manager: transition_scene cannot be NONE.")
 
-	_reserved_scene_id = next_scene
-	_reserved_options = opt_activate.copy()
-	_is_reserved_as_additive = false
-	_reserved_add_to_back = add_to_back
+	_reserved.scene_id = next_scene
+	_reserved.options = opt_activate.copy()
+	_reserved.is_additive = false
+	_reserved.add_to_back = add_to_back
 
 	var trans_options := opt_play_in.copy()
 	trans_options.node_name = _loading_node_name
@@ -397,13 +406,13 @@ func load_scene_with_transition(
 
 
 func instantiate_async_result() -> void:
-	var path := _scene_db.get_scene_path_from_enum(_reserved_scene_id)
-	if path == "" or _reserved_scene_id == Scenes.Id.NONE:
+	var path := _scene_db.get_scene_path_from_enum(_reserved.scene_id)
+	if path == "" or _reserved.scene_id == Scenes.Id.NONE:
 		push_warning("instantiate_async_result: No reserved scene to instantiate.")
 		return
 
 	# Add current scene to history before switching
-	if _reserved_add_to_back and _current_scene_enum != Scenes.Id.NONE:
+	if _reserved.add_to_back and _current_scene_enum != Scenes.Id.NONE:
 		_history_stack.push(_current_scene_enum)
 
 	# Load directly (it should be cached in ResourceLoader by ResourceLoaderMgr)
@@ -412,10 +421,10 @@ func instantiate_async_result() -> void:
 		var scene_node := res.instantiate()
 		scene_node.scene_file_path = path
 		# Temporary additive attachment
-		var tmp_name := _to_tmp_name(_reserved_options.node_name)
+		var tmp_name := _to_tmp_name(_reserved.options.node_name)
 		var parent_node := _create_ui_wrapper(tmp_name)
 		parent_node.add_child(scene_node)
-		_reserved_options.call_pre_cb(parent_node, scene_node)
+		_reserved.options.call_pre_cb(parent_node, scene_node)
 
 		var target_node := _get_actual_scene_container()
 		target_node.add_child(parent_node)
@@ -423,7 +432,7 @@ func instantiate_async_result() -> void:
 		# Place it right behind the loading screen (which is at the top).
 		target_node.move_child(parent_node, target_node.get_child_count() - 2)
 
-		_loaded_scene_map[_reserved_scene_id] = _SceneEntry.new(parent_node, scene_node)
+		_loaded_scene_map[_reserved.scene_id] = _SceneEntry.new(parent_node, scene_node)
 	else:
 		push_error("Scene Manager: Failed to get threaded load result for %s" % path)
 
@@ -446,28 +455,28 @@ static func _from_tmp_name(tmp_name: String) -> String:
 ## This is used in the `load_scene_with_transition` flow and uses the reserved information for
 ## switching scenes.
 func activate_prepared_scene() -> Node:
-	if _reserved_scene_id == Scenes.Id.NONE:
+	if _reserved.scene_id == Scenes.Id.NONE:
 		push_warning("activate_prepared_scene called but no scene is reserved.")
 		return null
 	assert(
-		_loaded_scene_map.has(_reserved_scene_id), "Scene Manager: Reserved scene entry missing."
+		_loaded_scene_map.has(_reserved.scene_id), "Scene Manager: Reserved scene entry missing."
 	)
 
-	_transition_player.set_clickable(_reserved_options.clickable)
-	await _transition_player.play_out(_reserved_options.play_out_time)
+	_transition_player.set_clickable(_reserved.options.clickable)
+	await _transition_player.play_out(_reserved.options.play_out_time)
 
 	# --- Category Comparison ---
 	# Calculate category differences before updating _current_scene_enum
-	var category_diff := _scene_db.compare_scene_categories(_current_scene_enum, _reserved_scene_id)
+	var category_diff := _scene_db.compare_scene_categories(_current_scene_enum, _reserved.scene_id)
 
 	# Remove the loading screen
 	_unload_scene(_loading_node_name)
 
-	if not _is_reserved_as_additive:
+	if not _reserved.is_additive:
 		# Remove everything except _reserved scene
 		var target_names: Array[String] = []
 		for id in _loaded_scene_map:
-			if id == _reserved_scene_id:
+			if id == _reserved.scene_id:
 				continue
 			target_names.append(_loaded_scene_map[id].container_node.name)
 
@@ -475,22 +484,20 @@ func activate_prepared_scene() -> Node:
 			_unload_scene(t_name)
 
 		# Revert the temporary name back to the original name to avoid conflicts
-		var cont := _loaded_scene_map[_reserved_scene_id].container_node
+		var cont := _loaded_scene_map[_reserved.scene_id].container_node
 		cont.name = _from_tmp_name(cont.name)
 
-		_current_scene_enum = _reserved_scene_id
+		_current_scene_enum = _reserved.scene_id
 
 	# Emit category change signal along with scene_loaded (for consistency with switch_to_scene)
 	category_changed.emit(category_diff)
 	scene_loaded.emit(_current_scene_enum)
 
-	await _transition_player.play_in(_reserved_options.play_in_time)
+	await _transition_player.play_in(_reserved.options.play_in_time)
 
-	var ret := _loaded_scene_map[_reserved_scene_id].scene_node
+	var ret := _loaded_scene_map[_reserved.scene_id].scene_node
 	# Reset the reserved scene information now that the scene has fully loaded.
-	_reserved_scene_id = Scenes.Id.NONE
-	_reserved_options = null
-	_reserved_add_to_back = false
+	_reserved.clear()
 
 	_transition_player.set_clickable(true)
 	scene_transition_completed.emit(_current_scene_enum)
@@ -513,12 +520,12 @@ func _create_scene_instance_blocking(scene: Scenes.Id) -> Node:
 ## Returns the currently reserved scene Enum.
 ## @return Reserved scene Enum.
 func get_reserved_scene() -> Scenes.Id:
-	return _reserved_scene_id
+	return _reserved.scene_id
 
 
 ## Returns the reserved load options for the reserved scene.
 func get_reserved_load_option() -> SceneLoadOptions:
-	return _reserved_options
+	return _reserved.options
 
 
 func get_scene_data() -> SMgrData:
