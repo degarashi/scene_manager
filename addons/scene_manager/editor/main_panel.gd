@@ -243,20 +243,45 @@ func _on_category_remove(category_id: int) -> void:
 
 
 func _reload_ui_scenes() -> void:
-	# --- Tabs ---
+	var data := _manager_data.get_data()
+	var category_ids: Array[int] = [ResourceUID.INVALID_ID]
+	category_ids.append_array(data.get_categories_all_ids())
+
+	# Map existing GUI children for easy lookup by category ID
+	var existing_guis: Dictionary[int, SMgrCategoryGUIBase] = {}
 	for child in _category_tab_cont.get_children():
-		_remove_node_safely(child)
+		var base := child as SMgrCategoryGUIBase
+		if base:
+			existing_guis[base.get_category_id()] = base
 
-	var prim_cat: SMgrCategoryGUIBase = _PRIMARY_CATEGORY_SCENE.instantiate()
-	_category_tab_cont.add_child(prim_cat)
-	prim_cat.activate(ResourceUID.INVALID_ID)
-	prim_cat.on_remove.connect(_on_category_remove)
+	# Process categories based on the sorted data order
+	for i in category_ids.size():
+		var id := category_ids[i]
+		var cat_gui: SMgrCategoryGUIBase
 
-	for category_id in _manager_data.get_data().get_categories_all_ids():
-		var cat: SMgrCategoryGUIBase = _SECONDARY_CATEGORY_SCENE.instantiate()
-		_category_tab_cont.add_child(cat)
-		cat.activate(category_id)
-		cat.on_remove.connect(_on_category_remove)
+		if existing_guis.has(id):
+			# Update existing instance
+			cat_gui = existing_guis[id]
+			existing_guis.erase(id)
+		else:
+			# Instantiate new instance based on category type
+			var scene := (
+				_PRIMARY_CATEGORY_SCENE
+				if id == ResourceUID.INVALID_ID
+				else _SECONDARY_CATEGORY_SCENE
+			)
+			cat_gui = scene.instantiate()
+			_category_tab_cont.add_child(cat_gui)
+			cat_gui.activate(id)
+			cat_gui.on_remove.connect(_on_category_remove)
+			# The widget handles its own internal updates, so no explicit refresh command is needed here.
+
+		# Ensure the tab order matches the sorted data order
+		_category_tab_cont.move_child(cat_gui, i)
+
+	# Remove orphaned GUI components that no longer exist in data
+	for orphan in existing_guis.values():
+		_remove_node_safely(orphan)
 
 
 func _refresh_ui() -> void:
