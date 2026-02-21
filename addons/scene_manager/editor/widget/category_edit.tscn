@@ -27,3 +27,5 @@ max_value = 10000.0
 value = 1.0
 rounded = true
 alignment = 1
+
+[connection signal="value_changed" from="HBoxContainer/LayerPriorityBox" to="." method="_on_layer_priority_box_value_changed"]
