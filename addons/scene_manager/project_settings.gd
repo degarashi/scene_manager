@@ -6,6 +6,7 @@ signal on_auto_save_changed(enable: bool)
 const DEFAULT_DATA_DIR = "res://scene_manager_data"
 const DEFAULT_SCENES_FILENAME = "scenes.gd"
 const DEFAULT_PATH_TO_SCENES := DEFAULT_DATA_DIR + "/" + DEFAULT_SCENES_FILENAME
+const DEFAULT_SCENES_DATA_FILENAME = "scenes_data.tres"
 const DEFAULT_PLAY_OUT_TIME: float = 1
 const DEFAULT_PLAY_IN_TIME: float = 1
 
@@ -42,7 +43,7 @@ var scene_path: String:
 
 var scene_data_path: String:
 	get:
-		return scene_path.get_base_dir().path_join("scenes_data.tres")
+		return scene_path.get_base_dir().path_join(DEFAULT_SCENES_DATA_FILENAME)
 
 var play_out_time: float:
 	get:
