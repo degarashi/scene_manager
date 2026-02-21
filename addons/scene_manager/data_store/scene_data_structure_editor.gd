@@ -216,6 +216,7 @@ func save_data(path: String, data_path: String) -> void:
 	file.close()
 
 	# --- save this resource itself ---
+	_data.sort_data_structures()
 	var error := ResourceSaver.save(_data, data_path)
 	if error != OK:
 		printerr(
