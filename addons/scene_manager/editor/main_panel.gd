@@ -296,8 +296,13 @@ func _cleanup_manager_data() -> void:
 	if _manager_data:
 		_manager_data.data_changed_debounced.disconnect(_refresh_ui)
 		_manager_data.on_dirty_flag_changed.disconnect(_on_dirty_flag_changed)
+		_manager_data._data.changed.disconnect(_on_data_changed)
 		_manager_data.cleanup()
 		_manager_data = null
+
+
+func _on_data_changed() -> void:
+	_ebus_editor.on_data_changed.emit()
 
 
 func _reload_data() -> void:
@@ -321,6 +326,7 @@ func _reload_data() -> void:
 	_update_last_modified_time()
 	_manager_data.data_changed_debounced.connect(_refresh_ui)
 	_manager_data.on_dirty_flag_changed.connect(_on_dirty_flag_changed)
+	_manager_data._data.changed.connect(_on_data_changed)
 	_ebus_editor.on_dirty_flag_changed.emit(false)
 
 

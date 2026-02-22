@@ -54,7 +54,3 @@ func _update_sub_section(target_sec: SMgrSection, signal_obj: Signal) -> void:
 func _refresh_ui() -> void:
 	_update_sub_section(_categorized_sec, _ebus_editor.get_scenes_categorized)
 	_update_sub_section(_uncategorized_sec, _ebus_editor.get_scenes_uncategorized)
-
-
-func _activate() -> void:
-	_refresh_ui()

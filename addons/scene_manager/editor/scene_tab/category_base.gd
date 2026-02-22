@@ -34,6 +34,18 @@ func activate(category_id: int) -> void:
 			name = recv[0].name
 			_activate()
 
+	# Force update on the first call; subsequent updates are handled via EventBus notifications.
+	_ebus_editor.on_data_changed.connect(_on_data_changed)
+	_refresh_ui()
+
+
+func _refresh_ui() -> void:
+	pass
+
+
+func _on_data_changed() -> void:
+	_refresh_ui()
+
 
 func _on_remove_list_button_up() -> void:
 	on_remove.emit(_category_id)

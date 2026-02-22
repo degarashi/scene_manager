@@ -10,6 +10,7 @@ signal remove_scene_from_category(scene_id: int, category_id: int)
 # --- Notify ---
 signal on_dirty_flag_changed(dirty: bool)
 signal on_category_selected(category_id: int)
+signal on_data_changed
 
 # --- Getter ---
 # for duplication check

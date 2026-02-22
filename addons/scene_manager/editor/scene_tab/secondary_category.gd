@@ -31,7 +31,3 @@ func _refresh_ui() -> void:
 		var item: SMgrSceneItem = _SCENE_ITEM.instantiate()
 		_subs.add_item(item)
 		item.activate(sc.uid)
-
-
-func _activate() -> void:
-	_refresh_ui()
