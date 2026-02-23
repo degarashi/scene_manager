@@ -4,6 +4,7 @@ extends VBoxContainer
 const _AF = preload("uid://dlgh4u64a7qxk")
 @export var _ebus_editor: SMgrEbusEditor
 var _category_id: int
+@onready var _pause_flag_cb: CheckBox = %PauseFlagCB
 @onready var _layer_priority_box: SpinBox = %LayerPriorityBox
 
 
@@ -30,6 +31,7 @@ func _on_category_selected(id: int) -> void:
 	if cat:
 		self.visible = true
 		_layer_priority_box.value = cat.layer_priority
+		_pause_flag_cb.button_pressed = cat.pauses_lower_priority_layers
 	else:
 		self.visible = false
 
@@ -40,3 +42,11 @@ func _on_layer_priority_box_value_changed(value: float) -> void:
 		return
 
 	cat.layer_priority = int(value)
+
+
+func _on_pause_flag_cb_toggled(toggled_on: bool) -> void:
+	var cat := _fetch_category(_category_id)
+	if not cat:
+		return
+
+	cat.pauses_lower_priority_layers = toggled_on
