@@ -12,7 +12,7 @@ func _on_category_selected(id: int) -> void:
 	var recv: Array[SMgrCategoryData]
 	_ebus_editor.get_category_by_id.emit(recv, id)
 	if recv.is_empty():
-		return
+		recv.append(null)
 	var cat := recv[0]
 	if cat:
 		self.text = cat.name
