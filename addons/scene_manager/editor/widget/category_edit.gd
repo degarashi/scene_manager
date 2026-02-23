@@ -1,12 +1,15 @@
 @tool
 extends VBoxContainer
 
+const _AF = preload("uid://dlgh4u64a7qxk")
 @export var _ebus_editor: SMgrEbusEditor
 var _category_id: int
 @onready var _layer_priority_box: SpinBox = %LayerPriorityBox
 
 
 func _ready() -> void:
+	if _AF.is_in_main_screen(self):
+		return
 	_ebus_editor.on_category_selected.connect(_on_category_selected)
 
 
