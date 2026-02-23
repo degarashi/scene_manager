@@ -1,7 +1,26 @@
 extends Object
 
 
-## Converts elements of an array into a string array
+## Check if the specified node has a parent node named "MainScreen"
+## @param node Target node for judgment
+## @return true if under MainScreen, false otherwise
+static func is_in_main_screen(node: Node) -> bool:
+	return has_ancestor(node, "MainScreen")
+
+
+## Check if the node has an ancestor with the specified name
+## @param node Starting node for the search
+## @param target_name Name of the ancestor node to find
+## @return true if an ancestor with target_name exists, false otherwise
+static func has_ancestor(node: Node, target_name: String) -> bool:
+	while node:
+		if node.name == target_name:
+			return true
+		node = node.get_parent()
+	return false
+
+
+## Conversion of all array elements into a new string array
 ## @param src Source array for conversion
 ## @return Array containing elements converted to strings
 static func convert_to_array_string(src: Array) -> Array[String]:
