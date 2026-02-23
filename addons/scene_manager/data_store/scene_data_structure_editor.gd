@@ -46,7 +46,7 @@ var _data_debouncer: _DEBOUNCER
 
 
 # ------------- [Callbacks] -------------
-func _init(p_data: SMgrData) -> void:
+func _init(p_data: SMgrData, ebus: SMgrEbusEditor) -> void:
 	assert(Engine.is_editor_hint(), "Editor-Only class")
 	assert(p_data != null, "SMgrData instance is required")
 
@@ -57,6 +57,8 @@ func _init(p_data: SMgrData) -> void:
 	_data.changed.connect(_on_data_changed)
 	data_changed.connect(_on_data_changed)
 	_setup_filesystem_monitoring.call_deferred()
+
+	_connect_ebus(ebus)
 
 
 ## Callback triggered when the filesystem changes (file added, removed, moved, etc.)
@@ -418,10 +420,26 @@ func sync_with_filesystem() -> void:
 			_data.remove_scene_data(uid)
 
 
-func cleanup() -> void:
+func cleanup(ebus: SMgrEbusEditor) -> void:
+	_disconnect_ebus(ebus)
 	# Remove debouncer
 	# (Because the instance may become invalid when switching between enable/disable of the plugin)
 	if is_instance_valid(_data_debouncer):
 		_data_debouncer.queue_free()
 	# Disconnect the signal
 	_cleanup_filesystem_monitoring()
+
+
+func _connect_ebus(ebus: SMgrEbusEditor) -> void:
+	ebus.get_dirty_flag.connect(_ebus_get_dirty_flag)
+	_data.connect_ebus(ebus)
+
+
+func _disconnect_ebus(ebus: SMgrEbusEditor) -> void:
+	if ebus.get_dirty_flag.is_connected(_ebus_get_dirty_flag):
+		ebus.get_dirty_flag.disconnect(_ebus_get_dirty_flag)
+	_data.disconnect_ebus(ebus)
+
+
+func _ebus_get_dirty_flag(recv: Array[bool]) -> void:
+	recv.append(get_dirty_flag())

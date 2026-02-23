@@ -320,3 +320,95 @@ func get_categories_all_ids() -> Array[Scenes.CategoryId]:
 	for c_id in _categories:
 		ret.append(c_id)
 	return ret
+
+
+func connect_ebus(ebus: SMgrEbusEditor) -> void:
+	_toggle_ebus_connections(ebus, true)
+
+
+func disconnect_ebus(ebus: SMgrEbusEditor) -> void:
+	_toggle_ebus_connections(ebus, false)
+
+
+func _toggle_ebus_connections(ebus: SMgrEbusEditor, connect: bool) -> void:
+	var connections := [
+		[ebus.get_scenes, _ebus_get_scenes],
+		[ebus.get_scene_info, _ebus_get_scene_info],
+		[ebus.get_scenes_all, _ebus_get_scenes_all],
+		[ebus.get_scenes_categorized, _ebus_get_scenes_categorized],
+		[ebus.get_scenes_uncategorized, _ebus_get_scenes_uncategorized],
+		[ebus.get_categories, _ebus_get_categories],
+		[ebus.get_category_by_id, _ebus_get_category_by_id],
+		[ebus.add_scene_to_category, _ebus_add_scene_to_category],
+		[ebus.remove_scene_from_category, _ebus_remove_scene_from_category],
+		[ebus.scene_name_duplication_check, _ebus_duplicate_name_check],
+		[ebus.change_scene_name, _ebus_change_scene_name]
+	]
+
+	for conn in connections:
+		var sig: Signal = conn[0]
+		var callable: Callable = conn[1]
+		if connect:
+			if not sig.is_connected(callable):
+				sig.connect(callable)
+		else:
+			if sig.is_connected(callable):
+				sig.disconnect(callable)
+
+
+func _ebus_get_scenes(recv: Array[SMgrDataScene], category_id: int) -> void:
+	recv.append_array(get_scenes_by_category_id(category_id))
+
+
+func _ebus_get_scene_info(recv: Array[SMgrDataScene], scene_id: int) -> void:
+	var sc := get_scene_from_uid(scene_id)
+	if sc:
+		recv.append(sc)
+
+
+func _ebus_get_scenes_all(recv: Array[SMgrDataScene]) -> void:
+	recv.append_array(get_scenes_all())
+
+
+func _ebus_get_scenes_categorized(recv: Array[SMgrDataScene]) -> void:
+	recv.append_array(get_scenes_categorized())
+
+
+func _ebus_get_scenes_uncategorized(recv: Array[SMgrDataScene]) -> void:
+	recv.append_array(get_scenes_uncategorized())
+
+
+func _ebus_get_categories(recv: Array[int]) -> void:
+	for id in get_categories_all_ids():
+		recv.append(int(id))
+
+
+func _ebus_get_category_by_id(recv: Array[SMgrCategoryData], category_id: int) -> void:
+	var cat := get_category_from_id(category_id)
+	if cat:
+		recv.append(cat)
+
+
+func _ebus_add_scene_to_category(scene_id: int, category_id: int) -> void:
+	var sc := get_scene_from_uid(scene_id)
+	if sc and not category_id in sc.categories:
+		sc.categories.append(category_id)
+		sc.emit_changed()
+
+
+func _ebus_remove_scene_from_category(scene_id: int, category_id: int) -> void:
+	var sc := get_scene_from_uid(scene_id)
+	if sc and category_id in sc.categories:
+		sc.categories.erase(category_id)
+		sc.emit_changed()
+
+
+func _ebus_duplicate_name_check(recv: Array[bool], scene_name: String) -> void:
+	recv.append(get_scene_by_name(scene_name) != null)
+
+
+func _ebus_change_scene_name(scene_id: int, scene_name: String) -> void:
+	var sc := get_scene_from_uid(scene_id)
+	if sc:
+		sc.name = scene_name
+		sc.emit_changed()

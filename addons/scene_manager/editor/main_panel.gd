@@ -19,7 +19,6 @@ var _manager_data: SMgrDataEditor
 ## For file monitoring
 var _last_modified_time: int = 0
 var _connect_ebus: bool = false
-var _reg_ent: Array[RegEnt]
 
 @onready var _save_delay_timer: Timer = %SaveDelayTimer
 
@@ -41,55 +40,6 @@ var _reg_ent: Array[RegEnt]
 @onready var _garbage_bin: Control = %GarbageBin
 
 
-func _ebus_cb_base(recv: Array, proc: Callable) -> void:
-	assert(recv.is_empty())
-	recv.append_array(proc.call(_manager_data.get_data()))
-
-
-func _ebus_get_scenes_all(recv: Array[SMgrDataScene]) -> void:
-	_ebus_cb_base(recv, func(mgr): return mgr.get_scenes_all())
-
-
-func _ebus_get_scenes_categorized(recv: Array[SMgrDataScene]) -> void:
-	_ebus_cb_base(recv, func(mgr): return mgr.get_scenes_categorized())
-
-
-func _ebus_get_scenes_uncategorized(recv: Array[SMgrDataScene]) -> void:
-	_ebus_cb_base(recv, func(mgr): return mgr.get_scenes_uncategorized())
-
-
-func _ebus_get_categories(recv: Array[int]) -> void:
-	_ebus_cb_base(recv, func(mgr): return mgr.get_categories_all_ids())
-
-
-func _ebus_get_category_by_id(recv: Array[SMgrCategoryData], category_id: int) -> void:
-	_ebus_cb_base(recv, func(mgr): return [mgr.get_category_from_id(category_id)])
-
-
-func _ebus_add_scene_to_category(scene_id: int, category_id: int) -> void:
-	_manager_data.add_scene_to_category(scene_id, category_id)
-
-
-func _ebus_remove_scene_from_category(scene_id: int, category_id: int) -> void:
-	_manager_data.remove_scene_from_category(scene_id, category_id)
-
-
-func _ebus_get_scenes(recv: Array[SMgrDataScene], category_id: int) -> void:
-	_ebus_cb_base(recv, func(mgr): return mgr.get_scenes_by_category_id(category_id))
-
-
-func _ebus_get_scene_info(recv: Array[SMgrDataScene], scene_id: int) -> void:
-	_ebus_cb_base(recv, func(mgr): return [mgr.get_scene_from_uid(scene_id)])
-
-
-func _ebus_duplicate_name_check(recv: Array[bool], scene_name: String) -> void:
-	_ebus_cb_base(recv, func(mgr): return [mgr.get_scene_by_name(scene_name) != null])
-
-
-func _ebus_change_scene_name(scene_id: int, scene_name: String) -> void:
-	_manager_data.change_scene_name(scene_id, scene_name)
-
-
 func _ebus_get_scene_enums_as_string(recv: Array[String]) -> void:
 	assert(recv.is_empty())
 	var scene_all := _manager_data.get_data().get_scenes_all()
@@ -97,12 +47,14 @@ func _ebus_get_scene_enums_as_string(recv: Array[String]) -> void:
 		recv.append(SceneManagerUtils.sanitize_as_enum_string(scene.name))
 
 
-func _ebus_get_dirty_flag(recv: Array[bool]) -> void:
-	assert(recv.is_empty())
-	recv.append(_manager_data.get_dirty_flag())
+func prepare(conn_ebus: bool) -> void:
+	_connect_ebus = conn_ebus
 
 
 func _ready() -> void:
+	if _connect_ebus:
+		_do_connect_ebus()
+
 	_reload_data()
 	_refresh_ui()
 
@@ -172,47 +124,15 @@ func _on_category_tab_container_tab_changed(tab: int) -> void:
 	_ebus_editor.on_category_selected.emit(cat_tab.get_category_id())
 
 
-class RegEnt:
-	var sig: Signal
-	var proc: Callable
-
-	func _init(p_sig: Signal, p_proc: Callable) -> void:
-		sig = p_sig
-		proc = p_proc
-
-	func connect_it() -> void:
-		sig.connect(proc)
-
-	func disconnect_it() -> void:
-		sig.disconnect(proc)
-
-
-func connect_ebus() -> void:
-	_connect_ebus = true
-	_reg_ent = [
-		RegEnt.new(_ebus_editor.get_scenes, _ebus_get_scenes),
-		RegEnt.new(_ebus_editor.get_scene_info, _ebus_get_scene_info),
-		RegEnt.new(_ebus_editor.get_scenes_all, _ebus_get_scenes_all),
-		RegEnt.new(_ebus_editor.get_scenes_categorized, _ebus_get_scenes_categorized),
-		RegEnt.new(_ebus_editor.get_scenes_uncategorized, _ebus_get_scenes_uncategorized),
-		RegEnt.new(_ebus_editor.get_categories, _ebus_get_categories),
-		RegEnt.new(_ebus_editor.get_category_by_id, _ebus_get_category_by_id),
-		RegEnt.new(_ebus_editor.add_scene_to_category, _ebus_add_scene_to_category),
-		RegEnt.new(_ebus_editor.remove_scene_from_category, _ebus_remove_scene_from_category),
-		RegEnt.new(_ebus_editor.scene_name_duplication_check, _ebus_duplicate_name_check),
-		RegEnt.new(_ebus_editor.change_scene_name, _ebus_change_scene_name),
-		RegEnt.new(_ebus_editor.get_dirty_flag, _ebus_get_dirty_flag),
-		RegEnt.new(_ebus_ins.get_scene_enums_as_string, _ebus_get_scene_enums_as_string)
-	]
-	for ent in _reg_ent:
-		ent.connect_it()
+func _do_connect_ebus() -> void:
+	_ebus_ins.get_scene_enums_as_string.connect(_ebus_get_scene_enums_as_string)
 
 
 func _disconnect_ebus() -> void:
 	if not _connect_ebus:
 		return
-	for ent in _reg_ent:
-		ent.disconnect_it()
+	if _ebus_ins.get_scene_enums_as_string.is_connected(_ebus_get_scene_enums_as_string):
+		_ebus_ins.get_scene_enums_as_string.disconnect(_ebus_get_scene_enums_as_string)
 	_connect_ebus = false
 
 
@@ -297,7 +217,7 @@ func _cleanup_manager_data() -> void:
 		_manager_data.data_changed_debounced.disconnect(_refresh_ui)
 		_manager_data.on_dirty_flag_changed.disconnect(_on_dirty_flag_changed)
 		_manager_data._data.changed.disconnect(_on_data_changed)
-		_manager_data.cleanup()
+		_manager_data.cleanup(_ebus_editor)
 		_manager_data = null
 
 
@@ -320,7 +240,7 @@ func _reload_data() -> void:
 		# Save as a resource and confirm the path
 		ResourceSaver.save(raw_data, _ps.scene_data_path)
 
-	_manager_data = SMgrDataEditor.new(raw_data)
+	_manager_data = SMgrDataEditor.new(raw_data, _ebus_editor)
 
 	_manager_data.sync_with_filesystem()
 	_update_last_modified_time()
