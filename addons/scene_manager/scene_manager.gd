@@ -214,25 +214,43 @@ func _unload_all_nodes() -> void:
 		_unload_scene(n_name)
 
 
+## Returns a list of category data assigned to the scene.
+func _get_categories_for_scene(scene_id: Scenes.Id) -> Array[SMgrCategoryData]:
+	var category_ids := _scene_db.get_category_ids_by_scene(scene_id)
+	var categories: Array[SMgrCategoryData] = []
+	for c_id in category_ids:
+		var category_data := _scene_db.get_category_from_id(c_id)
+		categories.append(category_data)
+	return categories
+
+
 ## Returns the maximum layer priority from all categories assigned to the scene.
 func _get_max_priority_for_scene(scene_id: Scenes.Id) -> int:
-	var category_ids := _scene_db.get_category_ids_by_scene(scene_id)
-	if category_ids.is_empty():
+	var categories := _get_categories_for_scene(scene_id)
+	if categories.is_empty():
 		return DEFAULT_LAYER_PRIORITY
 
 	var max_priority := -10000
-	var found := false
+	for category in categories:
+		max_priority = max(max_priority, category.layer_priority)
 
-	for c_id in category_ids:
-		var category_data := _scene_db.get_category_from_id(int(c_id))
-		if category_data:
-			if not found:
-				max_priority = category_data.layer_priority
-				found = true
-			else:
-				max_priority = max(max_priority, category_data.layer_priority)
+	return max_priority
 
-	return max_priority if found else DEFAULT_LAYER_PRIORITY
+
+func _get_pause_for_scene(scene_id: Scenes.Id) -> bool:
+	var categories := _get_categories_for_scene(scene_id)
+	for category in categories:
+		if category.pauses_lower_priority_layers:
+			return true
+	return false
+
+
+func _pause_lower_priority_layers(scene_id: Scenes.Id, cur_priority: int) -> void:
+	if _get_pause_for_scene(scene_id):
+		# Pause nodes on layers with lower priority
+		for entry: _SceneEntry in _loaded_scene_map.values():
+			if entry.container_node.layer < cur_priority:
+				entry.container_node.process_mode = Node.PROCESS_MODE_DISABLED
 
 
 func _perform_scene_setup(scene: Scenes.Id, options: SceneLoadOptions) -> Node:
@@ -243,7 +261,10 @@ func _perform_scene_setup(scene: Scenes.Id, options: SceneLoadOptions) -> Node:
 
 	var parent_node := _create_ui_wrapper(options.node_name)
 	# Apply layer priority from categories
-	parent_node.layer = _get_max_priority_for_scene(scene)
+	var current_priority := _get_max_priority_for_scene(scene)
+	parent_node.layer = current_priority
+	_pause_lower_priority_layers(scene, current_priority)
+
 	parent_node.add_child(new_scene_node)
 
 	# Execute user-defined callback before adding to tree
@@ -449,6 +470,7 @@ func instantiate_async_result() -> void:
 		var parent_node := _create_ui_wrapper(tmp_name)
 		# Apply layer priority even during async prep
 		parent_node.layer = _get_max_priority_for_scene(_reserved.scene_id)
+		_pause_lower_priority_layers(_reserved.scene_id, parent_node.layer)
 		parent_node.add_child(scene_node)
 
 		_reserved.options.call_pre_cb(parent_node, scene_node)
