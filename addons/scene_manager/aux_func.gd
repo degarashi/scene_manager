@@ -30,6 +30,8 @@ static func convert_to_array_string(src: Array) -> Array[String]:
 	return ret
 
 
+## Update and save the resource UID with a newly generated one
+## @param path Target resource file path
 static func change_resource_uid(path: String) -> void:
 	if not FileAccess.file_exists(path):
 		push_error("File does not exist: " + path)
