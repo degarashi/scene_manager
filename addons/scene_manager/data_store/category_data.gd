@@ -14,6 +14,12 @@ extends Resource
 			layer_priority = value
 			emit_changed()
 
+@export var pauses_lower_priority_layers: bool = false:
+	set(value):
+		if pauses_lower_priority_layers != value:
+			pauses_lower_priority_layers = value
+			emit_changed()
+
 
 func _init(p_name: String = "") -> void:
 	name = p_name
