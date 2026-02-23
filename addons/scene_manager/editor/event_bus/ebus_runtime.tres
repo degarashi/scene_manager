@@ -1,0 +1,6 @@
+[gd_resource type="Resource" script_class="SMgrEbusRuntime" load_steps=2 format=3 uid="uid://ckcouxte4mino"]
+
+[ext_resource type="Script" uid="uid://0pcfjgwo0smb" path="res://addons/scene_manager/editor/event_bus/ebus_runtime.gd" id="1_6eaiq"]
+
+[resource]
+script = ExtResource("1_6eaiq")
