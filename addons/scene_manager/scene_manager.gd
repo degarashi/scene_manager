@@ -183,7 +183,7 @@ func _on_initial_setup() -> void:
 
 		var layer := _create_ui_wrapper(_current_scene_enum, _C.DEFAULT_TREE_NODE_NAME)
 		_get_actual_scene_container().add_child(layer)
-		layer.setup_content(scene_node)
+		layer.add_node(scene_node)
 
 		if _current_scene_enum != Scenes.Id.NONE:
 			_loaded_scene_map[_current_scene_enum] = layer
@@ -294,7 +294,7 @@ func _perform_scene_setup(scene: Scenes.Id, options: SceneLoadOptions) -> Node:
 	var summary := _get_category_summary(scene)
 	var layer := _create_ui_wrapper(scene, options.node_name)
 	layer.layer = summary.max_priority
-	layer.setup_content(new_scene_node)
+	layer.add_node(new_scene_node)
 
 	# Pause lower layers if necessary
 	if summary.pauses_lower:
@@ -494,7 +494,7 @@ func instantiate_async_result() -> void:
 			_reserved.scene_id, _to_tmp_name(_reserved.options.node_name)
 		)
 		layer.layer = _get_max_priority_for_scene(_reserved.scene_id)
-		layer.setup_content(scene_node)
+		layer.add_node(scene_node)
 
 		if _get_pause_for_scene(_reserved.scene_id):
 			_pause_lower_priority_layers_by_value(layer.layer)
@@ -553,7 +553,7 @@ func activate_prepared_scene() -> Node:
 	scene_loaded.emit(_current_scene_enum)
 	await _transition_player.play_in(_reserved.options.play_in_time)
 
-	var ret := _loaded_scene_map[_current_scene_enum].content_node
+	var ret := _loaded_scene_map[_current_scene_enum].get_child(0)
 	_reserved.clear()
 
 	_transition_player.set_clickable(true)
