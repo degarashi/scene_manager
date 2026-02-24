@@ -494,9 +494,6 @@ func instantiate_async_result() -> void:
 		)
 		layer.add_node(scene_node)
 
-		if _get_pause_for_scene(_reserved.scene_id):
-			_pause_lower_priority_layers_by_value(layer.layer)
-
 		_reserved.options.call_pre_cb(layer, scene_node)
 		var target := _get_actual_scene_container()
 		target.add_child(layer)
