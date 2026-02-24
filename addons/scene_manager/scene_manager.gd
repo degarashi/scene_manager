@@ -27,6 +27,7 @@ const _SCENE_LAYER = preload("uid://do8sylacoy3u4")
 @export var _actual_scene_container_path: NodePath = "/root"
 @export var _wrap_initial_scene := true
 @export var _transitioner_source: PackedScene = preload("uid://2iy8wfgenjka")
+@export var _ebus: SMgrEbusRuntime
 
 
 # ------------- [Defines] -------------
@@ -152,19 +153,30 @@ func _create_scene_layer(scene_id: Scenes.Id, node_name: String) -> SMgrSceneLay
 	var layer: SMgrSceneLayer = _SCENE_LAYER.instantiate()
 	var summary := _get_category_summary(scene_id)
 	layer.prepare(scene_id, node_name, summary.max_priority)
+	layer.layer_disposed.connect(_on_layer_disposed.bind(layer))
 
-	# When the layer self-destructs (queue_free when empty), automatically remove it from the map.
-	layer.layer_disposed.connect(
-		func(id: Scenes.Id) -> void:
-			# Only remove if it still exists in the map and is itself (to prevent overwriting issues).
-			if _loaded_scene_map.get(id) == layer:
-				_loaded_scene_map.erase(id)
-	)
 	# Pause lower layers if necessary
 	if summary.pauses_lower:
-		_pause_lower_priority_layers_by_value(summary.max_priority)
+		_ebus.pause_threshold_changed.emit(summary.max_priority)
 
 	return layer
+
+
+func _on_layer_disposed(id: Scenes.Id, layer: SMgrSceneLayer) -> void:
+	# Only remove if it still exists in the map and is itself (to prevent overwriting issues).
+	if _loaded_scene_map.get(id) == layer:
+		_loaded_scene_map.erase(id)
+
+	var max_p := -10000
+	for loaded_id in _loaded_scene_map:
+		if _get_pause_for_scene(loaded_id):
+			max_p = max(max_p, _get_max_priority_for_scene(loaded_id))
+
+	if max_p != -10000:
+		_ebus.pause_threshold_changed.emit(max_p)
+	else:
+		# If no such scene exists, send a default value (or invalid value) to unpause all
+		_ebus.pause_threshold_changed.emit(_C.DEFAULT_LAYER_PRIORITY - 1)
 
 
 func _get_actual_scene_container() -> Node:
@@ -281,12 +293,6 @@ func _get_pause_for_scene(scene_id: Scenes.Id) -> bool:
 		if category.pauses_lower_priority_layers:
 			return true
 	return false
-
-
-func _pause_lower_priority_layers_by_value(cur_priority: int) -> void:
-	for layer: SMgrSceneLayer in _loaded_scene_map.values():
-		if layer.layer < cur_priority:
-			layer.process_mode = Node.PROCESS_MODE_DISABLED
 
 
 func _perform_scene_setup(scene: Scenes.Id, options: SceneLoadOptions) -> Node:
