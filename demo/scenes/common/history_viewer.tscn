@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://dmivmb0qfgryw"]
 
-[ext_resource type="Script" uid="uid://ks0lsxd3myf4" path="res://demo/common/history_viewer.gd" id="1_2elsg"]
+[ext_resource type="Script" uid="uid://ks0lsxd3myf4" path="res://demo/scenes/common/history_viewer.gd" id="1_2elsg"]
 
 [node name="HistoryViewer" type="PanelContainer"]
 anchors_preset = 15

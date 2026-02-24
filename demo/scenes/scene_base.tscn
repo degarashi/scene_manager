@@ -1,8 +1,8 @@
 [gd_scene load_steps=4 format=3 uid="uid://ecxo0comsyff"]
 
-[ext_resource type="Script" uid="uid://cd1to85vthex0" path="res://demo/scene_base.gd" id="1_yk0k1"]
+[ext_resource type="Script" uid="uid://cd1to85vthex0" path="res://demo/scenes/scene_base.gd" id="1_yk0k1"]
 [ext_resource type="Resource" uid="uid://0j37pjg3x7cj" path="res://demo/transition_setting.tres" id="2_n7kom"]
-[ext_resource type="PackedScene" uid="uid://dmivmb0qfgryw" path="res://demo/common/history_viewer.tscn" id="3_l3och"]
+[ext_resource type="PackedScene" uid="uid://dmivmb0qfgryw" path="res://demo/scenes/common/history_viewer.tscn" id="3_l3och"]
 
 [node name="SceneBase" type="Control"]
 layout_mode = 3

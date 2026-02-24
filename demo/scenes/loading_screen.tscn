@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://blw770pxky5d5"]
 
-[ext_resource type="Script" uid="uid://d1ylukiucydrn" path="res://demo/loading_screen.gd" id="1_gp8kc"]
+[ext_resource type="Script" uid="uid://d1ylukiucydrn" path="res://demo/scenes/loading_screen.gd" id="1_gp8kc"]
 
 [node name="LoadingScreen" type="Control"]
 layout_mode = 3

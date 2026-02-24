@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://ckkekibb7wbh2"]
 
-[ext_resource type="PackedScene" uid="uid://blw770pxky5d5" path="res://demo/loading_screen.tscn" id="1_5s7hw"]
-[ext_resource type="Script" uid="uid://ddfabjrbsw43r" path="res://demo/fake_loading_screen.gd" id="2_l7n74"]
+[ext_resource type="PackedScene" uid="uid://blw770pxky5d5" path="res://demo/scenes/loading_screen.tscn" id="1_5s7hw"]
+[ext_resource type="Script" uid="uid://ddfabjrbsw43r" path="res://demo/scenes/fake_loading_screen.gd" id="2_l7n74"]
 
 [node name="FakeLoadingScreen" instance=ExtResource("1_5s7hw")]
 script = ExtResource("2_l7n74")
