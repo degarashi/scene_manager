@@ -30,21 +30,6 @@ const DEFAULT_LAYER_PRIORITY = 1
 
 
 # ------------- [Defines] -------------
-## Internal class to hold entries of loaded scenes.
-class _SceneEntry:
-	var container_node: CanvasLayer
-	var scene_node: Node
-
-	## Initialize the instance.
-	## @param p_container The parent wrapper node.
-	## @param p_scene The main scene node.
-	func _init(p_container: CanvasLayer, p_scene: Node) -> void:
-		assert(p_container != null, "SceneEntry: container_node cannot be null.")
-		assert(p_scene != null, "SceneEntry: scene_node cannot be null.")
-		container_node = p_container
-		scene_node = p_scene
-
-
 ## Internal class to hold reservation info for asynchronous loading.
 class _ReservedInfo:
 	var scene_id: Scenes.Id = Scenes.Id.NONE
@@ -94,8 +79,8 @@ var _load_scene_id: Scenes.Id = Scenes.Id.NONE
 ## Reservation info for asynchronous loading.
 var _reserved := _ReservedInfo.new()
 
-## Scenes currently present in the field (Key: Scene-Id, Value: _SceneEntry).
-var _loaded_scene_map: Dictionary[Scenes.Id, _SceneEntry] = {}
+## Scenes currently present (Key: Scene-Id, Value: SMgrSceneLayer).
+var _loaded_scene_map: Dictionary[Scenes.Id, SMgrSceneLayer] = {}
 var _current_scene_enum: Scenes.Id = Scenes.Id.NONE
 var _trash_node: Control
 var _transition_player: ScreenTransitioner
@@ -161,10 +146,9 @@ func _on_loader_progress_changed(_path: String, percent: int) -> void:
 		load_percent_changed.emit(percent)
 
 
-func _create_ui_wrapper(node_name: String) -> CanvasLayer:
+func _create_ui_wrapper(scene_id: Scenes.Id, node_name: String) -> SMgrSceneLayer:
 	assert(not node_name.is_empty(), "Scene Manager: wrapper node name cannot be empty.")
-	var wrapper := CanvasLayer.new()
-	wrapper.name = node_name
+	var wrapper := SMgrSceneLayer.new(scene_id, node_name)
 	return wrapper
 
 
@@ -180,21 +164,21 @@ func _get_actual_scene_container() -> Node:
 
 func _on_initial_setup() -> void:
 	if _wrap_initial_scene:
-		## Wrap current_scene and place it under management
-		var default_wrapper := _create_ui_wrapper(_C.DEFAULT_TREE_NODE_NAME)
-		_get_actual_scene_container().add_child(default_wrapper)
-
 		var scene_node := get_tree().current_scene
 		assert(scene_node != null, "Scene Manager: current_scene is null during initial setup.")
-		scene_node.reparent(default_wrapper)
 
 		# Find Scenes.Id enum by current scene's path
 		var current_path := scene_node.scene_file_path
 		_current_scene_enum = _scene_db.get_scene_enum_by_path(current_path)
+
+		var layer := _create_ui_wrapper(_current_scene_enum, _C.DEFAULT_TREE_NODE_NAME)
+		_get_actual_scene_container().add_child(layer)
+		scene_node.reparent(layer)
+		layer.content_node = scene_node
+
 		if _current_scene_enum != Scenes.Id.NONE:
-			_loaded_scene_map[_current_scene_enum] = _SceneEntry.new(default_wrapper, scene_node)
-			# Apply priority for initial scene
-			default_wrapper.layer = _get_max_priority_for_scene(_current_scene_enum)
+			_loaded_scene_map[_current_scene_enum] = layer
+			layer.layer = _get_max_priority_for_scene(_current_scene_enum)
 		else:
 			push_warning("Initial scene not found in DB (Scenes.Id.NONE).")
 
@@ -220,7 +204,7 @@ func _unload_scene(node_name: String, should_found: bool = true) -> void:
 	# Remove from the loaded scenes map
 	var ids_to_remove: Array[Scenes.Id] = []
 	for id in _loaded_scene_map:
-		if _loaded_scene_map[id].container_node.name == node_name:
+		if _loaded_scene_map[id].name == node_name:
 			ids_to_remove.append(id)
 
 	for id in ids_to_remove:
@@ -245,10 +229,9 @@ func _remove_node_safely(target_node: Node) -> void:
 ## Frees all nodes related to the loaded scene map.
 func _unload_all_nodes() -> void:
 	var unique_names: Array[String] = []
-	for entry: _SceneEntry in _loaded_scene_map.values():
-		var n_name := entry.container_node.name
-		if n_name not in unique_names:
-			unique_names.append(n_name)
+	for layer: SMgrSceneLayer in _loaded_scene_map.values():
+		if layer.name not in unique_names:
+			unique_names.append(layer.name)
 
 	for n_name in unique_names:
 		_unload_scene(n_name)
@@ -259,8 +242,9 @@ func _get_categories_for_scene(scene_id: Scenes.Id) -> Array[SMgrCategoryData]:
 	var category_ids := _scene_db.get_category_ids_by_scene(scene_id)
 	var categories: Array[SMgrCategoryData] = []
 	for c_id in category_ids:
-		var category_data := _scene_db.get_category_from_id(c_id)
-		categories.append(category_data)
+		var data := _scene_db.get_category_from_id(c_id)
+		if data:
+			categories.append(data)
 	return categories
 
 
@@ -285,12 +269,10 @@ func _get_pause_for_scene(scene_id: Scenes.Id) -> bool:
 	return false
 
 
-func _pause_lower_priority_layers(scene_id: Scenes.Id, cur_priority: int) -> void:
-	if _get_pause_for_scene(scene_id):
-		# Pause nodes on layers with lower priority
-		for entry: _SceneEntry in _loaded_scene_map.values():
-			if entry.container_node.layer < cur_priority:
-				entry.container_node.process_mode = Node.PROCESS_MODE_DISABLED
+func _pause_lower_priority_layers_by_value(cur_priority: int) -> void:
+	for layer: SMgrSceneLayer in _loaded_scene_map.values():
+		if layer.layer < cur_priority:
+			layer.process_mode = Node.PROCESS_MODE_DISABLED
 
 
 func _perform_scene_setup(scene: Scenes.Id, options: SceneLoadOptions) -> Node:
@@ -301,29 +283,20 @@ func _perform_scene_setup(scene: Scenes.Id, options: SceneLoadOptions) -> Node:
 
 	# --- Aggregate category information at once ---
 	var summary := _get_category_summary(scene)
-	var parent_node := _create_ui_wrapper(options.node_name)
-	parent_node.layer = summary.max_priority
+	var layer := _create_ui_wrapper(scene, options.node_name)
+	layer.layer = summary.max_priority
+	layer.setup_content(new_scene_node)
 
 	# Pause lower layers if necessary
 	if summary.pauses_lower:
 		_pause_lower_priority_layers_by_value(summary.max_priority)
 
-	parent_node.add_child(new_scene_node)
-
-	# Execute user-defined callback before adding to tree
-	options.call_pre_cb(parent_node, new_scene_node)
-
-	_get_actual_scene_container().add_child(parent_node)
-	_loaded_scene_map[scene] = _SceneEntry.new(parent_node, new_scene_node)
+	options.call_pre_cb(layer, new_scene_node)
+	_get_actual_scene_container().add_child(layer)
+	_loaded_scene_map[scene] = layer
 
 	scene_loaded.emit(scene)
 	return new_scene_node
-
-
-func _pause_lower_priority_layers_by_value(cur_priority: int) -> void:
-	for entry: _SceneEntry in _loaded_scene_map.values():
-		if entry.container_node.layer < cur_priority:
-			entry.container_node.process_mode = Node.PROCESS_MODE_DISABLED
 
 
 # ------------- [Public Methods] -------------
@@ -347,13 +320,7 @@ func switch_to_scene(
 	_transition_player.set_clickable(options.clickable)
 	await _transition_player.play_out(options.play_out_time)
 
-	# --- Category Comparison ---
-	var category_diff: SMgrData.CategoryDiff = _scene_db.compare_scene_categories(
-		_current_scene_enum, scene
-	)
-
-	# --- Scene Replacement ---
-	# Unload everything for a clean switch
+	var category_diff := _scene_db.compare_scene_categories(_current_scene_enum, scene)
 	_unload_all_nodes()
 
 	# Add to history
@@ -394,7 +361,7 @@ func add_scene(
 				"Scene Manager: Scene %s is already loaded (additive)." % Scenes.Id.find_key(scene)
 			)
 			return null
-		_unload_scene(_loaded_scene_map[scene].container_node.name)
+		_unload_scene(_loaded_scene_map[scene].name)
 
 	# Resolve name conflicts for the wrapper node
 	_unload_scene(options.node_name, false)
@@ -442,7 +409,7 @@ func reload_current_scene(options := SceneLoadOptions.new()) -> bool:
 		return false
 
 	var opt := options.copy()
-	opt.node_name = _loaded_scene_map[_current_scene_enum].container_node.name
+	opt.node_name = _loaded_scene_map[_current_scene_enum].name
 	switch_to_scene(_current_scene_enum, false, opt)
 	return true
 
@@ -514,25 +481,20 @@ func instantiate_async_result() -> void:
 	if res:
 		var scene_node := res.instantiate()
 		scene_node.scene_file_path = path
-		# Temporary additive attachment
-		var tmp_name := _to_tmp_name(_reserved.options.node_name)
-		var parent_node := _create_ui_wrapper(tmp_name)
-		# Apply layer priority even during async prep
-		parent_node.layer = _get_max_priority_for_scene(_reserved.scene_id)
-		_pause_lower_priority_layers(_reserved.scene_id, parent_node.layer)
-		parent_node.add_child(scene_node)
+		var layer := _create_ui_wrapper(
+			_reserved.scene_id, _to_tmp_name(_reserved.options.node_name)
+		)
+		layer.layer = _get_max_priority_for_scene(_reserved.scene_id)
+		layer.setup_content(scene_node)
 
-		_reserved.options.call_pre_cb(parent_node, scene_node)
+		if _get_pause_for_scene(_reserved.scene_id):
+			_pause_lower_priority_layers_by_value(layer.layer)
 
-		var target_node := _get_actual_scene_container()
-		target_node.add_child(parent_node)
-
-		# Place it right behind the loading screen (which is at the top).
-		target_node.move_child(parent_node, target_node.get_child_count() - 2)
-
-		_loaded_scene_map[_reserved.scene_id] = _SceneEntry.new(parent_node, scene_node)
-	else:
-		push_error("Scene Manager: Failed to get threaded load result for %s" % path)
+		_reserved.options.call_pre_cb(layer, scene_node)
+		var target := _get_actual_scene_container()
+		target.add_child(layer)
+		target.move_child(layer, target.get_child_count() - 2)
+		_loaded_scene_map[_reserved.scene_id] = layer
 
 
 static func _to_tmp_name(node_name: String) -> String:
@@ -563,39 +525,26 @@ func activate_prepared_scene() -> Node:
 	_transition_player.set_clickable(_reserved.options.clickable)
 	await _transition_player.play_out(_reserved.options.play_out_time)
 
-	# --- Category Comparison ---
-	# Calculate category differences before updating _current_scene_enum
-	var category_diff := _scene_db.compare_scene_categories(_current_scene_enum, _reserved.scene_id)
-
-	# Remove the loading screen
+	var diff := _scene_db.compare_scene_categories(_current_scene_enum, _reserved.scene_id)
 	_unload_scene(_loading_node_name)
 
 	if not _reserved.is_additive:
-		# Remove everything except _reserved scene
-		var target_names: Array[String] = []
+		var targets: Array[String] = []
 		for id in _loaded_scene_map:
-			if id == _reserved.scene_id:
-				continue
-			target_names.append(_loaded_scene_map[id].container_node.name)
+			if id != _reserved.scene_id:
+				targets.append(_loaded_scene_map[id].name)
+		for t in targets:
+			_unload_scene(t)
 
-		for t_name in target_names:
-			_unload_scene(t_name)
-
-		# Revert the temporary name back to the original name to avoid conflicts
-		var cont := _loaded_scene_map[_reserved.scene_id].container_node
-		cont.name = _from_tmp_name(cont.name)
-
-		# Priority is already set in instantiate_async_result
+		var layer := _loaded_scene_map[_reserved.scene_id]
+		layer.name = _from_tmp_name(layer.name)
 		_current_scene_enum = _reserved.scene_id
 
-	# Emit category change signal along with scene_loaded (for consistency with switch_to_scene)
-	category_changed.emit(category_diff)
+	category_changed.emit(diff)
 	scene_loaded.emit(_current_scene_enum)
-
 	await _transition_player.play_in(_reserved.options.play_in_time)
 
-	var ret := _loaded_scene_map[_reserved.scene_id].scene_node
-	# Reset the reserved scene information now that the scene has fully loaded.
+	var ret := _loaded_scene_map[_current_scene_enum].content_node
 	_reserved.clear()
 
 	_transition_player.set_clickable(true)
