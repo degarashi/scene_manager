@@ -7,9 +7,10 @@ signal layer_disposed(id: Scenes.Id)
 var scene_id: Scenes.Id = Scenes.Id.NONE
 
 
-func prepare(p_scene_id: Scenes.Id, p_name: String) -> void:
+func prepare(p_scene_id: Scenes.Id, p_name: String, p_priority: int) -> void:
 	scene_id = p_scene_id
 	name = p_name
+	layer = p_priority
 
 	# Connect to the signal that monitors the addition/removal of child nodes
 	child_order_changed.connect(_on_child_order_changed)

@@ -147,10 +147,11 @@ func _on_loader_progress_changed(_path: String, percent: int) -> void:
 
 
 ## Creates a layer and registers cleanup processing for self-destruction.
-func _create_ui_wrapper(scene_id: Scenes.Id, node_name: String) -> SMgrSceneLayer:
+func _create_scene_layer(scene_id: Scenes.Id, node_name: String) -> SMgrSceneLayer:
 	assert(not node_name.is_empty(), "Scene Manager: wrapper node name cannot be empty.")
 	var layer: SMgrSceneLayer = _SCENE_LAYER.instantiate()
-	layer.prepare(scene_id, node_name)
+	var summary := _get_category_summary(scene_id)
+	layer.prepare(scene_id, node_name, summary.max_priority)
 
 	# When the layer self-destructs (queue_free when empty), automatically remove it from the map.
 	layer.layer_disposed.connect(
@@ -159,6 +160,10 @@ func _create_ui_wrapper(scene_id: Scenes.Id, node_name: String) -> SMgrSceneLaye
 			if _loaded_scene_map.get(id) == layer:
 				_loaded_scene_map.erase(id)
 	)
+	# Pause lower layers if necessary
+	if summary.pauses_lower:
+		_pause_lower_priority_layers_by_value(summary.max_priority)
+
 	return layer
 
 
@@ -181,7 +186,7 @@ func _on_initial_setup() -> void:
 		var current_path := scene_node.scene_file_path
 		_current_scene_enum = _scene_db.get_scene_enum_by_path(current_path)
 
-		var layer := _create_ui_wrapper(_current_scene_enum, _C.DEFAULT_TREE_NODE_NAME)
+		var layer := _create_scene_layer(_current_scene_enum, _C.DEFAULT_TREE_NODE_NAME)
 		_get_actual_scene_container().add_child(layer)
 		layer.add_node(scene_node)
 
@@ -291,14 +296,8 @@ func _perform_scene_setup(scene: Scenes.Id, options: SceneLoadOptions) -> Node:
 		return null
 
 	# --- Aggregate category information at once ---
-	var summary := _get_category_summary(scene)
-	var layer := _create_ui_wrapper(scene, options.node_name)
-	layer.layer = summary.max_priority
+	var layer := _create_scene_layer(scene, options.node_name)
 	layer.add_node(new_scene_node)
-
-	# Pause lower layers if necessary
-	if summary.pauses_lower:
-		_pause_lower_priority_layers_by_value(summary.max_priority)
 
 	options.call_pre_cb(layer, new_scene_node)
 	_get_actual_scene_container().add_child(layer)
@@ -490,10 +489,9 @@ func instantiate_async_result() -> void:
 	if res:
 		var scene_node := res.instantiate()
 		scene_node.scene_file_path = path
-		var layer := _create_ui_wrapper(
+		var layer := _create_scene_layer(
 			_reserved.scene_id, _to_tmp_name(_reserved.options.node_name)
 		)
-		layer.layer = _get_max_priority_for_scene(_reserved.scene_id)
 		layer.add_node(scene_node)
 
 		if _get_pause_for_scene(_reserved.scene_id):
