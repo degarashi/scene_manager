@@ -2,7 +2,7 @@
 
 [ext_resource type="Resource" uid="uid://ra25t5in8erp" path="res://addons/scene_manager/editor/event_bus/ebus_editor.tres" id="2_di26o"]
 [ext_resource type="Texture2D" uid="uid://bh5qft2w2580j" path="res://addons/scene_manager/icons/FileDialog.svg" id="3"]
-[ext_resource type="Resource" uid="uid://bnwpfojr6e0dh" path="res://addons/scene_manager/event_bus/ebus_inspector.tres" id="3_tcp4f"]
+[ext_resource type="Resource" uid="uid://bnwpfojr6e0dh" path="res://addons/scene_manager/editor/event_bus/ebus_inspector.tres" id="3_tcp4f"]
 [ext_resource type="PackedScene" uid="uid://db0et8bmevjww" path="res://addons/scene_manager/editor/widget/category_edit.tscn" id="4_tcp4f"]
 [ext_resource type="Texture2D" uid="uid://bd6ob6pgam1gt" path="res://addons/scene_manager/icons/Collapse.svg" id="4_vqnpn"]
 [ext_resource type="Texture2D" uid="uid://ceksw4v7wfgdq" path="res://addons/scene_manager/icons/Reload.svg" id="5_2r30m"]
