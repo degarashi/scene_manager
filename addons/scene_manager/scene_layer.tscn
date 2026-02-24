@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://do8sylacoy3u4"]
+
+[ext_resource type="Script" uid="uid://d1jwhomi2efhf" path="res://addons/scene_manager/scene_layer.gd" id="1_5kh5l"]
+
+[node name="SceneLayer" type="CanvasLayer"]
+script = ExtResource("1_5kh5l")

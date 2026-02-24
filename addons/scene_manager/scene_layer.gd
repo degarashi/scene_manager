@@ -8,7 +8,7 @@ var scene_id: Scenes.Id = Scenes.Id.NONE
 var content_node: Node = null
 
 
-func _init(p_scene_id: Scenes.Id, p_name: String) -> void:
+func prepare(p_scene_id: Scenes.Id, p_name: String) -> void:
 	self.scene_id = p_scene_id
 	self.name = p_name
 	# Connect to the signal that monitors the addition/removal of child nodes

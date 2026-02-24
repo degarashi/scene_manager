@@ -20,6 +20,8 @@ signal category_changed(diff: SMgrData.CategoryDiff)
 const _C = preload("uid://c3vvdktou45u")
 const _RING_BUFFER = preload("uid://b6phac21mxnxr")
 const _RESOURCE_LOADER = preload("uid://dabq3s83q0iku")
+const _SCENE_LAYER = preload("uid://do8sylacoy3u4")
+
 const DEFAULT_LAYER_PRIORITY = 1
 
 @export var _loading_node_name: String = "===Transition==="
@@ -149,7 +151,8 @@ func _on_loader_progress_changed(_path: String, percent: int) -> void:
 ## Creates a layer and registers cleanup processing for self-destruction.
 func _create_ui_wrapper(scene_id: Scenes.Id, node_name: String) -> SMgrSceneLayer:
 	assert(not node_name.is_empty(), "Scene Manager: wrapper node name cannot be empty.")
-	var layer := SMgrSceneLayer.new(scene_id, node_name)
+	var layer: SMgrSceneLayer = _SCENE_LAYER.instantiate()
+	layer.prepare(scene_id, node_name)
 
 	# When the layer self-destructs (queue_free when empty), automatically remove it from the map.
 	layer.layer_disposed.connect(
