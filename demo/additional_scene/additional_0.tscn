@@ -11,15 +11,13 @@ mouse_filter = 2
 
 [node name="Panel" type="Panel" parent="."]
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = 229.0
-offset_top = -137.0
-offset_right = 388.0
-offset_bottom = -110.5
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 751.0
+offset_top = 16.0
+offset_right = -21.0
+offset_bottom = -39.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -31,3 +29,13 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 text = "Additional Scene 0"
+
+[node name="RemoveButton" type="Button" parent="."]
+layout_mode = 0
+offset_left = 861.0
+offset_top = 222.0
+offset_right = 1032.0
+offset_bottom = 253.0
+text = "Click HERE to Remove"
+
+[connection signal="button_up" from="RemoveButton" to="." method="queue_free"]
