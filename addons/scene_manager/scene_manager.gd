@@ -59,6 +59,33 @@ class _ReservedInfo:
 		add_to_back = false
 
 
+## Class to aggregate and hold category information associated with a scene.
+class SceneCategorySummary:
+	var categories: Array[SMgrCategoryData] = []
+	var max_priority: int = DEFAULT_LAYER_PRIORITY
+	var pauses_lower: bool = false
+
+	func _init(p_categories: Array[SMgrCategoryData]) -> void:
+		categories = p_categories
+		if categories.is_empty():
+			return
+
+		# Set initial value to a very low number
+		max_priority = -10000
+		for category in categories:
+			# Calculate maximum priority
+			if category.layer_priority > max_priority:
+				max_priority = category.layer_priority
+
+			# Determine whether to pause lower priority layers
+			if category.pauses_lower_priority_layers:
+				pauses_lower = true
+
+		# Fallback if no categories were found (safety measure)
+		if max_priority == -10000:
+			max_priority = 1
+
+
 # ------------- [Private Variable] -------------
 var _scene_db: SMgrData
 ## ID of the scene currently being loaded.
@@ -94,6 +121,19 @@ func _ready() -> void:
 
 
 # ------------- [Private Methods] -------------
+## Returns an object containing the aggregated category info for a specified Scene ID.
+func _get_category_summary(scene_id: Scenes.Id) -> SceneCategorySummary:
+	var category_ids := _scene_db.get_category_ids_by_scene(scene_id)
+	var category_data_list: Array[SMgrCategoryData] = []
+
+	for c_id in category_ids:
+		var data := _scene_db.get_category_from_id(c_id)
+		if data:
+			category_data_list.append(data)
+
+	return SceneCategorySummary.new(category_data_list)
+
+
 func _init_resourece_loader() -> void:
 	_loader_mgr = _RESOURCE_LOADER.new()
 	_loader_mgr.name = "ResourceLoader"
@@ -259,11 +299,14 @@ func _perform_scene_setup(scene: Scenes.Id, options: SceneLoadOptions) -> Node:
 		push_error("Scene Manager: Failed to instantiate scene: %s" % Scenes.Id.find_key(scene))
 		return null
 
+	# --- Aggregate category information at once ---
+	var summary := _get_category_summary(scene)
 	var parent_node := _create_ui_wrapper(options.node_name)
-	# Apply layer priority from categories
-	var current_priority := _get_max_priority_for_scene(scene)
-	parent_node.layer = current_priority
-	_pause_lower_priority_layers(scene, current_priority)
+	parent_node.layer = summary.max_priority
+
+	# Pause lower layers if necessary
+	if summary.pauses_lower:
+		_pause_lower_priority_layers_by_value(summary.max_priority)
 
 	parent_node.add_child(new_scene_node)
 
@@ -275,6 +318,12 @@ func _perform_scene_setup(scene: Scenes.Id, options: SceneLoadOptions) -> Node:
 
 	scene_loaded.emit(scene)
 	return new_scene_node
+
+
+func _pause_lower_priority_layers_by_value(cur_priority: int) -> void:
+	for entry: _SceneEntry in _loaded_scene_map.values():
+		if entry.container_node.layer < cur_priority:
+			entry.container_node.process_mode = Node.PROCESS_MODE_DISABLED
 
 
 # ------------- [Public Methods] -------------
