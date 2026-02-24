@@ -22,8 +22,6 @@ const _RING_BUFFER = preload("uid://b6phac21mxnxr")
 const _RESOURCE_LOADER = preload("uid://dabq3s83q0iku")
 const _SCENE_LAYER = preload("uid://do8sylacoy3u4")
 
-const DEFAULT_LAYER_PRIORITY = 1
-
 @export var _loading_node_name: String = "===Transition==="
 @export var _initial_play_in_time = 1.0
 @export var _actual_scene_container_path: NodePath = "/root"
@@ -49,7 +47,7 @@ class _ReservedInfo:
 ## Class to aggregate and hold category information associated with a scene.
 class SceneCategorySummary:
 	var categories: Array[SMgrCategoryData] = []
-	var max_priority: int = DEFAULT_LAYER_PRIORITY
+	var max_priority: int = _C.DEFAULT_LAYER_PRIORITY
 	var pauses_lower: bool = false
 
 	func _init(p_categories: Array[SMgrCategoryData]) -> void:
@@ -263,7 +261,7 @@ func _get_categories_for_scene(scene_id: Scenes.Id) -> Array[SMgrCategoryData]:
 func _get_max_priority_for_scene(scene_id: Scenes.Id) -> int:
 	var categories := _get_categories_for_scene(scene_id)
 	if categories.is_empty():
-		return DEFAULT_LAYER_PRIORITY
+		return _C.DEFAULT_LAYER_PRIORITY
 
 	var max_priority := -10000
 	for category in categories:
