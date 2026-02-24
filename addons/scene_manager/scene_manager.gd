@@ -146,10 +146,19 @@ func _on_loader_progress_changed(_path: String, percent: int) -> void:
 		load_percent_changed.emit(percent)
 
 
+## Creates a layer and registers cleanup processing for self-destruction.
 func _create_ui_wrapper(scene_id: Scenes.Id, node_name: String) -> SMgrSceneLayer:
 	assert(not node_name.is_empty(), "Scene Manager: wrapper node name cannot be empty.")
-	var wrapper := SMgrSceneLayer.new(scene_id, node_name)
-	return wrapper
+	var layer := SMgrSceneLayer.new(scene_id, node_name)
+
+	# When the layer self-destructs (queue_free when empty), automatically remove it from the map.
+	layer.layer_disposed.connect(
+		func(id: Scenes.Id) -> void:
+			# Only remove if it still exists in the map and is itself (to prevent overwriting issues).
+			if _loaded_scene_map.get(id) == layer:
+				_loaded_scene_map.erase(id)
+	)
+	return layer
 
 
 func _get_actual_scene_container() -> Node:
@@ -173,8 +182,7 @@ func _on_initial_setup() -> void:
 
 		var layer := _create_ui_wrapper(_current_scene_enum, _C.DEFAULT_TREE_NODE_NAME)
 		_get_actual_scene_container().add_child(layer)
-		scene_node.reparent(layer)
-		layer.content_node = scene_node
+		layer.setup_content(scene_node)
 
 		if _current_scene_enum != Scenes.Id.NONE:
 			_loaded_scene_map[_current_scene_enum] = layer
