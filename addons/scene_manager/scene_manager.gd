@@ -57,7 +57,7 @@ class SceneCategorySummary:
 			return
 
 		# Set initial value to a very low number
-		max_priority = -10000
+		max_priority = _C.MIN_LAYER_PRIORITY
 		for category in categories:
 			# Calculate maximum priority
 			if category.layer_priority > max_priority:
@@ -68,7 +68,7 @@ class SceneCategorySummary:
 				pauses_lower = true
 
 		# Fallback if no categories were found (safety measure)
-		if max_priority == -10000:
+		if max_priority == _C.MIN_LAYER_PRIORITY:
 			max_priority = 1
 
 
@@ -162,14 +162,14 @@ func _create_scene_layer(scene_id: Scenes.Id, node_name: String) -> SMgrSceneLay
 
 
 func _on_layer_disposed(_scene_id: Scenes.Id) -> void:
-	var max_p := -10000
+	var max_p := _C.MIN_LAYER_PRIORITY
 	_ebus.process_scene_layer.emit(
 		func(sc: SMgrSceneLayer) -> void:
 			if _get_pause_for_scene(sc.scene_id):
 				max_p = max(max_p, _get_max_priority_for_scene(sc.scene_id))
 	)
 
-	if max_p != -10000:
+	if max_p != _C.MIN_LAYER_PRIORITY:
 		_ebus.pause_threshold_changed.emit(max_p)
 	else:
 		# If no such scene exists, send a default value (or invalid value) to unpause all
@@ -245,7 +245,7 @@ func _get_max_priority_for_scene(scene_id: Scenes.Id) -> int:
 	if categories.is_empty():
 		return _C.DEFAULT_LAYER_PRIORITY
 
-	var max_priority := -10000
+	var max_priority := _C.MIN_LAYER_PRIORITY
 	for category in categories:
 		max_priority = max(max_priority, category.layer_priority)
 
