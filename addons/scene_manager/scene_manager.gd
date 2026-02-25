@@ -162,8 +162,9 @@ func _on_layer_disposed(_scene_id: Scenes.Id) -> void:
 	var max_p := _C.MIN_LAYER_PRIORITY
 	_ebus.process_scene_layer.emit(
 		func(sc: SMgrSceneLayer) -> void:
-			if _get_pause_for_scene(sc.scene_id):
-				max_p = max(max_p, _get_max_priority_for_scene(sc.scene_id))
+			var summary := _get_category_summary(sc.scene_id)
+			if summary.pauses_lower:
+				max_p = max(max_p, summary.max_priority)
 	)
 
 	if max_p != _C.MIN_LAYER_PRIORITY:
@@ -197,7 +198,8 @@ func _on_initial_setup() -> void:
 		layer.add_node(scene_node)
 
 		if _current_scene_enum != Scenes.Id.NONE:
-			layer.layer = _get_max_priority_for_scene(_current_scene_enum)
+			var summary := _get_category_summary(_current_scene_enum)
+			layer.layer = summary.max_priority
 		else:
 			push_warning("Initial scene not found in DB (Scenes.Id.NONE).")
 
@@ -216,38 +218,6 @@ func _remove_node_safely(target_node: Node) -> void:
 func _remove_name_node(sc: SMgrSceneLayer, p_name: String) -> void:
 	if sc.name == p_name:
 		_remove_node_safely(sc)
-
-
-## Returns a list of category data assigned to the scene.
-func _get_categories_for_scene(scene_id: Scenes.Id) -> Array[SMgrCategoryData]:
-	var category_ids := _scene_db.get_category_ids_by_scene(scene_id)
-	var categories: Array[SMgrCategoryData] = []
-	for c_id in category_ids:
-		var data := _scene_db.get_category_from_id(c_id)
-		if data:
-			categories.append(data)
-	return categories
-
-
-## Returns the maximum layer priority from all categories assigned to the scene.
-func _get_max_priority_for_scene(scene_id: Scenes.Id) -> int:
-	var categories := _get_categories_for_scene(scene_id)
-	if categories.is_empty():
-		return _C.DEFAULT_LAYER_PRIORITY
-
-	var max_priority := _C.MIN_LAYER_PRIORITY
-	for category in categories:
-		max_priority = max(max_priority, category.layer_priority)
-
-	return max_priority
-
-
-func _get_pause_for_scene(scene_id: Scenes.Id) -> bool:
-	var categories := _get_categories_for_scene(scene_id)
-	for category in categories:
-		if category.pauses_lower_priority_layers:
-			return true
-	return false
 
 
 func _perform_scene_setup(scene: Scenes.Id, options: SceneLoadOptions) -> Node:
@@ -335,8 +305,6 @@ func add_scene(
 			)
 			return null
 		_ebus.process_scene_layer.emit(_remove_name_node.bind(options.node_name))
-
-	# Resolve name conflicts for the wrapper node
 
 	return _perform_scene_setup(scene_id, options)
 
