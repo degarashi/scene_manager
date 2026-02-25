@@ -455,15 +455,17 @@ func instantiate_async_result() -> void:
 	if res:
 		var scene_node := res.instantiate()
 		scene_node.scene_file_path = path
+		# Temporarily make the name unique to avoid name collisions
 		var layer := _create_scene_layer(
 			_reserved.scene_id, _to_tmp_name(_reserved.options.node_name)
 		)
+		# Keep it hidden for now
+		layer.visible = false
 		layer.add_node(scene_node)
 
 		_reserved.options.call_pre_cb(layer, scene_node)
 		var target := _get_actual_scene_container()
 		target.add_child(layer)
-		target.move_child(layer, target.get_child_count() - 2)
 
 
 static func _to_tmp_name(node_name: String) -> String:
@@ -499,12 +501,15 @@ func activate_prepared_scene() -> Node:
 	_ebus.process_scene_layer.emit(_remove_name_node.bind(_loading_node_name))
 
 	if not _reserved.is_additive:
+		# Revert the temporary unique name to the original name
 		_ebus.process_scene_layer.emit(
 			func(sc: SMgrSceneLayer) -> void:
 				if sc.scene_id != _reserved.scene_id:
 					_remove_node_safely(sc)
 		)
 		layer.name = _from_tmp_name(layer.name)
+		# Display it here
+		layer.visible = true
 		_current_scene_enum = _reserved.scene_id
 
 	category_changed.emit(diff)
