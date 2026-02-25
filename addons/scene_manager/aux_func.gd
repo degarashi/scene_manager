@@ -1,6 +1,18 @@
 extends Object
 
 
+static func to_tmp_name(node_name: String) -> String:
+	return node_name + "_" + str(ResourceUID.create_id())
+
+
+static func from_tmp_name(tmp_name: String) -> String:
+	var parts := tmp_name.split("_")
+	if parts.size() > 1:
+		parts.remove_at(parts.size() - 1)
+		return "_".join(parts)
+	return tmp_name
+
+
 ## Check if the specified node has a parent node named "MainScreen"
 ## @param node Target node for judgment
 ## @return true if under MainScreen, false otherwise
