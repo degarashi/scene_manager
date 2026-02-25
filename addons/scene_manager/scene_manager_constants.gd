@@ -5,3 +5,5 @@ class_name SMgrConstants
 const DEFAULT_TREE_NODE_NAME: String = "World"
 const ALL_CATEGORY_NAME = "All"
 const DEFAULT_LAYER_PRIORITY = 1
+const MIN_LAYER_PRIORITY = -10000
+const MAX_LAYER_PRIORITY = 10000
