@@ -81,7 +81,6 @@ var _load_scene_id: Scenes.Id = Scenes.Id.NONE
 var _reserved := _ReservedInfo.new()
 
 ## Scenes currently present (Key: Scene-Id, Value: SMgrSceneLayer).
-var _loaded_scene_map: Dictionary[Scenes.Id, SMgrSceneLayer] = {}
 var _current_scene_enum: Scenes.Id = Scenes.Id.NONE
 var _trash_node: Control
 var _transition_player: ScreenTransitioner
@@ -153,7 +152,7 @@ func _create_scene_layer(scene_id: Scenes.Id, node_name: String) -> SMgrSceneLay
 	var layer: SMgrSceneLayer = _SCENE_LAYER.instantiate()
 	var summary := _get_category_summary(scene_id)
 	layer.prepare(scene_id, node_name, summary.max_priority, summary.pauses_lower)
-	layer.layer_disposed.connect(_on_layer_disposed.bind(layer))
+	layer.layer_disposed.connect(_on_layer_disposed)
 
 	# Pause lower layers if necessary
 	if summary.pauses_lower:
@@ -162,15 +161,13 @@ func _create_scene_layer(scene_id: Scenes.Id, node_name: String) -> SMgrSceneLay
 	return layer
 
 
-func _on_layer_disposed(id: Scenes.Id, layer: SMgrSceneLayer) -> void:
-	# Only remove if it still exists in the map and is itself (to prevent overwriting issues).
-	if _loaded_scene_map.get(id) == layer:
-		_loaded_scene_map.erase(id)
-
+func _on_layer_disposed(_scene_id: Scenes.Id) -> void:
 	var max_p := -10000
-	for loaded_id in _loaded_scene_map:
-		if _get_pause_for_scene(loaded_id):
-			max_p = max(max_p, _get_max_priority_for_scene(loaded_id))
+	_ebus.process_scene_layer.emit(
+		func(sc: SMgrSceneLayer) -> void:
+			if _get_pause_for_scene(sc.scene_id):
+				max_p = max(max_p, _get_max_priority_for_scene(sc.scene_id))
+	)
 
 	if max_p != -10000:
 		_ebus.pause_threshold_changed.emit(max_p)
@@ -203,7 +200,6 @@ func _on_initial_setup() -> void:
 		layer.add_node(scene_node)
 
 		if _current_scene_enum != Scenes.Id.NONE:
-			_loaded_scene_map[_current_scene_enum] = layer
 			layer.layer = _get_max_priority_for_scene(_current_scene_enum)
 		else:
 			push_warning("Initial scene not found in DB (Scenes.Id.NONE).")
@@ -276,7 +272,6 @@ func _perform_scene_setup(scene: Scenes.Id, options: SceneLoadOptions) -> Node:
 
 	options.call_pre_cb(layer, new_scene_node)
 	_get_actual_scene_container().add_child(layer)
-	_loaded_scene_map[scene] = layer
 
 	scene_loaded.emit(scene)
 	return new_scene_node
@@ -396,7 +391,9 @@ func reload_current_scene(options := SceneLoadOptions.new()) -> bool:
 		return false
 
 	var opt := options.copy()
-	opt.node_name = _loaded_scene_map[_current_scene_enum].name
+	var recv: Array[SMgrSceneLayer]
+	_ebus.get_scene_by_id.emit(recv, _current_scene_enum)
+	opt.node_name = recv[0].name
 	switch_to_scene(_current_scene_enum, false, opt)
 	return true
 
@@ -477,7 +474,6 @@ func instantiate_async_result() -> void:
 		var target := _get_actual_scene_container()
 		target.add_child(layer)
 		target.move_child(layer, target.get_child_count() - 2)
-		_loaded_scene_map[_reserved.scene_id] = layer
 
 
 static func _to_tmp_name(node_name: String) -> String:
@@ -501,9 +497,10 @@ func activate_prepared_scene() -> Node:
 	if _reserved.scene_id == Scenes.Id.NONE:
 		push_warning("activate_prepared_scene called but no scene is reserved.")
 		return null
-	assert(
-		_loaded_scene_map.has(_reserved.scene_id), "Scene Manager: Reserved scene entry missing."
-	)
+	var recv: Array[SMgrSceneLayer]
+	_ebus.get_scene_by_id.emit(recv, _reserved.scene_id)
+	assert(not recv.is_empty(), "Scene Manager: Reserved scene entry missing.")
+	var layer := recv[0]
 
 	_transition_player.set_clickable(_reserved.options.clickable)
 	await _transition_player.play_out(_reserved.options.play_out_time)
@@ -512,14 +509,11 @@ func activate_prepared_scene() -> Node:
 	_ebus.process_scene_layer.emit(_remove_name_node.bind(_loading_node_name))
 
 	if not _reserved.is_additive:
-		var targets: Array[String] = []
-		for id in _loaded_scene_map:
-			if id != _reserved.scene_id:
-				targets.append(_loaded_scene_map[id].name)
-		for t in targets:
-			_ebus.process_scene_layer.emit(_remove_name_node.bind(t))
-
-		var layer := _loaded_scene_map[_reserved.scene_id]
+		_ebus.process_scene_layer.emit(
+			func(sc: SMgrSceneLayer) -> void:
+				if sc.scene_id != _reserved.scene_id:
+					_remove_node_safely(sc)
+		)
 		layer.name = _from_tmp_name(layer.name)
 		_current_scene_enum = _reserved.scene_id
 
@@ -527,12 +521,11 @@ func activate_prepared_scene() -> Node:
 	scene_loaded.emit(_current_scene_enum)
 	await _transition_player.play_in(_reserved.options.play_in_time)
 
-	var ret := _loaded_scene_map[_current_scene_enum].get_child(0)
 	_reserved.clear()
 
 	_transition_player.set_clickable(true)
 	scene_transition_completed.emit(_current_scene_enum)
-	return ret
+	return layer.get_child(0)
 
 
 # ------------- [Utils] -------------
