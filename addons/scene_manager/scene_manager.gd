@@ -21,6 +21,7 @@ const _C = preload("uid://c3vvdktou45u")
 const _RING_BUFFER = preload("uid://b6phac21mxnxr")
 const _RESOURCE_LOADER = preload("uid://dabq3s83q0iku")
 const _SCENE_LAYER = preload("uid://do8sylacoy3u4")
+const _AF = preload("uid://dlgh4u64a7qxk")
 
 @export var _loading_node_name: String = "===Transition==="
 @export var _initial_play_in_time = 1.0
@@ -425,7 +426,7 @@ func instantiate_async_result() -> void:
 		scene_node.scene_file_path = path
 		# Temporarily make the name unique to avoid name collisions
 		var layer := _create_scene_layer(
-			_reserved.scene_id, _to_tmp_name(_reserved.options.node_name)
+			_reserved.scene_id, _AF.to_tmp_name(_reserved.options.node_name)
 		)
 		# Keep it hidden for now
 		layer.visible = false
@@ -434,18 +435,6 @@ func instantiate_async_result() -> void:
 		_reserved.options.call_pre_cb(layer, scene_node)
 		var target := _get_actual_scene_container()
 		target.add_child(layer)
-
-
-static func _to_tmp_name(node_name: String) -> String:
-	return node_name + "_" + str(ResourceUID.create_id())
-
-
-static func _from_tmp_name(tmp_name: String) -> String:
-	var parts := tmp_name.split("_")
-	if parts.size() > 1:
-		parts.remove_at(parts.size() - 1)
-		return "_".join(parts)
-	return tmp_name
 
 
 ## When you added the loaded scene to the scene tree by `instantiate_async_result`
@@ -475,7 +464,7 @@ func activate_prepared_scene() -> Node:
 				if sc.scene_id != _reserved.scene_id:
 					_remove_node_safely(sc)
 		)
-		layer.name = _from_tmp_name(layer.name)
+		layer.name = _AF.from_tmp_name(layer.name)
 		# Display it here
 		layer.visible = true
 		_current_scene_enum = _reserved.scene_id
