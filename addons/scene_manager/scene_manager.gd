@@ -362,28 +362,28 @@ func switch_to_scene(
 
 ## Adds a scene while keeping the current scene. (Additive Routine)
 func add_scene(
-	scene: Scenes.Id, remove_old: bool = false, options := SceneLoadOptions.new()
+	scene_id: Scenes.Id, remove_old: bool = false, options := SceneLoadOptions.new()
 ) -> Node:
-	if scene == Scenes.Id.NONE:
+	if scene_id == Scenes.Id.NONE:
 		push_warning("Scene Manager: add_scene called with NONE.")
 		return null
 
 	# Handle existing instances of the same ID
-	if _loaded_scene_map.has(scene):
+	if _loaded_scene_map.has(scene_id):
 		if not remove_old:
 			push_warning(
 				(
 					"Scene Manager: Scene %s is already loaded (additive)."
-					% Scenes.Id.find_key(scene)
+					% Scenes.Id.find_key(scene_id)
 				)
 			)
 			return null
-		_unload_scene(_loaded_scene_map[scene].name)
+		_unload_scene(_loaded_scene_map[scene_id].name)
 
 	# Resolve name conflicts for the wrapper node
 	_unload_scene(options.node_name, false)
 
-	return _perform_scene_setup(scene, options)
+	return _perform_scene_setup(scene_id, options)
 
 
 func load_previous_scene(options := SceneLoadOptions.new()) -> bool:
