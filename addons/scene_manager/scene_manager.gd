@@ -215,31 +215,6 @@ func _on_initial_setup() -> void:
 	scene_transition_completed.emit(_current_scene_enum)
 
 
-## Frees all scenes under a specified parent node and removes them from the map.
-## @param node_name Name of the parent node to release.
-func _unload_scene(node_name: String, should_found: bool = true) -> void:
-	# If a node with the specified name exists directly under scene container node, remove it.
-	var target_node := _get_actual_scene_container().get_node_or_null(node_name)
-	if not target_node:
-		if should_found:
-			push_warning(
-				"Scene Manager: Attempted to unload node '%s', but it was not found." % node_name
-			)
-		return
-
-	# Remove from the loaded scenes map
-	var ids_to_remove: Array[Scenes.Id] = []
-	for id in _loaded_scene_map:
-		if _loaded_scene_map[id].name == node_name:
-			ids_to_remove.append(id)
-
-	for id in ids_to_remove:
-		_loaded_scene_map.erase(id)
-
-	# Delete the node itself
-	_remove_node_safely(target_node)
-
-
 func _remove_node_safely(target_node: Node) -> void:
 	assert(target_node != null, "Scene Manager: target_node to remove is null.")
 	assert(_trash_node != null, "Scene Manager: trash_node is not initialized.")
@@ -252,15 +227,9 @@ func _remove_node_safely(target_node: Node) -> void:
 	target_node.queue_free()
 
 
-## Frees all nodes related to the loaded scene map.
-func _unload_all_nodes() -> void:
-	var unique_names: Array[String] = []
-	for layer: SMgrSceneLayer in _loaded_scene_map.values():
-		if layer.name not in unique_names:
-			unique_names.append(layer.name)
-
-	for n_name in unique_names:
-		_unload_scene(n_name)
+func _remove_name_node(sc: SMgrSceneLayer, p_name: String) -> void:
+	if sc.name == p_name:
+		_remove_node_safely(sc)
 
 
 ## Returns a list of category data assigned to the scene.
@@ -335,7 +304,7 @@ func switch_to_scene(
 	await _transition_player.play_out(options.play_out_time)
 
 	var category_diff := _scene_db.compare_scene_categories(_current_scene_enum, scene)
-	_unload_all_nodes()
+	_ebus.process_scene_layer.emit(_remove_node_safely)
 
 	# Add to history
 	if add_to_back and _current_scene_enum != Scenes.Id.NONE:
@@ -368,8 +337,10 @@ func add_scene(
 		push_warning("Scene Manager: add_scene called with NONE.")
 		return null
 
+	var recv: Array[SMgrSceneLayer]
+	_ebus.get_scene_by_name.emit(recv, options.node_name)
 	# Handle existing instances of the same ID
-	if _loaded_scene_map.has(scene_id):
+	if not recv.is_empty():
 		if not remove_old:
 			push_warning(
 				(
@@ -378,10 +349,9 @@ func add_scene(
 				)
 			)
 			return null
-		_unload_scene(_loaded_scene_map[scene_id].name)
+		_ebus.process_scene_layer.emit(_remove_name_node.bind(options.node_name))
 
 	# Resolve name conflicts for the wrapper node
-	_unload_scene(options.node_name, false)
 
 	return _perform_scene_setup(scene_id, options)
 
@@ -539,7 +509,7 @@ func activate_prepared_scene() -> Node:
 	await _transition_player.play_out(_reserved.options.play_out_time)
 
 	var diff := _scene_db.compare_scene_categories(_current_scene_enum, _reserved.scene_id)
-	_unload_scene(_loading_node_name)
+	_ebus.process_scene_layer.emit(_remove_name_node.bind(_loading_node_name))
 
 	if not _reserved.is_additive:
 		var targets: Array[String] = []
@@ -547,7 +517,7 @@ func activate_prepared_scene() -> Node:
 			if id != _reserved.scene_id:
 				targets.append(_loaded_scene_map[id].name)
 		for t in targets:
-			_unload_scene(t)
+			_ebus.process_scene_layer.emit(_remove_name_node.bind(t))
 
 		var layer := _loaded_scene_map[_reserved.scene_id]
 		layer.name = _from_tmp_name(layer.name)
