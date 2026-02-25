@@ -152,7 +152,7 @@ func _create_scene_layer(scene_id: Scenes.Id, node_name: String) -> SMgrSceneLay
 	assert(not node_name.is_empty(), "Scene Manager: wrapper node name cannot be empty.")
 	var layer: SMgrSceneLayer = _SCENE_LAYER.instantiate()
 	var summary := _get_category_summary(scene_id)
-	layer.prepare(scene_id, node_name, summary.max_priority)
+	layer.prepare(scene_id, node_name, summary.max_priority, summary.pauses_lower)
 	layer.layer_disposed.connect(_on_layer_disposed.bind(layer))
 
 	# Pause lower layers if necessary

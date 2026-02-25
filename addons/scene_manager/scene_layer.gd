@@ -6,12 +6,14 @@ signal layer_disposed(id: Scenes.Id)
 
 @export var _ebus: SMgrEbusRuntime
 var scene_id: Scenes.Id = Scenes.Id.NONE
+var pause_lower: bool = false
 
 
-func prepare(p_scene_id: Scenes.Id, p_name: String, p_priority: int) -> void:
+func prepare(p_scene_id: Scenes.Id, p_name: String, p_priority: int, p_pause_lower: bool) -> void:
 	scene_id = p_scene_id
 	name = p_name
 	layer = p_priority
+	pause_lower = p_pause_lower
 
 	# Connect to the signal that monitors the addition/removal of child nodes
 	child_order_changed.connect(_on_child_order_changed)
