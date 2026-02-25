@@ -82,7 +82,7 @@ var _reserved := _ReservedInfo.new()
 
 ## Scenes currently present (Key: Scene-Id, Value: SMgrSceneLayer).
 var _current_scene_enum: Scenes.Id = Scenes.Id.NONE
-var _trash_node: Control
+var _trash_can: SMgrTrashCan
 var _transition_player: ScreenTransitioner
 
 @onready var _history_stack := _RING_BUFFER.new()
@@ -132,11 +132,8 @@ func _init_effector() -> void:
 
 
 func _init_trash_node() -> void:
-	_trash_node = Control.new()
-	_trash_node.name = "trash_node"
-	_trash_node.process_mode = Node.PROCESS_MODE_DISABLED
-	_trash_node.visible = false
-	add_child(_trash_node)
+	_trash_can = SMgrTrashCan.new()
+	add_child(_trash_can)
 
 
 func _on_loader_progress_changed(_path: String, percent: int) -> void:
@@ -213,14 +210,7 @@ func _on_initial_setup() -> void:
 
 func _remove_node_safely(target_node: Node) -> void:
 	assert(target_node != null, "Scene Manager: target_node to remove is null.")
-	assert(_trash_node != null, "Scene Manager: trash_node is not initialized.")
-
-	# Move to trash and then remove
-	# (This will immediately release the name directly under scene container node)
-	target_node.reparent(_trash_node)
-	# Change the name just in case
-	target_node.name = "dying_" + str(target_node.get_instance_id())
-	target_node.queue_free()
+	_trash_can.collect(target_node)
 
 
 func _remove_name_node(sc: SMgrSceneLayer, p_name: String) -> void:
