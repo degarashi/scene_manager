@@ -372,7 +372,10 @@ func add_scene(
 	if _loaded_scene_map.has(scene):
 		if not remove_old:
 			push_warning(
-				"Scene Manager: Scene %s is already loaded (additive)." % Scenes.Id.find_key(scene)
+				(
+					"Scene Manager: Scene %s is already loaded (additive)."
+					% Scenes.Id.find_key(scene)
+				)
 			)
 			return null
 		_unload_scene(_loaded_scene_map[scene].name)
