@@ -20,11 +20,16 @@ func prepare(p_scene_id: Scenes.Id, p_name: String, p_priority: int, p_pause_low
 	# Receive notification of the layer priority to be paused from SceneManager
 	_ebus.pause_threshold_changed.connect(_pause_threshold_changed)
 	_ebus.get_scene_by_name.connect(_get_scene_by_name)
+	_ebus.process_scene_layer.connect(_process_scene_layer)
 
 
 func _get_scene_by_name(recv: Array[SMgrSceneLayer], q_name: String) -> void:
 	if q_name == self.name:
 		recv.append(self)
+
+
+func _process_scene_layer(proc: Callable) -> void:
+	proc.call(self)
 
 
 func _pause_threshold_changed(priority: int) -> void:
