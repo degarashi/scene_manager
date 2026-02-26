@@ -163,9 +163,8 @@ func _on_layer_disposed(_scene_id: Scenes.Id) -> void:
 	var max_p := _C.MIN_LAYER_PRIORITY
 	_ebus.process_scene_layer.emit(
 		func(sc: SMgrSceneLayer) -> void:
-			var summary := _get_category_summary(sc.scene_id)
-			if summary.pauses_lower:
-				max_p = max(max_p, summary.max_priority)
+			if sc.pause_lower:
+				max_p = max(max_p, sc.l_priority)
 	)
 
 	if max_p != _C.MIN_LAYER_PRIORITY:
