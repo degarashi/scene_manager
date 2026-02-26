@@ -51,6 +51,7 @@ class SceneCategorySummary:
 	var categories: Array[SMgrCategoryData] = []
 	var max_priority: int = _C.DEFAULT_LAYER_PRIORITY
 	var pauses_lower: bool = false
+	var always_process: bool = false
 
 	func _init(p_categories: Array[SMgrCategoryData]) -> void:
 		categories = p_categories
@@ -67,6 +68,9 @@ class SceneCategorySummary:
 			# Determine whether to pause lower priority layers
 			if category.pauses_lower_priority_layers:
 				pauses_lower = true
+
+			if category.always_process:
+				always_process = true
 
 		# Fallback if no categories were found (safety measure)
 		if max_priority == _C.MIN_LAYER_PRIORITY:
@@ -155,6 +159,8 @@ func _create_scene_layer(scene_id: Scenes.Id, node_name: String) -> SMgrSceneLay
 	# Pause lower layers if necessary
 	if summary.pauses_lower:
 		_ebus.pause_threshold_changed.emit(summary.max_priority)
+	if summary.always_process:
+		layer.process_mode = Node.PROCESS_MODE_ALWAYS
 
 	return layer
 
