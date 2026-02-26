@@ -20,6 +20,12 @@ extends Resource
 			pauses_lower_priority_layers = value
 			emit_changed()
 
+@export var always_process: bool = false:
+	set(value):
+		if always_process != value:
+			always_process = value
+			emit_changed()
+
 
 func _init(p_name: String = "") -> void:
 	name = p_name
