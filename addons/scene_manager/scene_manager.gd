@@ -196,11 +196,7 @@ func _on_initial_setup() -> void:
 		var layer := _create_scene_layer(_current_scene_enum, _C.DEFAULT_TREE_NODE_NAME)
 		_get_actual_scene_container().add_child(layer)
 		layer.add_node(scene_node)
-
-		if _current_scene_enum != Scenes.Id.NONE:
-			var summary := _get_category_summary(_current_scene_enum)
-			layer.layer = summary.max_priority
-		else:
+		if _current_scene_enum == Scenes.Id.NONE:
 			push_warning("Initial scene not found in DB (Scenes.Id.NONE).")
 
 	# Initial fade-in effect
