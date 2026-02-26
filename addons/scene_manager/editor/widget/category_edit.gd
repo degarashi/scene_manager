@@ -6,6 +6,7 @@ const _AF = preload("uid://dlgh4u64a7qxk")
 var _category_id: int
 @onready var _pause_flag_cb: CheckBox = %PauseFlagCB
 @onready var _layer_priority_box: SpinBox = %LayerPriorityBox
+@onready var _always_process_cb: CheckBox = %AlwaysProcessCB
 
 
 func _ready() -> void:
@@ -32,6 +33,7 @@ func _on_category_selected(id: int) -> void:
 		self.visible = true
 		_layer_priority_box.value = cat.layer_priority
 		_pause_flag_cb.button_pressed = cat.pauses_lower_priority_layers
+		_always_process_cb.button_pressed = cat.always_process
 	else:
 		self.visible = false
 
@@ -50,3 +52,11 @@ func _on_pause_flag_cb_toggled(toggled_on: bool) -> void:
 		return
 
 	cat.pauses_lower_priority_layers = toggled_on
+
+
+func _on_always_process_cb_toggled(toggled_on: bool) -> void:
+	var cat := _fetch_category(_category_id)
+	if not cat:
+		return
+
+	cat.always_process = toggled_on
