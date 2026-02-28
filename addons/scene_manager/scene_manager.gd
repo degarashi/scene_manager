@@ -53,6 +53,7 @@ class SceneCategorySummary:
 	var pauses_lower: bool = false
 	var always_process: bool = false
 	var follow_viewport: bool = false
+	var layer_name: String = ""
 
 	func _init(p_categories: Array[SMgrCategoryData]) -> void:
 		categories = p_categories
@@ -75,6 +76,10 @@ class SceneCategorySummary:
 
 			if category.follow_viewport:
 				follow_viewport = true
+
+			# Pick the first non-empty layer name found in categories
+			if layer_name.is_empty() and not category.layer_name.is_empty():
+				layer_name = category.layer_name
 
 		# Fallback if no categories were found (safety measure)
 		if max_priority == _C.MIN_LAYER_PRIORITY:
@@ -153,12 +158,21 @@ func _on_loader_progress_changed(_path: String, percent: int) -> void:
 
 
 ## Creates a layer and registers cleanup processing for self-destruction.
-func _create_scene_layer(scene_id: Scenes.Id, node_name: String) -> SMgrSceneLayer:
-	assert(not node_name.is_empty(), "Scene Manager: wrapper node name cannot be empty.")
-	var layer: SMgrSceneLayer = _SCENE_LAYER.instantiate()
+## If override_name is provided, it takes precedence over both category and options.
+func _create_scene_layer(
+	scene_id: Scenes.Id, node_name: String, override_name: String = ""
+) -> SMgrSceneLayer:
 	var summary := _get_category_summary(scene_id)
+
+	# Determine final name. Order of precedence:
+	var final_name := override_name
+	if final_name.is_empty():
+		final_name = summary.layer_name if not summary.layer_name.is_empty() else node_name
+	assert(not final_name.is_empty(), "Scene Manager: wrapper node name cannot be empty.")
+
+	var layer: SMgrSceneLayer = _SCENE_LAYER.instantiate()
 	layer.prepare(
-		scene_id, node_name, summary.max_priority, summary.pauses_lower, summary.follow_viewport
+		scene_id, final_name, summary.max_priority, summary.pauses_lower, summary.follow_viewport
 	)
 	layer.layer_disposed.connect(_on_layer_disposed)
 
@@ -205,7 +219,8 @@ func _on_initial_setup() -> void:
 		var current_path := scene_node.scene_file_path
 		_current_scene_enum = _scene_db.get_scene_enum_by_path(current_path)
 
-		var layer := _create_scene_layer(_current_scene_enum, _C.DEFAULT_TREE_NODE_NAME)
+		# Force using DEFAULT_TREE_NODE_NAME by passing it as override_name
+		var layer := _create_scene_layer(_current_scene_enum, "", _C.DEFAULT_TREE_NODE_NAME)
 		_get_actual_scene_container().add_child(layer)
 		layer.add_node(scene_node)
 		if _current_scene_enum == Scenes.Id.NONE:
@@ -234,7 +249,7 @@ func _perform_scene_setup(scene: Scenes.Id, options: SceneLoadOptions) -> Node:
 		push_error("Scene Manager: Failed to instantiate scene: %s" % Scenes.Id.find_key(scene))
 		return null
 
-	# --- Aggregate category information at once ---
+	# Create layer (node_name will be ignored if category has layer_name)
 	var layer := _create_scene_layer(scene, options.node_name)
 	layer.add_node(new_scene_node)
 
@@ -441,9 +456,10 @@ func instantiate_async_result() -> void:
 	if res:
 		var scene_node := res.instantiate()
 		scene_node.scene_file_path = path
-		# Temporarily make the name unique to avoid name collisions
+
+		# Force using the input node_name from options by passing it as override_name
 		var layer := _create_scene_layer(
-			_reserved.scene_id, _AF.to_tmp_name(_reserved.options.node_name)
+			_reserved.scene_id, "", _AF.to_tmp_name(_reserved.options.node_name)
 		)
 		# Keep it hidden for now
 		layer.visible = false
