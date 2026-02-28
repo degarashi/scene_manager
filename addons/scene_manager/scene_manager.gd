@@ -248,6 +248,16 @@ func get_history_count() -> int:
 	return _history_stack.size()
 
 
+## Unloads a SceneLayer matching the specified node name.
+func unload_scene_by_name(node_name: String) -> void:
+	if node_name.is_empty():
+		push_warning("Scene Manager: unload_scene_by_name called with empty name.")
+		return
+
+	# Leverages existing logic to safely move the node to the trash can
+	_ebus.process_scene_layer.emit(_remove_name_node.bind(node_name))
+
+
 ## Discards the current main scene and switches to a new one. (Main Routine)
 func switch_to_scene(
 	scene: Scenes.Id, add_to_back: bool, options := SceneLoadOptions.new()
