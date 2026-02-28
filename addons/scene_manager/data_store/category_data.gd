@@ -8,6 +8,12 @@ extends Resource
 			name = value
 			emit_changed()
 
+@export var layer_name: String:
+	set(value):
+		if layer_name != value:
+			layer_name = value
+			emit_changed()
+
 @export var layer_priority: int = 1:
 	set(value):
 		if layer_priority != value:
