@@ -10,12 +10,15 @@ var pause_lower: bool = false
 var l_priority: int = 1
 
 
-func prepare(p_scene_id: Scenes.Id, p_name: String, p_priority: int, p_pause_lower: bool) -> void:
+func prepare(
+	p_scene_id: Scenes.Id, p_name: String, p_priority: int, p_pause_lower: bool, p_follow: bool
+) -> void:
 	scene_id = p_scene_id
 	name = p_name
 	layer = p_priority
 	l_priority = p_priority
 	pause_lower = p_pause_lower
+	follow_viewport_enabled = p_follow
 
 	# Connect to the signal that monitors the addition/removal of child nodes
 	child_order_changed.connect(_on_child_order_changed)

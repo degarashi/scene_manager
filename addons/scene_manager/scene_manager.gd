@@ -52,6 +52,7 @@ class SceneCategorySummary:
 	var max_priority: int = _C.DEFAULT_LAYER_PRIORITY
 	var pauses_lower: bool = false
 	var always_process: bool = false
+	var follow_viewport: bool = false
 
 	func _init(p_categories: Array[SMgrCategoryData]) -> void:
 		categories = p_categories
@@ -71,6 +72,9 @@ class SceneCategorySummary:
 
 			if category.always_process:
 				always_process = true
+
+			if category.follow_viewport:
+				follow_viewport = true
 
 		# Fallback if no categories were found (safety measure)
 		if max_priority == _C.MIN_LAYER_PRIORITY:
@@ -153,7 +157,9 @@ func _create_scene_layer(scene_id: Scenes.Id, node_name: String) -> SMgrSceneLay
 	assert(not node_name.is_empty(), "Scene Manager: wrapper node name cannot be empty.")
 	var layer: SMgrSceneLayer = _SCENE_LAYER.instantiate()
 	var summary := _get_category_summary(scene_id)
-	layer.prepare(scene_id, node_name, summary.max_priority, summary.pauses_lower)
+	layer.prepare(
+		scene_id, node_name, summary.max_priority, summary.pauses_lower, summary.follow_viewport
+	)
 	layer.layer_disposed.connect(_on_layer_disposed)
 
 	# Pause lower layers if necessary
