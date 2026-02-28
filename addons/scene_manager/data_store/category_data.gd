@@ -26,6 +26,12 @@ extends Resource
 			always_process = value
 			emit_changed()
 
+@export var follow_viewport: bool = false:
+	set(value):
+		if follow_viewport != value:
+			follow_viewport = value
+			emit_changed()
+
 
 func _init(p_name: String = "") -> void:
 	name = p_name
