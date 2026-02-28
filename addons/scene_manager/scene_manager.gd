@@ -316,7 +316,7 @@ func add_scene(
 				)
 			)
 			return null
-		_ebus.process_scene_layer.emit(_remove_name_node.bind(options.node_name))
+		unload_scene_by_name(options.node_name)
 
 	return _perform_scene_setup(scene_id, options)
 
@@ -466,7 +466,7 @@ func activate_prepared_scene() -> Node:
 	await _transition_player.play_out(_reserved.options.play_out_time)
 
 	var diff := _scene_db.compare_scene_categories(_current_scene_enum, _reserved.scene_id)
-	_ebus.process_scene_layer.emit(_remove_name_node.bind(_loading_node_name))
+	unload_scene_by_name(_loading_node_name)
 
 	if not _reserved.is_additive:
 		# Revert the temporary unique name to the original name
