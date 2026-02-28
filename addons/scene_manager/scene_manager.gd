@@ -16,6 +16,12 @@ signal on_game_end
 
 signal category_changed(diff: SMgrData.CategoryDiff)
 
+## Defines how to handle cases where a SceneLayer name already exists.
+enum DuplicateNameMode {
+	REMOVE_OLD,  ## Remove the existing SceneLayer before adding the new one.
+	WARN_AND_SKIP,  ## Print a warning and abort the addition.
+	RENAME_NEW,  ## Append a numeric suffix to the new SceneLayer to avoid collision.
+}
 # ------------- [Constants] -------------
 const _C = preload("uid://c3vvdktou45u")
 const _RING_BUFFER = preload("uid://b6phac21mxnxr")
@@ -319,25 +325,44 @@ func switch_to_scene(
 
 ## Adds a scene while keeping the current scene. (Additive Routine)
 func add_scene(
-	scene_id: Scenes.Id, remove_old: bool = false, options := SceneLoadOptions.new()
+	scene_id: Scenes.Id,
+	mode: DuplicateNameMode = DuplicateNameMode.WARN_AND_SKIP,
+	options := SceneLoadOptions.new()
 ) -> Node:
 	if scene_id == Scenes.Id.NONE:
 		push_warning("Scene Manager: add_scene called with NONE.")
 		return null
 
+	var summary := _get_category_summary(scene_id)
+	var target_name := (
+		summary.layer_name if not summary.layer_name.is_empty() else options.node_name
+	)
+
 	var recv: Array[SMgrSceneLayer]
-	_ebus.get_scene_by_name.emit(recv, options.node_name)
-	# Handle existing instances of the same ID
+	_ebus.get_scene_by_name.emit(recv, target_name)
+
 	if not recv.is_empty():
-		if not remove_old:
-			push_warning(
-				(
-					"Scene Manager: Scene %s is already loaded (additive)."
-					% Scenes.Id.find_key(scene_id)
+		match mode:
+			DuplicateNameMode.REMOVE_OLD:
+				unload_scene_by_name(target_name)
+
+			DuplicateNameMode.WARN_AND_SKIP:
+				push_warning(
+					"Scene Manager: Scene with name '%s' is already loaded. Skipping." % target_name
 				)
-			)
-			return null
-		unload_scene_by_name(options.node_name)
+				return null
+
+			DuplicateNameMode.RENAME_NEW:
+				var suffix := 2
+				var new_name := target_name + str(suffix)
+				var check_recv: Array[SMgrSceneLayer]
+				_ebus.get_scene_by_name.emit(check_recv, new_name)
+				while not check_recv.is_empty():
+					suffix += 1
+					new_name = target_name + str(suffix)
+					check_recv.clear()
+					_ebus.get_scene_by_name.emit(check_recv, new_name)
+				options.node_name = new_name  # Update options to use the unique name
 
 	return _perform_scene_setup(scene_id, options)
 
@@ -423,7 +448,7 @@ func load_scene_with_transition(
 	next_scene: Scenes.Id,
 	transition_scene: Scenes.Id,
 	add_to_back: bool = true,
-	remove_old: bool = false,
+	mode: DuplicateNameMode = DuplicateNameMode.WARN_AND_SKIP,
 	opt_play_in := SceneLoadOptions.new(),
 	opt_activate := opt_play_in
 ) -> void:
@@ -438,7 +463,7 @@ func load_scene_with_transition(
 	var trans_options := opt_play_in.copy()
 	trans_options.node_name = _loading_node_name
 
-	add_scene(transition_scene, remove_old, trans_options)
+	add_scene(transition_scene, mode, trans_options)
 
 
 func instantiate_async_result() -> void:
