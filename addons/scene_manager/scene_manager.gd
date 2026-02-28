@@ -21,6 +21,7 @@ enum DuplicateNameMode {
 	REMOVE_OLD,  ## Remove the existing SceneLayer before adding the new one.
 	WARN_AND_SKIP,  ## Print a warning and abort the addition.
 	RENAME_NEW,  ## Append a numeric suffix to the new SceneLayer to avoid collision.
+	APPEND,  ## Add the new scene to the existing SceneLayer.
 }
 # ------------- [Constants] -------------
 const _C = preload("uid://c3vvdktou45u")
@@ -363,6 +364,15 @@ func add_scene(
 					check_recv.clear()
 					_ebus.get_scene_by_name.emit(check_recv, new_name)
 				options.node_name = new_name  # Update options to use the unique name
+
+			DuplicateNameMode.APPEND:
+				var target_layer := recv[0]
+				var new_node := _create_scene_instance_blocking(scene_id)
+				if new_node:
+					target_layer.add_node(new_node)
+					options.call_pre_cb(target_layer, new_node)
+					scene_loaded.emit(scene_id)
+				return new_node
 
 	return _perform_scene_setup(scene_id, options)
 
