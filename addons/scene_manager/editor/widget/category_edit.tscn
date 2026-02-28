@@ -9,6 +9,20 @@ offset_bottom = 87.0
 script = ExtResource("1_7tx63")
 _ebus_editor = ExtResource("2_7tx63")
 
+[node name="LayerName" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="LayerName"]
+layout_mode = 2
+text = "Layer Name"
+
+[node name="LayerNameEdit" type="LineEdit" parent="LayerName"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "(not specified)"
+alignment = 1
+
 [node name="LayerPriority" type="HBoxContainer" parent="."]
 layout_mode = 2
 
@@ -16,7 +30,6 @@ layout_mode = 2
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Layer Priority:"
-horizontal_alignment = 1
 
 [node name="LayerPriorityBox" type="SpinBox" parent="LayerPriority"]
 unique_name_in_owner = true
@@ -64,6 +77,7 @@ text = "Follow Viewport"
 unique_name_in_owner = true
 layout_mode = 2
 
+[connection signal="text_changed" from="LayerName/LayerNameEdit" to="." method="_on_layer_name_edit_text_changed"]
 [connection signal="value_changed" from="LayerPriority/LayerPriorityBox" to="." method="_on_layer_priority_box_value_changed"]
 [connection signal="toggled" from="PauseFlag/PauseFlagCB" to="." method="_on_pause_flag_cb_toggled"]
 [connection signal="toggled" from="AlwaysProcess/AlwaysProcessCB" to="." method="_on_always_process_cb_toggled"]
