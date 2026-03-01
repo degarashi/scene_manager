@@ -194,6 +194,12 @@ func _export_category_enum_string() -> String:
 	var ret: String = ""
 	ret += "enum CategoryId {\n"
 	var categories := _data.get_categories_list()
+
+	# Sort alphabetically based on category name
+	categories.sort_custom(
+		func(a: SMgrCategoryData, b: SMgrCategoryData) -> bool: return a.name < b.name
+	)
+
 	for c_data in categories:
 		var c_uid := c_data.name.hash()
 		ret += "\t{0} = {1},\n".format([c_data.name.to_upper(), c_uid])
