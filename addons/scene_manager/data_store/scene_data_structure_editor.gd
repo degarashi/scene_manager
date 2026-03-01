@@ -11,11 +11,6 @@ signal on_dirty_flag_changed(dirty: bool)
 
 
 # ------------- [Constants] -------------
-## Key constants for parsing within the generated file
-class _CommentKey:
-	const ENUM: String = "# [Scene Enum]"
-
-
 const _C = preload("uid://c3vvdktou45u")
 const _DEBOUNCER = preload("uid://du3v1b53ukv08")
 const _DEBOUNCE_TIME = 0.15
@@ -173,7 +168,6 @@ func _scan_and_collect_uids(dir_path: String, collected_uids: Array[int]) -> voi
 
 func _export_scene_enum_string() -> String:
 	var ret: String = ""
-	ret += _CommentKey.ENUM + "\n"
 	ret += "enum Id {\n"
 	ret += "\tNONE = {0},\n".format([ResourceUID.INVALID_ID])
 
