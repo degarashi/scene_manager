@@ -42,14 +42,6 @@ func _on_category_selected(id: int) -> void:
 		self.visible = false
 
 
-func _on_layer_name_edit_text_changed(new_text: String) -> void:
-	var cat := _fetch_category(_category_id)
-	if not cat:
-		return
-
-	cat.layer_name = new_text
-
-
 func _on_layer_priority_box_value_changed(value: float) -> void:
 	var cat := _fetch_category(_category_id)
 	if not cat:
@@ -80,3 +72,21 @@ func _on_follow_viewport_cb_toggled(toggled_on: bool) -> void:
 		return
 
 	cat.follow_viewport = toggled_on
+
+
+func _on_layer_name_confirmed() -> void:
+	var cat := _fetch_category(_category_id)
+	if not cat:
+		return
+
+	cat.layer_name = _layer_name_edit.text
+
+
+func _on_layer_name_edit_focus_exited() -> void:
+	_on_layer_name_confirmed()
+
+
+func _on_layer_name_edit_text_submitted(_new_text: String) -> void:
+	_on_layer_name_confirmed()
+	# Remove focus and complete input
+	_layer_name_edit.release_focus()
