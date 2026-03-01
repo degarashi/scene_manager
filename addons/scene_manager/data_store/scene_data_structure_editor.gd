@@ -3,8 +3,6 @@ class_name SMgrDataEditor
 extends RefCounted
 
 # ------------- [Signal] -------------
-## Signal emitted when scene management data changes
-signal data_changed
 ## Signal emitted after changes have settled (no changes for 0.5 seconds)
 signal data_changed_debounced
 ## Signal emitted when the state of the dirty flag (unsaved changes) changes
@@ -55,7 +53,6 @@ func _init(p_data: SMgrData, ebus: SMgrEbusEditor) -> void:
 
 	# Detect changes on the SMgrData side and update its own signals and dirty flag
 	_data.changed.connect(_on_data_changed)
-	data_changed.connect(_on_data_changed)
 	_setup_filesystem_monitoring.call_deferred()
 
 	_connect_ebus(ebus)
