@@ -17,7 +17,7 @@ var _timer: Timer
 
 func _ready() -> void:
 	_timer = Timer.new()
-	_timer.one_shot = true
+	_timer.one_shot = one_shot
 	_timer.wait_time = delay
 	_timer.autostart = false
 
