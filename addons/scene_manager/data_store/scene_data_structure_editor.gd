@@ -69,8 +69,8 @@ func _on_debounce_timeout() -> void:
 
 # ------------- [Private Method] -------------
 func _init_debouncer() -> void:
-	_data_debouncer = _DEBOUNCER.new()
-	_data_debouncer.delay = _DEBOUNCE_TIME
+	assert(_data_debouncer == null)
+	_data_debouncer = _DEBOUNCER.new(_DEBOUNCE_TIME, true)
 	_data_debouncer.timeout.connect(_on_debounce_timeout)
 
 	# Needs to be attached to the runtime or the editor's main window, etc.
@@ -423,6 +423,7 @@ func cleanup(ebus: SMgrEbusEditor) -> void:
 	# (Because the instance may become invalid when switching between enable/disable of the plugin)
 	if is_instance_valid(_data_debouncer):
 		_data_debouncer.queue_free()
+		_data_debouncer = null
 	# Disconnect the signal
 	_cleanup_filesystem_monitoring()
 
