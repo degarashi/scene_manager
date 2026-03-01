@@ -15,6 +15,11 @@ signal timeout
 var _timer: Timer
 
 
+func _init(p_delay: float = 0.5, p_one_shot: bool = true) -> void:
+	delay = p_delay
+	one_shot = p_one_shot
+
+
 func _ready() -> void:
 	_timer = Timer.new()
 	_timer.one_shot = one_shot
