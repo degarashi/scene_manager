@@ -2,31 +2,54 @@
 class_name SMgrData
 extends Resource
 
+## Signal emitted once after a certain period, grouping multiple changes occurring in a short time.
+signal changed_debounced
+
+const _DEBOUNCE_TIME = 0.3
+
 # ------------- [Exports] -------------
 ## List of directory paths to include
 @export var _include_list: Array[String]:
 	set(value):
 		if _include_list != value:
 			_include_list = value
-			emit_changed()
+			_on_any_data_changed()
 
 ## Dictionary of scene data objects keyed by scene UID (int)
 @export var _scenes: Dictionary[int, SMgrDataScene] = {}:
 	set(value):
 		_scenes = value
 		_validate_connections()
-		emit_changed()
+		_on_any_data_changed()
 
 ## Dictionary of category data objects keyed by category-name's Hash (int)
 @export var _categories: Dictionary[int, SMgrCategoryData] = {}:
 	set(value):
 		_categories = value
 		_validate_connections()
-		emit_changed()
+		_on_any_data_changed()
+
+var _change_debouncer := DebouncerRC.new(_DEBOUNCE_TIME, true)
 
 
+## Common processing when any data changes are detected
 func _on_any_data_changed() -> void:
+	# Conventional immediate signal (necessary for Inspector updates, etc.)
 	emit_changed()
+
+	# Start/Restart debounce processing
+	_change_debouncer.call_debounced()
+
+
+## Initialize debouncer (connect signals)
+func _init() -> void:
+	# When the debouncer times out, emit the debounced signal externally
+	if not _change_debouncer.timeout.is_connected(_emit_debounced_signal):
+		_change_debouncer.timeout.connect(_emit_debounced_signal)
+
+
+func _emit_debounced_signal() -> void:
+	changed_debounced.emit()
 
 
 ## Ensure all managed data objects have their changed signals connected
@@ -46,13 +69,13 @@ func set_scene_data(uid: int, scene_data: SMgrDataScene) -> void:
 	_scenes[uid] = scene_data
 	if not scene_data.changed.is_connected(_on_any_data_changed):
 		scene_data.changed.connect(_on_any_data_changed)
-	emit_changed()
+	_on_any_data_changed()
 
 
 ## Removes a scene and notifies change
 func remove_scene_data(uid: int) -> void:
 	if _scenes.erase(uid):
-		emit_changed()
+		_on_any_data_changed()
 
 
 ## Registers or updates a category and notifies change
@@ -60,13 +83,13 @@ func set_category_data(id: int, category_data: SMgrCategoryData) -> void:
 	_categories[id] = category_data
 	if not category_data.changed.is_connected(_on_any_data_changed):
 		category_data.changed.connect(_on_any_data_changed)
-	emit_changed()
+	_on_any_data_changed()
 
 
 ## Removes a category and notifies change
 func remove_category_data(id: int) -> void:
 	if _categories.erase(id):
-		emit_changed()
+		_on_any_data_changed()
 
 
 ## Sorts internal dictionaries to maintain a clean serialization order.
