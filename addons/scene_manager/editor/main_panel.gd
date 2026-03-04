@@ -245,7 +245,7 @@ func _reload_data() -> void:
 	_update_last_modified_time()
 	_manager_data.data_changed_debounced.connect(_refresh_ui)
 	_manager_data.on_dirty_flag_changed.connect(_on_dirty_flag_changed)
-	_manager_data._data.changed.connect(_on_data_changed)
+	_manager_data.data_changed_debounced.connect(_on_data_changed)
 	_ebus_editor.on_dirty_flag_changed.emit(false)
 
 
