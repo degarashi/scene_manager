@@ -1,6 +1,8 @@
 @tool
 class_name SMgrDataScene
-extends Resource
+extends DebouncedResource
+
+const _DEBOUNCE_TIME = 0.3
 
 # ------------- [Exports] -------------
 ## Identifier name of the scene (used for Enums, etc.)
@@ -28,6 +30,11 @@ extends Resource
 		if uid != value:
 			uid = value
 			emit_changed()
+
+
+func _init() -> void:
+	# Initialize the debouncer inherited from DebouncedResource
+	_init_debouncer(_DEBOUNCE_TIME)
 
 
 # ------------- [Static Helper Methods] -------------
@@ -74,7 +81,7 @@ static func initialize(sc_name: String, target_path: String, target_uid: int) ->
 	if not final_path.is_empty():
 		var ret := SMgrDataScene.new()
 		ret.name = sc_name
-		# Assign finalized values directly to avoid redundant setter execution
+		# Assign finalized values (triggers emit_changed via setters)
 		ret.path = final_path
 		ret.uid = final_uid
 		return ret
