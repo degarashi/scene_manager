@@ -1,9 +1,6 @@
 @tool
 class_name SMgrData
-extends Resource
-
-## Signal emitted once after a certain period, grouping multiple changes occurring in a short time.
-signal changed_debounced
+extends DebouncedResource
 
 const _DEBOUNCE_TIME = 0.3
 
@@ -29,27 +26,18 @@ const _DEBOUNCE_TIME = 0.3
 		_validate_connections()
 		_on_any_data_changed()
 
-var _change_debouncer := DebouncerRC.new(_DEBOUNCE_TIME, true)
+
+## Initialize debouncer (connect signals)
+func _init() -> void:
+	# Initialize the debouncer inherited from DebouncedResource
+	_init_debouncer(_DEBOUNCE_TIME)
 
 
 ## Common processing when any data changes are detected
 func _on_any_data_changed() -> void:
 	# Conventional immediate signal (necessary for Inspector updates, etc.)
+	# This triggers the inherited DebouncedResource's _on_resource_changed()
 	emit_changed()
-
-	# Start/Restart debounce processing
-	_change_debouncer.call_debounced()
-
-
-## Initialize debouncer (connect signals)
-func _init() -> void:
-	# When the debouncer times out, emit the debounced signal externally
-	if not _change_debouncer.timeout.is_connected(_emit_debounced_signal):
-		_change_debouncer.timeout.connect(_emit_debounced_signal)
-
-
-func _emit_debounced_signal() -> void:
-	changed_debounced.emit()
 
 
 ## Ensure all managed data objects have their changed signals connected
