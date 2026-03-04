@@ -1,6 +1,8 @@
 @tool
 class_name SMgrCategoryData
-extends Resource
+extends DebouncedResource
+
+const _DEBOUNCE_TIME = 0.3
 
 @export var name: String:
 	set(value):
@@ -40,4 +42,9 @@ extends Resource
 
 
 func _init(p_name: String = "") -> void:
+	# Initialize the debouncer inherited from DebouncedResource
+	_init_debouncer(_DEBOUNCE_TIME)
+
+	# The property name's setter triggers emit_changed(),
+	# which in turn triggers the debouncer.
 	name = p_name
