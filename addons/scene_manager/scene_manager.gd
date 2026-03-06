@@ -15,6 +15,8 @@ signal scene_transition_completed(scene_id: Scenes.Id)
 signal on_game_end
 
 signal category_changed(diff: SMgrData.CategoryDiff)
+## Emitted when a scene is reloaded
+signal category_reapplied(tags: Array[Scenes.CategoryId])
 
 ## Defines how to handle cases where a SceneLayer name already exists.
 enum DuplicateNameMode {
@@ -434,6 +436,9 @@ func reload_current_scene(options := SceneLoadOptions.new()) -> bool:
 		return false
 
 	opt.node_name = recv[0].name
+	# Notify category tag here
+	category_reapplied.emit(_scene_db.get_category_ids_by_scene(_current_scene_enum))
+
 	switch_to_scene(_current_scene_enum, false, opt)
 	return true
 
