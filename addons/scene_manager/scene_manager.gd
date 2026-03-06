@@ -495,17 +495,20 @@ func instantiate_async_result() -> void:
 	if _reserved.add_to_back and _current_scene_enum != Scenes.Id.NONE:
 		_history_stack.push(_current_scene_enum)
 
-	# Load directly (it should be cached in ResourceLoader by ResourceLoaderMgr)
+	# Load the resource (should be cached by the ResourceLoaderMgr)
 	var res := load(path) as PackedScene
 	if res:
 		var scene_node := res.instantiate()
 		scene_node.scene_file_path = path
 
-		# Force using the input node_name from options by passing it as override_name
+		# Create the layer with a temporary unique name.
+		# This prevents name collisions with the current active scene
+		# while this new layer sits hidden in the background.
 		var layer := _create_scene_layer(
 			_reserved.scene_id, "", _AF.to_tmp_name(_reserved.options.node_name)
 		)
-		# Keep it hidden for now
+
+		# Keep the layer hidden until activate_prepared_scene() is called
 		layer.visible = false
 		layer.add_node(scene_node)
 
