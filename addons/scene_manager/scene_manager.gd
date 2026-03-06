@@ -358,6 +358,7 @@ func add_scene(
 				return null
 
 			DuplicateNameMode.RENAME_NEW:
+				# Logic to find a unique name by appending a numeric suffix
 				var suffix := 2
 				var new_name := target_name + str(suffix)
 				var check_recv: Array[SMgrSceneLayer]
@@ -367,17 +368,21 @@ func add_scene(
 					new_name = target_name + str(suffix)
 					check_recv.clear()
 					_ebus.get_scene_by_name.emit(check_recv, new_name)
-				options.node_name = new_name  # Update options to use the unique name
+				options.node_name = new_name
 
 			DuplicateNameMode.APPEND:
+				# Instead of creating a new layer, append the instance to the existing layer
 				var target_layer := recv[0]
 				var new_node := _create_scene_instance_blocking(scene_id)
 				if new_node:
 					target_layer.add_node(new_node)
+					# Apply pre-callback to the existing layer and new node
 					options.call_pre_cb(target_layer, new_node)
+					# Manually emit since we bypass _perform_scene_setup
 					scene_loaded.emit(scene_id)
 				return new_node
 
+	# For other modes (or if no duplicate was found), proceed with standard setup
 	return _perform_scene_setup(scene_id, options)
 
 
