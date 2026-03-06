@@ -514,15 +514,13 @@ func instantiate_async_result() -> void:
 		target.add_child(layer)
 
 
-## When you added the loaded scene to the scene tree by `instantiate_async_result`
-## function, you call this function after you are sure that the added scene to scene tree
-## is completely ready and functional to change the active scene.[br]
-## This is used in the `load_scene_with_transition` flow and uses the reserved information for
-## switching scenes.
+## Finalizes the transition by swapping the old scene with the pre-instantiated one.
+## This is the final step of the 'load_scene_with_transition' flow.
 func activate_prepared_scene() -> Node:
 	if _reserved.scene_id == Scenes.Id.NONE:
 		push_warning("activate_prepared_scene called but no scene is reserved.")
 		return null
+
 	var recv: Array[SMgrSceneLayer]
 	_ebus.get_scene_by_id.emit(recv, _reserved.scene_id)
 	assert(not recv.is_empty(), "Scene Manager: Reserved scene entry missing.")
@@ -532,28 +530,33 @@ func activate_prepared_scene() -> Node:
 	await _transition_player.play_out(_reserved.options.play_out_time)
 
 	var diff := _scene_db.compare_scene_categories(_current_scene_enum, _reserved.scene_id)
+
+	# Remove the transition/loading scene layer
 	unload_scene_by_name(_loading_node_name)
 
 	if not _reserved.is_additive:
-		# Revert the temporary unique name to the original name
+		# Cleanup: Remove all layers except the new one and revert the temporary name
 		_ebus.process_scene_layer.emit(
 			func(sc: SMgrSceneLayer) -> void:
 				if sc.scene_id != _reserved.scene_id:
 					_remove_node_safely(sc)
 		)
+
+		# Now that the old scene is gone, revert the layer name to its intended original name
 		layer.name = _AF.from_tmp_name(layer.name)
-		# Display it here
 		layer.visible = true
 		_current_scene_enum = _reserved.scene_id
 
 	category_changed.emit(diff)
 	scene_loaded.emit(_current_scene_enum)
+
+	# Show the new scene
 	await _transition_player.play_in(_reserved.options.play_in_time)
 
 	_reserved.clear()
-
 	_transition_player.set_clickable(true)
 	scene_transition_completed.emit(_current_scene_enum)
+
 	return layer.get_child(0)
 
 
