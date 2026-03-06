@@ -296,40 +296,59 @@ func unload_scene_by_name(node_name: String) -> void:
 
 ## Discards the current main scene and switches to a new one. (Main Routine)
 func switch_to_scene(
-	scene: Scenes.Id, add_to_back: bool, options := SceneLoadOptions.new()
+	scene_id: Scenes.Id, add_to_back: bool, options := SceneLoadOptions.new()
 ) -> Node:
-	if scene == Scenes.Id.NONE:
+	if scene_id == Scenes.Id.NONE:
 		push_warning("Scene Manager: switch_to_scene called with NONE.")
 		return null
+
+	# Even if reloading the same scene, the instance is recreated.
+	# We preserve the existing layer name and re-notify categories to maintain consistency.
+	var is_reloading := scene_id == _current_scene_enum
+	if is_reloading:
+		var recv: Array[SMgrSceneLayer]
+		_ebus.get_scene_by_id.emit(recv, scene_id)
+		if not recv.is_empty():
+			# Force the new instance to use the same node name as the current one.
+			options.node_name = recv[0].name
 
 	# --- Transition Start ---
 	_transition_player.set_clickable(options.clickable)
 	await _transition_player.play_out(options.play_out_time)
 
-	var category_diff := _scene_db.compare_scene_categories(_current_scene_enum, scene)
+	# Remove existing layers before setting up the new scene
 	_ebus.process_scene_layer.emit(_remove_node_safely)
 
-	# Add to history
-	if add_to_back and _current_scene_enum != Scenes.Id.NONE:
+	# Update history stack (only for new scene transitions)
+	if not is_reloading and add_to_back and _current_scene_enum != Scenes.Id.NONE:
 		_history_stack.push(_current_scene_enum)
 
-	var new_scene_node := _perform_scene_setup(scene, options)
+	# Instantiate and setup the scene (this internally emits 'scene_loaded')
+	var new_scene_node := _perform_scene_setup(scene_id, options)
 	if not new_scene_node:
 		push_error(
-			"Scene Manager: Failed to instantiate switch_to_scene: %s" % Scenes.Id.find_key(scene)
+			(
+				"Scene Manager: Failed to instantiate switch_to_scene: %s"
+				% Scenes.Id.find_key(scene_id)
+			)
 		)
 		_transition_player.set_clickable(true)
 		return null
 
-	_current_scene_enum = scene
+	var category_diff := _scene_db.compare_scene_categories(_current_scene_enum, scene_id)
+	_current_scene_enum = scene_id
 
-	# Emit category change signal along with scene_loaded
-	category_changed.emit(category_diff)
-	category_tags_notified.emit(category_diff.added)
+	if is_reloading:
+		var current_tags := _scene_db.get_category_ids_by_scene(scene_id)
+		category_reapplied.emit(current_tags)
+		category_tags_notified.emit(current_tags)
+	else:
+		category_changed.emit(category_diff)
+		category_tags_notified.emit(category_diff.added)
 
 	await _transition_player.play_in(options.play_in_time)
 	_transition_player.set_clickable(true)
-	scene_transition_completed.emit(scene)
+	scene_transition_completed.emit(scene_id)
 	return new_scene_node
 
 
@@ -430,21 +449,8 @@ func reload_current_scene(options := SceneLoadOptions.new()) -> bool:
 		push_warning("Attempted to reload current scene, but current scene is NONE.")
 		return false
 
-	var opt := options.copy()
-	var recv: Array[SMgrSceneLayer]
-	_ebus.get_scene_by_id.emit(recv, _current_scene_enum)
-
-	if recv.is_empty():
-		push_error("Scene Manager: Failed to reload. Current scene layer not found in tree.")
-		return false
-
-	opt.node_name = recv[0].name
-
-	var current_tags := _scene_db.get_category_ids_by_scene(_current_scene_enum)
-	category_reapplied.emit(current_tags)
-	category_tags_notified.emit(current_tags)
-
-	switch_to_scene(_current_scene_enum, false, opt)
+	# The reload logic is handled within switch_to_scene(), so simply calling it is sufficient.
+	switch_to_scene(_current_scene_enum, false, options)
 	return true
 
 
