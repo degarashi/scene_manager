@@ -423,6 +423,11 @@ func reload_current_scene(options := SceneLoadOptions.new()) -> bool:
 	var opt := options.copy()
 	var recv: Array[SMgrSceneLayer]
 	_ebus.get_scene_by_id.emit(recv, _current_scene_enum)
+
+	if recv.is_empty():
+		push_error("Scene Manager: Failed to reload. Current scene layer not found in tree.")
+		return false
+
 	opt.node_name = recv[0].name
 	switch_to_scene(_current_scene_enum, false, opt)
 	return true
