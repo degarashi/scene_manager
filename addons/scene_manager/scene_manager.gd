@@ -164,14 +164,18 @@ func _on_loader_progress_changed(_path: String, percent: int) -> void:
 		load_percent_changed.emit(percent)
 
 
-## Creates a layer and registers cleanup processing for self-destruction.
-## If override_name is provided, it takes precedence over both category and options.
+## Creates a SceneLayer and registers cleanup processing for self-destruction.
+##
+## The final node name is determined by the following priority:
+## 1. override_name (if provided and not empty)
+## 2. category.layer_name (if defined in the scene database)
+## 3. node_name (the fallback name passed as an argument)
 func _create_scene_layer(
 	scene_id: Scenes.Id, node_name: String, override_name: String = ""
 ) -> SMgrSceneLayer:
 	var summary := _get_category_summary(scene_id)
 
-	# Determine final name. Order of precedence:
+	# Determine final name based on the priority described above
 	var final_name := override_name
 	if final_name.is_empty():
 		final_name = summary.layer_name if not summary.layer_name.is_empty() else node_name
