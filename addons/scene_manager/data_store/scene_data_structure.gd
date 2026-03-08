@@ -43,20 +43,19 @@ func _on_any_data_changed() -> void:
 ## Ensure all managed data objects have their changed signals connected
 func _validate_connections() -> void:
 	for scene_data in _scenes.values():
-		if scene_data and not scene_data.changed.is_connected(_on_any_data_changed):
-			scene_data.changed.connect(_on_any_data_changed)
+		if scene_data:
+			_AF.connect_if_not_connected(scene_data.changed, _on_any_data_changed)
 
 	for category_data in _categories.values():
-		if category_data and not category_data.changed.is_connected(_on_any_data_changed):
-			category_data.changed.connect(_on_any_data_changed)
+		if category_data:
+			_AF.connect_if_not_connected(category_data.changed, _on_any_data_changed)
 
 
 # ------------- [Data Modification Methods] -------------
 ## Registers or updates a scene and notifies change
 func set_scene_data(uid: int, scene_data: SMgrDataScene) -> void:
 	_scenes[uid] = scene_data
-	if not scene_data.changed.is_connected(_on_any_data_changed):
-		scene_data.changed.connect(_on_any_data_changed)
+	_AF.connect_if_not_connected(scene_data.changed, _on_any_data_changed)
 	_on_any_data_changed()
 
 
@@ -69,8 +68,7 @@ func remove_scene_data(uid: int) -> void:
 ## Registers or updates a category and notifies change
 func set_category_data(id: int, category_data: SMgrCategoryData) -> void:
 	_categories[id] = category_data
-	if not category_data.changed.is_connected(_on_any_data_changed):
-		category_data.changed.connect(_on_any_data_changed)
+	_AF.connect_if_not_connected(category_data.changed, _on_any_data_changed)
 	_on_any_data_changed()
 
 
@@ -360,11 +358,9 @@ func _toggle_ebus_connections(ebus: SMgrEbusEditor, connect: bool) -> void:
 		var sig: Signal = conn[0]
 		var callable: Callable = conn[1]
 		if connect:
-			if not sig.is_connected(callable):
-				sig.connect(callable)
+			_AF.connect_if_not_connected(sig, callable)
 		else:
-			if sig.is_connected(callable):
-				sig.disconnect(callable)
+			_AF.disconnect_if_connected(sig, callable)
 
 
 func _ebus_get_scenes(recv: Array[SMgrDataScene], category_id: int) -> void:
