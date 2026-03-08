@@ -1,6 +1,18 @@
 extends Object
 
 
+## Connects the signal to the callable only if the connection does not already exist
+static func connect_if_not_connected(sig: Signal, callable: Callable) -> void:
+	if not sig.is_connected(callable):
+		sig.connect(callable)
+
+
+## Disconnects the signal from the callable only if the connection exists
+static func disconnect_if_connected(sig: Signal, callable: Callable) -> void:
+	if sig.is_connected(callable):
+		sig.disconnect(callable)
+
+
 static func to_tmp_name(node_name: String) -> String:
 	return node_name + "_" + str(ResourceUID.create_id())
 
