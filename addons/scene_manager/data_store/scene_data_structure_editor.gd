@@ -63,14 +63,12 @@ func _on_data_changed() -> void:
 # ------------- [Private Method] -------------
 func _setup_filesystem_monitoring() -> void:
 	var fs := EditorInterface.get_resource_filesystem()
-	if not fs.filesystem_changed.is_connected(_on_filesystem_changed):
-		fs.filesystem_changed.connect(_on_filesystem_changed)
+	_AF.connect_if_not_connected(fs.filesystem_changed, _on_filesystem_changed)
 
 
 func _cleanup_filesystem_monitoring() -> void:
 	var fs := EditorInterface.get_resource_filesystem()
-	if fs.filesystem_changed.is_connected(_on_filesystem_changed):
-		fs.filesystem_changed.disconnect(_on_filesystem_changed)
+	_AF.disconnect_if_connected(fs.filesystem_changed, _on_filesystem_changed)
 
 
 ## Registers a scene file based on its UID
@@ -406,13 +404,12 @@ func cleanup(ebus: SMgrEbusEditor) -> void:
 
 
 func _connect_ebus(ebus: SMgrEbusEditor) -> void:
-	ebus.get_dirty_flag.connect(_ebus_get_dirty_flag)
+	_AF.connect_if_not_connected(ebus.get_dirty_flag, _ebus_get_dirty_flag)
 	_data.connect_ebus(ebus)
 
 
 func _disconnect_ebus(ebus: SMgrEbusEditor) -> void:
-	if ebus.get_dirty_flag.is_connected(_ebus_get_dirty_flag):
-		ebus.get_dirty_flag.disconnect(_ebus_get_dirty_flag)
+	_AF.disconnect_if_connected(ebus.get_dirty_flag, _ebus_get_dirty_flag)
 	_data.disconnect_ebus(ebus)
 
 
