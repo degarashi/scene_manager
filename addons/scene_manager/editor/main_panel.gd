@@ -125,14 +125,17 @@ func _on_category_tab_container_tab_changed(tab: int) -> void:
 
 
 func _do_connect_ebus() -> void:
-	_ebus_ins.get_scene_enums_as_string.connect(_ebus_get_scene_enums_as_string)
+	_AF.connect_if_not_connected(
+		_ebus_ins.get_scene_enums_as_string, _ebus_get_scene_enums_as_string
+	)
 
 
 func _disconnect_ebus() -> void:
 	if not _connect_ebus:
 		return
-	if _ebus_ins.get_scene_enums_as_string.is_connected(_ebus_get_scene_enums_as_string):
-		_ebus_ins.get_scene_enums_as_string.disconnect(_ebus_get_scene_enums_as_string)
+	_AF.disconnect_if_connected(
+		_ebus_ins.get_scene_enums_as_string, _ebus_get_scene_enums_as_string
+	)
 	_connect_ebus = false
 
 
@@ -146,7 +149,7 @@ func _remove_include_path(item: SMgrRemovableItem) -> void:
 func _add_include_item(path: String) -> void:
 	var item: SMgrRemovableItem = _INCLUDE_ITEM_SCENE.instantiate()
 	item.prepare(path, item)
-	item.on_remove.connect(_remove_include_path)
+	_AF.connect_if_not_connected(item.on_remove, _remove_include_path)
 	_include_path_list.add_child(item)
 
 
@@ -193,7 +196,7 @@ func _reload_ui_scenes() -> void:
 			cat_gui = scene.instantiate()
 			_category_tab_cont.add_child(cat_gui)
 			cat_gui.activate(id)
-			cat_gui.on_remove.connect(_on_category_remove)
+			_AF.connect_if_not_connected(cat_gui.on_remove, _on_category_remove)
 			# The widget handles its own internal updates, so no explicit refresh command is needed here.
 
 		# Ensure the tab order matches the sorted data order
@@ -214,8 +217,9 @@ func _refresh_ui() -> void:
 
 func _cleanup_manager_data() -> void:
 	if _manager_data:
-		_manager_data.data_changed_debounced.disconnect(_refresh_ui)
-		_manager_data.on_dirty_flag_changed.disconnect(_on_dirty_flag_changed)
+		_AF.disconnect_if_connected(_manager_data.data_changed_debounced, _refresh_ui)
+		_AF.disconnect_if_connected(_manager_data.on_dirty_flag_changed, _on_dirty_flag_changed)
+		_AF.disconnect_if_connected(_manager_data.data_changed_debounced, _on_data_changed)
 		_manager_data.cleanup(_ebus_editor)
 		_manager_data = null
 
@@ -243,9 +247,9 @@ func _reload_data() -> void:
 
 	_manager_data.sync_with_filesystem()
 	_update_last_modified_time()
-	_manager_data.data_changed_debounced.connect(_refresh_ui)
-	_manager_data.on_dirty_flag_changed.connect(_on_dirty_flag_changed)
-	_manager_data.data_changed_debounced.connect(_on_data_changed)
+	_AF.connect_if_not_connected(_manager_data.data_changed_debounced, _refresh_ui)
+	_AF.connect_if_not_connected(_manager_data.on_dirty_flag_changed, _on_dirty_flag_changed)
+	_AF.connect_if_not_connected(_manager_data.data_changed_debounced, _on_data_changed)
 	_ebus_editor.on_dirty_flag_changed.emit(false)
 
 
