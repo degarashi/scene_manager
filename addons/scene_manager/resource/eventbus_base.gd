@@ -2,10 +2,15 @@
 class_name SMgrEventBusBase
 extends SMgrResource
 
+# ------------- [Constants] -------------
+const _AF = preload("uid://dlgh4u64a7qxk")
+
+# ------------- [Private Variable] -------------
 ## Cache to hold signal argument names { signal_name: Array[String] }
 var _sig_arg_cache: Dictionary = {}
 
 
+# ------------- [Public Method] -------------
 ## Connects all signals to the logging callback
 func connect_all_signals_to_logger() -> void:
 	var script := get_script() as Script
@@ -21,8 +26,7 @@ func connect_all_signals_to_logger() -> void:
 
 		# Connect
 		var callable := _on_signal_emitted.bind(sig_name)
-		if not is_connected(sig_name, callable):
-			connect(sig_name, callable)
+		_AF.connect_if_not_connected(Signal(self, sig_name), callable)
 
 
 ## Disconnects the logging connection for all signals
@@ -35,12 +39,20 @@ func disconnect_all_signals_from_logger() -> void:
 		var sig_name: String = sig["name"]
 		var target_callable := _on_signal_emitted.bind(sig_name)
 
-		if is_connected(sig_name, target_callable):
-			disconnect(sig_name, target_callable)
+		_AF.disconnect_if_connected(Signal(self, sig_name), target_callable)
 
 	_sig_arg_cache.clear()
 
 
+## Returns the total number of signals defined in this script
+func get_signal_count() -> int:
+	var script := get_script() as Script
+	if not script:
+		return 0
+	return script.get_script_signal_list().size()
+
+
+# ------------- [Private Method] -------------
 ## Generic callback executed when a signal is emitted
 func _on_signal_emitted(...args: Array) -> void:
 	var num_args := args.size()
@@ -66,11 +78,3 @@ func _on_signal_emitted(...args: Array) -> void:
 		log_msg += ": <{0}>".format([", ".join(formatted_args)])
 
 	print(log_msg)
-
-
-## Returns the total number of signals defined in this script
-func get_signal_count() -> int:
-	var script := get_script() as Script
-	if not script:
-		return 0
-	return script.get_script_signal_list().size()
