@@ -16,6 +16,7 @@ const _ICON_COLLAPSE_BUTTON = preload("uid://bd6ob6pgam1gt")
 @export var _ebus_ins: SMgrEbusInspector
 var _ps := preload("uid://dn6eh4s0h8jhi")
 var _manager_data: SMgrDataEditor
+var _log: SMgrLogBase
 ## For file monitoring
 var _last_modified_time: int = 0
 var _connect_ebus: bool = false
@@ -223,6 +224,11 @@ func _cleanup_manager_data() -> void:
 		_manager_data.cleanup(_ebus_editor)
 		_manager_data = null
 
+	if _ps:
+		_AF.disconnect_if_connected(_ps.on_enable_log_changed, _on_enable_log_changed)
+
+	_log = null
+
 
 func _on_data_changed() -> void:
 	_ebus_editor.on_data_changed.emit()
@@ -231,10 +237,16 @@ func _on_data_changed() -> void:
 func _reload_data() -> void:
 	_cleanup_manager_data()
 
-	# Check if the directory exists (just to be sure)
+	# Initialize Logger via DI pattern
+	_log = SMgrLogBase.create(_ps.enable_log)
+	# Listen for log setting changes to update the logger instance dynamically
+	_AF.connect_if_not_connected(_ps.on_enable_log_changed, _on_enable_log_changed)
+
+	# Check if the directory exists
 	var target_dir := _ps.scene_path.get_base_dir()
 	if not DirAccess.dir_exists_absolute(target_dir):
 		DirAccess.make_dir_recursive_absolute(target_dir)
+		_log.info("Created data directory at: " + target_dir)
 
 	var raw_data: SMgrData = ResourceLoader.load(_ps.scene_data_path)
 	if not raw_data:
@@ -242,6 +254,7 @@ func _reload_data() -> void:
 		raw_data = SMgrData.new()
 		# Save as a resource and confirm the path
 		ResourceSaver.save(raw_data, _ps.scene_data_path)
+		_log.info("Created new SMgrData resource at: " + _ps.scene_data_path)
 
 	_manager_data = SMgrDataEditor.new(raw_data, _ebus_editor)
 
@@ -251,6 +264,12 @@ func _reload_data() -> void:
 	_AF.connect_if_not_connected(_manager_data.on_dirty_flag_changed, _on_dirty_flag_changed)
 	_AF.connect_if_not_connected(_manager_data.data_changed_debounced, _on_data_changed)
 	_ebus_editor.on_dirty_flag_changed.emit(false)
+
+
+func _on_enable_log_changed(enable: bool) -> void:
+	# Re-create the logger instance
+	_log = SMgrLogBase.create(enable)
+	_log.debug("Logger updated. Enable: %s" % enable)
 
 
 func _on_file_dialog_button_button_up() -> void:
