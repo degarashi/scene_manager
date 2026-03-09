@@ -3,6 +3,7 @@ class_name SMgrProjectSettings
 extends SMgrResource
 
 signal on_auto_save_changed(enable: bool)
+
 const DEFAULT_DATA_DIR = "res://scene_manager_data"
 const DEFAULT_SCENES_FILENAME = "scenes.gd"
 const DEFAULT_PATH_TO_SCENES := DEFAULT_DATA_DIR + "/" + DEFAULT_SCENES_FILENAME
@@ -18,6 +19,7 @@ class Property:
 	const PLAY_IN_TIME = "scene_manager/scenes/default_play_in_time"
 	const AUTO_SAVE = "scene_manager/scenes/autosave"
 	const INCLUDES_VISIBLE = "scene_manager/scenes/includes_visible"
+	const ENABLE_LOG = "scene_manager/general/enable_log"
 
 
 # Dictionary Keys
@@ -79,6 +81,14 @@ var includes_visible: bool:
 			ProjectSettings.set_setting(Property.INCLUDES_VISIBLE, value)
 			_save()
 
+var enable_log: bool:
+	get:
+		return ProjectSettings.get_setting(Property.ENABLE_LOG, false)
+	set(value):
+		if enable_log != value:
+			ProjectSettings.set_setting(Property.ENABLE_LOG, value)
+			_save()
+
 
 func _ensure_data_dir_exists(dir_path: String) -> void:
 	if not DirAccess.dir_exists_absolute(dir_path):
@@ -128,6 +138,12 @@ func setup_project_settings() -> void:
 			Key.DEFAULT: true,
 			Key.TYPE: TYPE_BOOL,
 			Key.INTERNAL: true,
+		},
+		Property.ENABLE_LOG:
+		{
+			Key.DEFAULT: false,
+			Key.TYPE: TYPE_BOOL,
+			Key.BASIC: true,
 		}
 	}
 
