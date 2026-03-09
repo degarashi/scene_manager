@@ -366,16 +366,31 @@ func add_include_path(inc_path: String) -> bool:
 
 
 ## Rescans registered include paths, removes non-existent scenes, and registers new scenes
+##
+## Scan all registered include paths to find current .tscn files and update UIDs.
+## Then, compare the found UIDs with the existing data to prune any scenes
+## that no longer exist on the filesystem but are still within the managed paths.
 func sync_with_filesystem() -> void:
 	var found_uids: Array[int] = []
 
+	# Collect all current UIDs within the include paths.
 	for path in _data.get_include_list():
 		if DirAccess.dir_exists_absolute(path):
+			# if Directory
 			_scan_and_collect_uids(path, found_uids)
 		elif FileAccess.file_exists(path) and path.ends_with(".tscn"):
+			# if File
 			var uid := _register_scene_file(path)
 			if uid != ResourceUID.INVALID_ID:
 				found_uids.append(uid)
+
+	# Handle path changes for existing scenes (Movement Support)
+	for sc in _data.get_scenes_all():
+		if sc.uid in found_uids:
+			var current_actual_path := ResourceUID.get_id_path(sc.uid)
+			if not current_actual_path.is_empty() and sc.path != current_actual_path:
+				# (SMgrDataScene's setter or emit_changed will trigger the dirty flag)
+				sc.path = current_actual_path
 
 	# Remove UIDs that should be under the include list but were not found during the scan
 	var uids_to_remove: Array[int] = []
@@ -392,6 +407,8 @@ func sync_with_filesystem() -> void:
 
 	if not uids_to_remove.is_empty():
 		for uid in uids_to_remove:
+			var sc_data := _data.get_scene_from_uid(uid)
+			var sc_name := sc_data.name if sc_data else str(uid)
 			_data.remove_scene_data(uid)
 
 
