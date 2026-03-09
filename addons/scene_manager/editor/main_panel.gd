@@ -269,6 +269,8 @@ func _init_logger(enable: bool) -> void:
 	# Re-create the logger instance
 	_log = SMgrLogBase.create(enable)
 	_log.debug("Logger updated. Enable: %s" % enable)
+	if _manager_data:
+		_manager_data.set_logger(_log)
 
 
 func _on_file_dialog_button_button_up() -> void:
