@@ -71,8 +71,8 @@ var auto_save: bool:
 	set(value):
 		if auto_save != value:
 			ProjectSettings.set_setting(Property.AUTO_SAVE, value)
-			# force _save only the "auto _save" value
 			_save()
+			_last_auto_save = value
 			on_auto_save_changed.emit.call_deferred(value)
 
 var includes_visible: bool:
@@ -93,6 +93,7 @@ var enable_log: bool:
 			_last_enable_log = value
 			on_enable_log_changed.emit(value)
 
+var _last_auto_save: bool = false
 var _last_enable_log: bool = false
 
 
@@ -110,6 +111,13 @@ func _save() -> void:
 
 ## Handler to detect changes made to settings from external sources like the Project Settings window
 func _on_project_settings_changed() -> void:
+	# Check auto_save change
+	var current_auto_save := auto_save
+	if current_auto_save != _last_auto_save:
+		_last_auto_save = current_auto_save
+		on_auto_save_changed.emit.call_deferred(current_auto_save)
+
+	# Check enable_log change
 	var current_log := enable_log
 	if current_log != _last_enable_log:
 		_last_enable_log = current_log
@@ -196,6 +204,7 @@ func setup_project_settings() -> void:
 			ProjectSettings.set_restart_if_changed(path, true)
 
 	# Cache the initial state
+	_last_auto_save = auto_save
 	_last_enable_log = enable_log
 
 	if needs_save:
