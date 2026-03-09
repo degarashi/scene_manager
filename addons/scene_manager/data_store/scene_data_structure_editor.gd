@@ -140,6 +140,7 @@ func _scan_and_collect_uids(dir_path: String, collected_uids: Array[int]) -> voi
 		elif file_name.ends_with(".tscn"):
 			var uid := _register_scene_file(full_path)
 			if uid != ResourceUID.INVALID_ID:
+				print("    Found scene: %s (UID: %d)" % [file_name, uid])
 				collected_uids.append(uid)
 		file_name = dir.get_next()
 
@@ -371,15 +372,18 @@ func add_include_path(inc_path: String) -> bool:
 ## Then, compare the found UIDs with the existing data to prune any scenes
 ## that no longer exist on the filesystem but are still within the managed paths.
 func sync_with_filesystem() -> void:
+	print("[Scene Manager] Syncing with filesystem...")
 	var found_uids: Array[int] = []
 
 	# Collect all current UIDs within the include paths.
 	for path in _data.get_include_list():
 		if DirAccess.dir_exists_absolute(path):
 			# if Directory
+			print("  Scanning directory: ", path)
 			_scan_and_collect_uids(path, found_uids)
 		elif FileAccess.file_exists(path) and path.ends_with(".tscn"):
 			# if File
+			print("  Checking scene file: ", path)
 			var uid := _register_scene_file(path)
 			if uid != ResourceUID.INVALID_ID:
 				found_uids.append(uid)
@@ -389,6 +393,12 @@ func sync_with_filesystem() -> void:
 		if sc.uid in found_uids:
 			var current_actual_path := ResourceUID.get_id_path(sc.uid)
 			if not current_actual_path.is_empty() and sc.path != current_actual_path:
+				print(
+					(
+						"  Updating path for scene: %s (%s -> %s)"
+						% [sc.name, sc.path, current_actual_path]
+					)
+				)
 				# (SMgrDataScene's setter or emit_changed will trigger the dirty flag)
 				sc.path = current_actual_path
 
@@ -409,7 +419,10 @@ func sync_with_filesystem() -> void:
 		for uid in uids_to_remove:
 			var sc_data := _data.get_scene_from_uid(uid)
 			var sc_name := sc_data.name if sc_data else str(uid)
+			print("  Removing missing scene: ", sc_name)
 			_data.remove_scene_data(uid)
+
+	print("[Scene Manager] Sync complete.")
 
 
 func cleanup(ebus: SMgrEbusEditor) -> void:
