@@ -225,7 +225,7 @@ func _cleanup_manager_data() -> void:
 		_manager_data = null
 
 	if _ps:
-		_AF.disconnect_if_connected(_ps.on_enable_log_changed, _on_enable_log_changed)
+		_AF.disconnect_if_connected(_ps.on_enable_log_changed, _init_logger)
 
 	_log = null
 
@@ -237,10 +237,9 @@ func _on_data_changed() -> void:
 func _reload_data() -> void:
 	_cleanup_manager_data()
 
-	# Initialize Logger via DI pattern
-	_log = SMgrLogBase.create(_ps.enable_log)
+	_init_logger(_ps.enable_log)
 	# Listen for log setting changes to update the logger instance dynamically
-	_AF.connect_if_not_connected(_ps.on_enable_log_changed, _on_enable_log_changed)
+	_AF.connect_if_not_connected(_ps.on_enable_log_changed, _init_logger)
 
 	# Check if the directory exists
 	var target_dir := _ps.scene_path.get_base_dir()
@@ -266,7 +265,7 @@ func _reload_data() -> void:
 	_ebus_editor.on_dirty_flag_changed.emit(false)
 
 
-func _on_enable_log_changed(enable: bool) -> void:
+func _init_logger(enable: bool) -> void:
 	# Re-create the logger instance
 	_log = SMgrLogBase.create(enable)
 	_log.debug("Logger updated. Enable: %s" % enable)
