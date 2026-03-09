@@ -256,7 +256,7 @@ func _reload_data() -> void:
 		ResourceSaver.save(raw_data, _ps.scene_data_path)
 		_log.info("Created new SMgrData resource at: " + _ps.scene_data_path)
 
-	_manager_data = SMgrDataEditor.new(raw_data, _ebus_editor)
+	_manager_data = SMgrDataEditor.new(raw_data, _ebus_editor, _log)
 
 	_manager_data.sync_with_filesystem()
 	_update_last_modified_time()

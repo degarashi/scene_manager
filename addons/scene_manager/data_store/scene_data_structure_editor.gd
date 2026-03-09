@@ -22,6 +22,7 @@ extends Node
 
 # ------------- [Private Variable] -------------
 var _data: SMgrData
+var _log: SMgrLogBase
 
 var _dirty_flag: bool = false:
 	set(value):
@@ -33,11 +34,12 @@ var _dirty_flag: bool = false:
 
 
 # ------------- [Callbacks] -------------
-func _init(p_data: SMgrData, ebus: SMgrEbusEditor) -> void:
+func _init(p_data: SMgrData, ebus: SMgrEbusEditor, p_log: SMgrLogBase) -> void:
 	assert(Engine.is_editor_hint(), "Editor-Only class")
 	assert(p_data != null, "SMgrData instance is required")
 
 	_data = p_data
+	_log = p_log
 
 	# Initialize the debouncer inherited from DebouncedResource
 	_init_debouncer(_DEBOUNCE_TIME)
@@ -140,7 +142,7 @@ func _scan_and_collect_uids(dir_path: String, collected_uids: Array[int]) -> voi
 		elif file_name.ends_with(".tscn"):
 			var uid := _register_scene_file(full_path)
 			if uid != ResourceUID.INVALID_ID:
-				print("    Found scene: %s (UID: %d)" % [file_name, uid])
+				_log.debug("Found scene: %s (UID: %d)" % [file_name, uid])
 				collected_uids.append(uid)
 		file_name = dir.get_next()
 
@@ -178,6 +180,13 @@ func _export_category_enum_string() -> String:
 
 
 # ------------- [Public Method] -------------
+
+
+## Updates the logger instance dynamically
+func set_logger(p_log: SMgrLogBase) -> void:
+	_log = p_log
+
+
 func get_data() -> SMgrData:
 	return _data
 
@@ -186,7 +195,7 @@ func save_data(path: String, data_path: String) -> void:
 	# --- write GDScript(Enum) data ---
 	var file := FileAccess.open(path, FileAccess.WRITE)
 	if not file:
-		printerr("Scene Manager Error: Failed to open file for writing at '%s'." % path)
+		_log.error("Failed to open file for writing at '%s'." % path)
 		return
 	file.store_string(_SCENE_DATA_HEADER)
 	file.store_string(_export_scene_enum_string())
@@ -197,12 +206,9 @@ func save_data(path: String, data_path: String) -> void:
 	_data.sort_data_structures()
 	var error := ResourceSaver.save(_data, data_path)
 	if error != OK:
-		printerr(
-			(
-				"Scene Manager Error: Failed to save SMgrData resource at '%s' (Error: %d)."
-				% [data_path, error]
-			)
-		)
+		_log.error("Failed to save SMgrData resource at '%s' (Error: %d)." % [data_path, error])
+	else:
+		_log.info("Successfully saved scene data to: " + path)
 
 	_dirty_flag = false
 
@@ -265,12 +271,7 @@ func remove_include_path(scene_path: String) -> void:
 		# emit_changed is called via the setter by property assignment
 		_data._include_list = list
 	else:
-		printerr(
-			(
-				"Scene Manager Error: Cannot remove include path. Path '%s' is not in the list."
-				% scene_path
-			)
-		)
+		_log.error("Cannot remove include path. Path '%s' is not in the list." % scene_path)
 		return
 
 	var ids_to_remove: Array[int] = []
@@ -292,12 +293,12 @@ func add_category(category_name: String) -> void:
 	# Check existing list case-insensitively
 	for c_data in _data.get_categories_list():
 		if c_data.name.to_lower() == new_name.to_lower():
-			push_warning("Scene Manager: Category '%s' already exists." % new_name)
+			_log.warn("Category '%s' already exists." % new_name)
 			return
 
 	# Also check for duplicates with default section names
 	if new_name.to_lower() == _C.ALL_CATEGORY_NAME.to_lower():
-		push_warning("Scene Manager: '%s' is a reserved category name." % new_name)
+		_log.warn("'%s' is a reserved category name." % new_name)
 		return
 
 	var new_data := SMgrCategoryData.new(new_name)
@@ -314,7 +315,7 @@ func get_category_id_from_name(category_name: String) -> int:
 
 func remove_category(category_id: int) -> void:
 	if _data.get_category_from_id(category_id) == null:
-		printerr("Scene Manager Error: Cannot remove category ID '%d'." % category_id)
+		_log.error("Cannot remove category ID '%d'." % category_id)
 		return
 
 	_data.remove_category_data(category_id)
@@ -333,18 +334,14 @@ func add_include_path(inc_path: String) -> bool:
 	var is_file := FileAccess.file_exists(inc_path) and inc_path.ends_with(".tscn")
 
 	if not is_dir and not is_file:
-		push_warning(
-			"Scene Manager Error: Path '%s' is not a valid directory or .tscn file." % inc_path
-		)
+		_log.warn("Path '%s' is not a valid directory or .tscn file." % inc_path)
 		return false
 
 	# Check for inclusion relationships
 	var list := _data.get_include_list()
 	for existing_path in list:
 		if inc_path.begins_with(existing_path):
-			push_warning(
-				"Scene Manager: Path '%s' is already covered by '%s'." % [inc_path, existing_path]
-			)
+			_log.warn("Path '%s' is already covered by '%s'." % [inc_path, existing_path])
 			return false
 
 	# If the new path is a parent of existing paths, remove those sub-paths
@@ -352,7 +349,7 @@ func add_include_path(inc_path: String) -> bool:
 	list = list.filter(func(p: String) -> bool: return not p.begins_with(inc_path))
 
 	if list.size() < original_size:
-		print("Scene Manager: Removed sub-paths covered by '%s'." % inc_path)
+		_log.info("Removed sub-paths covered by '%s'." % inc_path)
 
 	list.append(inc_path)
 	_data._include_list = list  # Triggers setter
@@ -362,7 +359,7 @@ func add_include_path(inc_path: String) -> bool:
 	else:
 		_register_scene_file(inc_path)
 
-	print("Scene Manager: Successfully added path '%s'." % inc_path)
+	_log.info("Successfully added path '%s'." % inc_path)
 	return true
 
 
@@ -372,18 +369,16 @@ func add_include_path(inc_path: String) -> bool:
 ## Then, compare the found UIDs with the existing data to prune any scenes
 ## that no longer exist on the filesystem but are still within the managed paths.
 func sync_with_filesystem() -> void:
-	print("[Scene Manager] Syncing with filesystem...")
+	_log.debug("Syncing with filesystem...")
 	var found_uids: Array[int] = []
 
 	# Collect all current UIDs within the include paths.
 	for path in _data.get_include_list():
 		if DirAccess.dir_exists_absolute(path):
-			# if Directory
-			print("  Scanning directory: ", path)
+			_log.debug("  Scanning directory: " + path)
 			_scan_and_collect_uids(path, found_uids)
 		elif FileAccess.file_exists(path) and path.ends_with(".tscn"):
-			# if File
-			print("  Checking scene file: ", path)
+			_log.debug("  Checking scene file: " + path)
 			var uid := _register_scene_file(path)
 			if uid != ResourceUID.INVALID_ID:
 				found_uids.append(uid)
@@ -393,7 +388,7 @@ func sync_with_filesystem() -> void:
 		if sc.uid in found_uids:
 			var current_actual_path := ResourceUID.get_id_path(sc.uid)
 			if not current_actual_path.is_empty() and sc.path != current_actual_path:
-				print(
+				_log.info(
 					(
 						"  Updating path for scene: %s (%s -> %s)"
 						% [sc.name, sc.path, current_actual_path]
@@ -419,10 +414,10 @@ func sync_with_filesystem() -> void:
 		for uid in uids_to_remove:
 			var sc_data := _data.get_scene_from_uid(uid)
 			var sc_name := sc_data.name if sc_data else str(uid)
-			print("  Removing missing scene: ", sc_name)
+			_log.info("  Removing missing scene: " + sc_name)
 			_data.remove_scene_data(uid)
 
-	print("[Scene Manager] Sync complete.")
+	_log.debug("Sync complete.")
 
 
 func cleanup(ebus: SMgrEbusEditor) -> void:
