@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://crnf0w0s44hxx"]
+[gd_scene format=3 uid="uid://crnf0w0s44hxx"]
 
 [ext_resource type="Resource" uid="uid://ra25t5in8erp" path="res://addons/scene_manager/editor/event_bus/ebus_editor.tres" id="2_di26o"]
 [ext_resource type="Texture2D" uid="uid://bh5qft2w2580j" path="res://addons/scene_manager/icons/FileDialog.svg" id="3"]
@@ -11,7 +11,7 @@
 [ext_resource type="Script" uid="uid://bp7a48n3n7idd" path="res://addons/scene_manager/editor/main_panel.gd" id="6"]
 [ext_resource type="PackedScene" uid="uid://lx7kbuk7ui2m" path="res://addons/scene_manager/editor/widget/auto_save_button.tscn" id="6_efl6f"]
 
-[node name="RootContainer" type="MarginContainer"]
+[node name="RootContainer" type="MarginContainer" unique_id=803725779]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -21,22 +21,22 @@ script = ExtResource("6")
 _ebus_editor = ExtResource("2_di26o")
 _ebus_ins = ExtResource("3_tcp4f")
 
-[node name="MainContainer" type="VBoxContainer" parent="."]
+[node name="MainContainer" type="VBoxContainer" parent="." unique_id=833062135]
 layout_mode = 2
 
-[node name="VSplitContainer" type="VSplitContainer" parent="MainContainer"]
+[node name="VSplitContainer" type="VSplitContainer" parent="MainContainer" unique_id=1960098671]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MainContainer/VSplitContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="MainContainer/VSplitContainer" unique_id=1551687688]
 layout_mode = 2
 
-[node name="Scenes" type="ScrollContainer" parent="MainContainer/VSplitContainer/VBoxContainer"]
+[node name="Scenes" type="ScrollContainer" parent="MainContainer/VSplitContainer/VBoxContainer" unique_id=78600150]
 custom_minimum_size = Vector2(0, 222)
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="CategoryTabContainer" type="TabContainer" parent="MainContainer/VSplitContainer/VBoxContainer/Scenes"]
+[node name="CategoryTabContainer" type="TabContainer" parent="MainContainer/VSplitContainer/VBoxContainer/Scenes" unique_id=153645775]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -44,33 +44,33 @@ size_flags_vertical = 3
 current_tab = 0
 drag_to_rearrange_enabled = true
 
-[node name="AddCategoryContainer" type="MarginContainer" parent="MainContainer/VSplitContainer/VBoxContainer"]
+[node name="AddCategoryContainer" type="MarginContainer" parent="MainContainer/VSplitContainer/VBoxContainer" unique_id=263778220]
 layout_mode = 2
 size_flags_vertical = 8
 
-[node name="AddCategoryContainer" type="HBoxContainer" parent="MainContainer/VSplitContainer/VBoxContainer/AddCategoryContainer"]
+[node name="AddCategoryContainer" type="HBoxContainer" parent="MainContainer/VSplitContainer/VBoxContainer/AddCategoryContainer" unique_id=1852955989]
 layout_mode = 2
 
-[node name="CategoryNameToAdd" type="LineEdit" parent="MainContainer/VSplitContainer/VBoxContainer/AddCategoryContainer/AddCategoryContainer"]
+[node name="CategoryNameToAdd" type="LineEdit" parent="MainContainer/VSplitContainer/VBoxContainer/AddCategoryContainer/AddCategoryContainer" unique_id=426591954]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 3.0
 
-[node name="AddCategoryButton" type="Button" parent="MainContainer/VSplitContainer/VBoxContainer/AddCategoryContainer/AddCategoryContainer"]
+[node name="AddCategoryButton" type="Button" parent="MainContainer/VSplitContainer/VBoxContainer/AddCategoryContainer/AddCategoryContainer" unique_id=2000779897]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 disabled = true
 text = "+ Category"
 
-[node name="MiscTab" type="TabContainer" parent="MainContainer/VSplitContainer"]
+[node name="MiscTab" type="TabContainer" parent="MainContainer/VSplitContainer" unique_id=962655244]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 current_tab = 1
 
-[node name="Include" type="VBoxContainer" parent="MainContainer/VSplitContainer/MiscTab"]
+[node name="Include" type="VBoxContainer" parent="MainContainer/VSplitContainer/MiscTab" unique_id=653634237]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
@@ -78,48 +78,48 @@ size_flags_vertical = 3
 size_flags_stretch_ratio = 0.3
 metadata/_tab_index = 0
 
-[node name="Container" type="VBoxContainer" parent="MainContainer/VSplitContainer/MiscTab/Include"]
+[node name="Container" type="VBoxContainer" parent="MainContainer/VSplitContainer/MiscTab/Include" unique_id=1055687251]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="Title" type="HBoxContainer" parent="MainContainer/VSplitContainer/MiscTab/Include/Container"]
+[node name="Title" type="HBoxContainer" parent="MainContainer/VSplitContainer/MiscTab/Include/Container" unique_id=1234468327]
 layout_mode = 2
 
-[node name="Padding" type="Control" parent="MainContainer/VSplitContainer/MiscTab/Include/Container/Title"]
+[node name="Padding" type="Control" parent="MainContainer/VSplitContainer/MiscTab/Include/Container/Title" unique_id=1905049511]
 custom_minimum_size = Vector2(28, 28)
 layout_mode = 2
 
-[node name="Scenes" type="Label" parent="MainContainer/VSplitContainer/MiscTab/Include/Container/Title"]
+[node name="Scenes" type="Label" parent="MainContainer/VSplitContainer/MiscTab/Include/Container/Title" unique_id=1740614592]
 layout_mode = 2
 text = "Includes:"
 
-[node name="Includes" type="ScrollContainer" parent="MainContainer/VSplitContainer/MiscTab/Include/Container"]
+[node name="Includes" type="ScrollContainer" parent="MainContainer/VSplitContainer/MiscTab/Include/Container" unique_id=391979311]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="IncludeList" type="VBoxContainer" parent="MainContainer/VSplitContainer/MiscTab/Include/Container/Includes"]
+[node name="IncludeList" type="VBoxContainer" parent="MainContainer/VSplitContainer/MiscTab/Include/Container/Includes" unique_id=499820413]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="IncludeAddPanel" type="VBoxContainer" parent="MainContainer/VSplitContainer/MiscTab/Include"]
+[node name="IncludeAddPanel" type="VBoxContainer" parent="MainContainer/VSplitContainer/MiscTab/Include" unique_id=1301480378]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="IncludeInteractiveSectionContainer" type="MarginContainer" parent="MainContainer/VSplitContainer/MiscTab/Include/IncludeAddPanel"]
+[node name="IncludeInteractiveSectionContainer" type="MarginContainer" parent="MainContainer/VSplitContainer/MiscTab/Include/IncludeAddPanel" unique_id=4654491]
 layout_mode = 2
 size_flags_vertical = 8
 
-[node name="AddIncludeContainer" type="HBoxContainer" parent="MainContainer/VSplitContainer/MiscTab/Include/IncludeAddPanel/IncludeInteractiveSectionContainer"]
+[node name="AddIncludeContainer" type="HBoxContainer" parent="MainContainer/VSplitContainer/MiscTab/Include/IncludeAddPanel/IncludeInteractiveSectionContainer" unique_id=2146210619]
 layout_mode = 2
 
-[node name="DialogAddIncludeContainer" type="HBoxContainer" parent="MainContainer/VSplitContainer/MiscTab/Include/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer"]
+[node name="DialogAddIncludeContainer" type="HBoxContainer" parent="MainContainer/VSplitContainer/MiscTab/Include/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer" unique_id=873813743]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="FileDialog" type="FileDialog" parent="MainContainer/VSplitContainer/MiscTab/Include/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer"]
+[node name="FileDialog" type="FileDialog" parent="MainContainer/VSplitContainer/MiscTab/Include/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer" unique_id=1671478432]
 unique_name_in_owner = true
 title = "Open a File or Directory"
 size = Vector2i(348, 180)
@@ -127,21 +127,21 @@ ok_button_text = "Open"
 file_mode = 3
 filters = PackedStringArray("*.tscn")
 
-[node name="FileDialogButton" type="Button" parent="MainContainer/VSplitContainer/MiscTab/Include/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer"]
+[node name="FileDialogButton" type="Button" parent="MainContainer/VSplitContainer/MiscTab/Include/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer" unique_id=1971836768]
 custom_minimum_size = Vector2(28, 28)
 layout_mode = 2
 icon = ExtResource("3")
 
-[node name="AddressEdit" type="LineEdit" parent="MainContainer/VSplitContainer/MiscTab/Include/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer"]
+[node name="AddressEdit" type="LineEdit" parent="MainContainer/VSplitContainer/MiscTab/Include/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer" unique_id=1110473390]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="DialogAddIncludeContainer2" type="HBoxContainer" parent="MainContainer/VSplitContainer/MiscTab/Include/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer"]
+[node name="DialogAddIncludeContainer2" type="HBoxContainer" parent="MainContainer/VSplitContainer/MiscTab/Include/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer" unique_id=1795315615]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="AddIncludeButton" type="Button" parent="MainContainer/VSplitContainer/MiscTab/Include/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer2"]
+[node name="AddIncludeButton" type="Button" parent="MainContainer/VSplitContainer/MiscTab/Include/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer2" unique_id=770181270]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -149,21 +149,21 @@ tooltip_text = "Adds folder/file to include in the scene data."
 disabled = true
 text = "Add"
 
-[node name="CategoryInfo" type="VBoxContainer" parent="MainContainer/VSplitContainer/MiscTab"]
+[node name="CategoryInfo" type="VBoxContainer" parent="MainContainer/VSplitContainer/MiscTab" unique_id=1650104190]
 layout_mode = 2
 metadata/_tab_index = 1
 
-[node name="CategoryNameLabel" parent="MainContainer/VSplitContainer/MiscTab/CategoryInfo" instance=ExtResource("5_8cjhe")]
+[node name="CategoryNameLabel" parent="MainContainer/VSplitContainer/MiscTab/CategoryInfo" unique_id=698089813 instance=ExtResource("5_8cjhe")]
 layout_mode = 2
 
-[node name="CategoryEdit" parent="MainContainer/VSplitContainer/MiscTab/CategoryInfo" instance=ExtResource("4_tcp4f")]
+[node name="CategoryEdit" parent="MainContainer/VSplitContainer/MiscTab/CategoryInfo" unique_id=583848232 instance=ExtResource("4_tcp4f")]
 visible = false
 layout_mode = 2
 
-[node name="HSeparator2" type="HSeparator" parent="MainContainer"]
+[node name="HSeparator2" type="HSeparator" parent="MainContainer" unique_id=2079799009]
 layout_mode = 2
 
-[node name="HideIncludeButton" type="Button" parent="MainContainer"]
+[node name="HideIncludeButton" type="Button" parent="MainContainer" unique_id=1662387860]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(28, 28)
 layout_mode = 2
@@ -173,21 +173,21 @@ icon = ExtResource("4_vqnpn")
 icon_alignment = 1
 metadata/enabled = true
 
-[node name="InteractiveSectionContainer" type="VBoxContainer" parent="MainContainer"]
+[node name="InteractiveSectionContainer" type="VBoxContainer" parent="MainContainer" unique_id=1249218832]
 layout_mode = 2
 
-[node name="MarginRefreshSaveContainer" type="MarginContainer" parent="MainContainer/InteractiveSectionContainer"]
+[node name="MarginRefreshSaveContainer" type="MarginContainer" parent="MainContainer/InteractiveSectionContainer" unique_id=1020014946]
 layout_mode = 2
 size_flags_vertical = 0
 
-[node name="RefreshSaveContainer" type="VBoxContainer" parent="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer"]
+[node name="RefreshSaveContainer" type="VBoxContainer" parent="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer" unique_id=2139713062]
 layout_mode = 2
 
-[node name="SaveRefreshContainer" type="HBoxContainer" parent="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer"]
+[node name="SaveRefreshContainer" type="HBoxContainer" parent="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer" unique_id=162685789]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="RefreshButton" type="Button" parent="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer/SaveRefreshContainer"]
+[node name="RefreshButton" type="Button" parent="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer/SaveRefreshContainer" unique_id=786078650]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -195,41 +195,40 @@ tooltip_text = "Reloads the scene data file and refreshes the UI."
 text = "Refresh"
 icon = ExtResource("5_2r30m")
 
-[node name="SaveContainer" type="HBoxContainer" parent="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer/SaveRefreshContainer"]
+[node name="SaveContainer" type="HBoxContainer" parent="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer/SaveRefreshContainer" unique_id=1155730816]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="SaveButton" parent="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer/SaveRefreshContainer/SaveContainer" instance=ExtResource("5_efl6f")]
+[node name="SaveButton" parent="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer/SaveRefreshContainer/SaveContainer" unique_id=117147505 instance=ExtResource("5_efl6f")]
 unique_name_in_owner = true
 layout_mode = 2
-disabled = true
 
-[node name="AutoSaveRefreshContainer" type="HBoxContainer" parent="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer"]
+[node name="AutoSaveRefreshContainer" type="HBoxContainer" parent="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer" unique_id=297657268]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="CheckInvalidIdsButton" type="Button" parent="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer/AutoSaveRefreshContainer"]
+[node name="CheckInvalidIdsButton" type="Button" parent="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer/AutoSaveRefreshContainer" unique_id=1919139769]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 tooltip_text = "Detect invalid SceneIds used in scripts within the project."
 text = "Check Invalid Ids"
 
-[node name="RefreshUidButton" type="Button" parent="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer/AutoSaveRefreshContainer"]
+[node name="RefreshUidButton" type="Button" parent="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer/AutoSaveRefreshContainer" unique_id=1447026229]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Refresh UID of \"Scenes.gd\""
 
-[node name="AutoSaveButton" parent="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer/AutoSaveRefreshContainer" instance=ExtResource("6_efl6f")]
+[node name="AutoSaveButton" parent="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer/AutoSaveRefreshContainer" unique_id=1756963575 instance=ExtResource("6_efl6f")]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="GarbageBin" type="Control" parent="."]
+[node name="GarbageBin" type="Control" parent="." unique_id=916768468]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 
-[node name="SaveDelayTimer" type="Timer" parent="."]
+[node name="SaveDelayTimer" type="Timer" parent="." unique_id=202339258]
 unique_name_in_owner = true
 wait_time = 0.05
 one_shot = true

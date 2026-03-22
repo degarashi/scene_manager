@@ -1,6 +1,6 @@
-[gd_scene load_steps=5 format=3 uid="uid://cbqttysey0hqt"]
+[gd_scene format=3 uid="uid://cbqttysey0hqt"]
 
-[ext_resource type="Script" path="res://addons/scene_manager/transition/fade_transitioner.gd" id="1_rnvl1"]
+[ext_resource type="Script" uid="uid://d0iel61mgjnf5" path="res://addons/scene_manager/transition/fade_transitioner.gd" id="1_rnvl1"]
 
 [sub_resource type="Animation" id="8"]
 length = 0.001
@@ -25,14 +25,14 @@ _data = {
 &"fade": SubResource("7")
 }
 
-[node name="FadeTransition" type="Node"]
+[node name="FadeTransition" type="Node" unique_id=60776338]
 process_mode = 3
 script = ExtResource("1_rnvl1")
 
-[node name="canvas" type="CanvasLayer" parent="."]
+[node name="canvas" type="CanvasLayer" parent="." unique_id=1971691187]
 layer = 100
 
-[node name="fade" type="ColorRect" parent="canvas"]
+[node name="fade" type="ColorRect" parent="canvas" unique_id=807124122]
 unique_name_in_owner = true
 anchors_preset = 15
 anchor_right = 1.0
@@ -42,8 +42,6 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(0, 0, 0, 0)
 
-[node name="animation_player" type="AnimationPlayer" parent="."]
+[node name="animation_player" type="AnimationPlayer" parent="." unique_id=1311915591]
 unique_name_in_owner = true
-libraries = {
-&"": SubResource("AnimationLibrary_p2st6")
-}
+libraries/ = SubResource("AnimationLibrary_p2st6")

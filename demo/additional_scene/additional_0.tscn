@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://b1l34my6xocd6"]
 
-[node name="Additional0" type="Control"]
+[node name="Additional0" type="Control" unique_id=1188320236]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -9,7 +9,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Panel" type="Panel" parent="."]
+[node name="Panel" type="Panel" parent="." unique_id=829685652]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -21,7 +21,7 @@ offset_bottom = -39.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Label" type="Label" parent="Panel"]
+[node name="Label" type="Label" parent="Panel" unique_id=1606527867]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -30,7 +30,7 @@ grow_horizontal = 2
 grow_vertical = 2
 text = "Additional Scene 0"
 
-[node name="RemoveButton" type="Button" parent="."]
+[node name="RemoveButton" type="Button" parent="." unique_id=1871091377]
 layout_mode = 0
 offset_left = 861.0
 offset_top = 222.0

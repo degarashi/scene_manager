@@ -1,16 +1,16 @@
-[gd_scene load_steps=4 format=3 uid="uid://blee3apqqctiw"]
+[gd_scene format=3 uid="uid://blee3apqqctiw"]
 
 [ext_resource type="Script" uid="uid://d1xx54acvvxow" path="res://demo/scenes/scene_0.gd" id="1_leh0y"]
 [ext_resource type="PackedScene" uid="uid://ecxo0comsyff" path="res://demo/scenes/scene_base.tscn" id="1_y5x6j"]
 [ext_resource type="PackedScene" uid="uid://dr6m23f4i6vlj" path="res://demo/moveing_object/rotating_sprite.tscn" id="3_vtbfv"]
 
-[node name="Scene0" instance=ExtResource("1_y5x6j")]
+[node name="Scene0" unique_id=143444750 instance=ExtResource("1_y5x6j")]
 script = ExtResource("1_leh0y")
 
-[node name="ColorRect" parent="." index="0"]
+[node name="ColorRect" parent="." index="0" unique_id=1345516627]
 color = Color(0.29492667, 0.2652, 0.52, 1)
 
-[node name="CenterContainer" type="CenterContainer" parent="." index="1"]
+[node name="CenterContainer" type="CenterContainer" parent="." index="1" unique_id=1049176337]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -18,49 +18,49 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer" index="0"]
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer" index="0" unique_id=450879038]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="CenterContainer/VBoxContainer" index="0"]
+[node name="Label" type="Label" parent="CenterContainer/VBoxContainer" index="0" unique_id=395769981]
 layout_mode = 2
 theme_override_font_sizes/font_size = 51
 text = "SCENE 0"
 horizontal_alignment = 1
 
-[node name="HSeparator" type="HSeparator" parent="CenterContainer/VBoxContainer" index="1"]
+[node name="HSeparator" type="HSeparator" parent="CenterContainer/VBoxContainer" index="1" unique_id=715565279]
 layout_mode = 2
 
-[node name="HBoxContainer" type="HBoxContainer" parent="CenterContainer/VBoxContainer" index="2"]
+[node name="HBoxContainer" type="HBoxContainer" parent="CenterContainer/VBoxContainer" index="2" unique_id=487409063]
 layout_mode = 2
 
-[node name="Scene1Button" type="Button" parent="CenterContainer/VBoxContainer/HBoxContainer" index="0"]
+[node name="Scene1Button" type="Button" parent="CenterContainer/VBoxContainer/HBoxContainer" index="0" unique_id=2104078625]
 layout_mode = 2
 text = "Load Scene1
 "
 
-[node name="BeginLoadingButton" type="Button" parent="CenterContainer/VBoxContainer/HBoxContainer" index="1"]
+[node name="BeginLoadingButton" type="Button" parent="CenterContainer/VBoxContainer/HBoxContainer" index="1" unique_id=1204155969]
 layout_mode = 2
 text = "Load Scene1 (with Loading)"
 
-[node name="BeginFakeLoadingButton" type="Button" parent="CenterContainer/VBoxContainer" index="3"]
+[node name="BeginFakeLoadingButton" type="Button" parent="CenterContainer/VBoxContainer" index="3" unique_id=1944216546]
 layout_mode = 2
 text = "Load Scene1 (with Fake Loading)"
 
-[node name="HSeparator2" type="HSeparator" parent="CenterContainer/VBoxContainer" index="4"]
+[node name="HSeparator2" type="HSeparator" parent="CenterContainer/VBoxContainer" index="4" unique_id=1024801212]
 layout_mode = 2
 
-[node name="LoadAdditionalButton" type="Button" parent="CenterContainer/VBoxContainer" index="5"]
+[node name="LoadAdditionalButton" type="Button" parent="CenterContainer/VBoxContainer" index="5" unique_id=2043210840]
 layout_mode = 2
 text = "Load Additional"
 
-[node name="HSeparator3" type="HSeparator" parent="CenterContainer/VBoxContainer" index="6"]
+[node name="HSeparator3" type="HSeparator" parent="CenterContainer/VBoxContainer" index="6" unique_id=339469928]
 layout_mode = 2
 
-[node name="QuitButton" type="Button" parent="CenterContainer/VBoxContainer" index="7"]
+[node name="QuitButton" type="Button" parent="CenterContainer/VBoxContainer" index="7" unique_id=1332624532]
 layout_mode = 2
 text = "Quit"
 
-[node name="RotatingSprite" parent="." index="3" instance=ExtResource("3_vtbfv")]
+[node name="RotatingSprite" parent="." index="3" unique_id=537151815 instance=ExtResource("3_vtbfv")]
 position = Vector2(572, 546)
 
 [connection signal="button_up" from="CenterContainer/VBoxContainer/HBoxContainer/Scene1Button" to="." method="_on_scene_1_button_button_up"]

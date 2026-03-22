@@ -1,17 +1,17 @@
-[gd_scene load_steps=4 format=3 uid="uid://bll0mw3ddccs1"]
+[gd_scene format=3 uid="uid://bll0mw3ddccs1"]
 
 [ext_resource type="Script" uid="uid://br4ty75s5p5ao" path="res://addons/scene_manager/property_editor/scene_line_edit.gd" id="1_a6w4g"]
 [ext_resource type="Resource" uid="uid://bnwpfojr6e0dh" path="res://addons/scene_manager/editor/event_bus/ebus_inspector.tres" id="2_h83yu"]
 [ext_resource type="Script" uid="uid://btabfwj4vodlm" path="res://addons/scene_manager/auto_complete_menu_node/scripts/auto_complete_assistant.gd" id="2_j4s1p"]
 
-[node name="SceneLineEdit" type="LineEdit" node_paths=PackedStringArray("autocomplete")]
+[node name="SceneLineEdit" type="LineEdit" unique_id=1984551070 node_paths=PackedStringArray("autocomplete")]
 offset_right = 67.0625
 offset_bottom = 31.0
 script = ExtResource("1_a6w4g")
 _ebus_ins = ExtResource("2_h83yu")
 autocomplete = NodePath("Autocomplete")
 
-[node name="Autocomplete" type="Node" parent="." node_paths=PackedStringArray("line_edits")]
+[node name="Autocomplete" type="Node" parent="." unique_id=1626763307 node_paths=PackedStringArray("line_edits")]
 script = ExtResource("2_j4s1p")
 line_edits = [NodePath("..")]
 terms = Array[String](["a", "b", "c"])

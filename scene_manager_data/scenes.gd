@@ -5,7 +5,6 @@
 @tool
 extends Node
 
-# [Scene Enum]
 enum Id {
 	NONE = -1,
 	ADDITIONAL_0 = 4235791306192597837,

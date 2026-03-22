@@ -1,15 +1,15 @@
-[gd_scene load_steps=3 format=3 uid="uid://ci2f28yyimdrf"]
+[gd_scene format=3 uid="uid://ci2f28yyimdrf"]
 
 [ext_resource type="Script" uid="uid://cujce4jodihjj" path="res://demo/scenes/scene_2.gd" id="1_qfws2"]
 [ext_resource type="PackedScene" uid="uid://ecxo0comsyff" path="res://demo/scenes/scene_base.tscn" id="1_y5x6j"]
 
-[node name="Scene2" instance=ExtResource("1_y5x6j")]
+[node name="Scene2" unique_id=1017007300 instance=ExtResource("1_y5x6j")]
 script = ExtResource("1_qfws2")
 
-[node name="ColorRect" parent="." index="0"]
+[node name="ColorRect" parent="." index="0" unique_id=1345516627]
 color = Color(0.4378188, 0.1613518, 0.2446549, 1)
 
-[node name="Label" type="Label" parent="." index="1"]
+[node name="Label" type="Label" parent="." index="1" unique_id=1445832454]
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -22,7 +22,7 @@ grow_horizontal = 2
 theme_override_font_sizes/font_size = 45
 text = "SCENE 2"
 
-[node name="LoadScene0Button" type="Button" parent="." index="2"]
+[node name="LoadScene0Button" type="Button" parent="." index="2" unique_id=542119712]
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5

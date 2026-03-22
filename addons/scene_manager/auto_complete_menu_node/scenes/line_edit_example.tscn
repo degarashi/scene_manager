@@ -1,8 +1,8 @@
-[gd_scene load_steps=2 format=3 uid="uid://bal2cvrrckfs1"]
+[gd_scene format=3 uid="uid://bal2cvrrckfs1"]
 
 [ext_resource type="Script" uid="uid://btabfwj4vodlm" path="res://addons/scene_manager/auto_complete_menu_node/scripts/auto_complete_assistant.gd" id="1_qnd4x"]
 
-[node name="LineEditExample" type="Control"]
+[node name="LineEditExample" type="Control" unique_id=1717136972]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -10,13 +10,13 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="AutoCompleteAssistant" type="Node" parent="." node_paths=PackedStringArray("line_edits", "menu_location_node")]
+[node name="AutoCompleteAssistant" type="Node" parent="." unique_id=534908744 node_paths=PackedStringArray("line_edits", "menu_location_node")]
 script = ExtResource("1_qnd4x")
 line_edits = [NodePath("../FullCoverageTestControl/LineEdit")]
 terms = Array[String](["hello", "world", "this is a test", "testing_underscore"])
 menu_location_node = NodePath("../FullCoverageTestControl")
 
-[node name="FullCoverageTestControl" type="ColorRect" parent="."]
+[node name="FullCoverageTestControl" type="ColorRect" parent="." unique_id=1627971933]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.2
@@ -29,7 +29,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.50575, 0.64078, 0.432909, 1)
 
-[node name="LineEdit" type="LineEdit" parent="FullCoverageTestControl"]
+[node name="LineEdit" type="LineEdit" parent="FullCoverageTestControl" unique_id=860395382]
 layout_mode = 1
 anchors_preset = -1
 anchor_top = 0.399
@@ -40,10 +40,10 @@ offset_top = -95.916
 offset_right = 87.2
 offset_bottom = -64.916
 focus_neighbor_top = NodePath("/root/@EditorNode@16886/@Panel@13/@VBoxContainer@14/DockHSplitLeftL/DockHSplitLeftR/DockHSplitMain/@VBoxContainer@25/DockVSplitCenter/@VSplitContainer@52/@VBoxContainer@53/@PanelContainer@98/MainScreen/@CanvasItemEditor@9272/@VSplitContainer@9094/@HSplitContainer@9096/@HSplitContainer@9098/@Control@9099/@SubViewportContainer@9100/@SubViewport@9101/LineEditExample/AutoCompleteAssistant/CompleteMenu/ScrollContainer/OptionHolder/BackgroundColorRect/Button")
-focus_neighbor_bottom = NodePath("/root/@EditorNode@16886/@Panel@13/@VBoxContainer@14/DockHSplitLeftL/DockHSplitLeftR/DockHSplitMain/@VBoxContainer@25/DockVSplitCenter/@VSplitContainer@52/@VBoxContainer@53/@PanelContainer@98/MainScreen/@CanvasItemEditor@9272/@VSplitContainer@9094/@HSplitContainer@9096/@HSplitContainer@9098/@Control@9099/@SubViewportContainer@9100/@SubViewport@9101/LineEditExample/AutoCompleteAssistant/CompleteMenu/ScrollContainer/OptionHolder/BackgroundColorRect/Button")
+focus_neighbor_bottom = NodePath("/root/@EditorNode@18065/@Panel@14/@VBoxContainer@15/DockHSplitMain/@VBoxContainer@28/DockVSplitCenter/@VSplitContainer@70/@VBoxContainer@71/@EditorMainScreen@125/MainScreen/@CanvasItemEditor@9318/@VSplitContainer@9101/@HSplitContainer@9103/@HSplitContainer@9105/@Control@9106/@SubViewportContainer@9107/@SubViewport@9108/LineEditExample/AutoCompleteAssistant/CompleteMenu/ScrollContainer/OptionHolder/BackgroundColorRect/Button")
 placeholder_text = "Insert Text"
 
-[node name="OutOfCoverageTestControl" type="Control" parent="."]
+[node name="OutOfCoverageTestControl" type="Control" parent="." unique_id=1421193766]
 visible = false
 layout_mode = 1
 anchor_right = 0.5

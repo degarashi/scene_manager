@@ -1,10 +1,10 @@
-[gd_scene load_steps=4 format=3 uid="uid://b75ms1lprcrgd"]
+[gd_scene format=3 uid="uid://b75ms1lprcrgd"]
 
 [ext_resource type="Script" uid="uid://dano25hhw3wol" path="res://addons/scene_manager/editor/scene_tab/category_base.gd" id="1_homsn"]
 [ext_resource type="Texture2D" uid="uid://36xdho566h28" path="res://addons/scene_manager/icons/ImportFail.svg" id="2_61flc"]
 [ext_resource type="Resource" uid="uid://ra25t5in8erp" path="res://addons/scene_manager/editor/event_bus/ebus_editor.tres" id="2_u5pvp"]
 
-[node name="section" type="VBoxContainer"]
+[node name="section" type="VBoxContainer" unique_id=747488562]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -13,20 +13,20 @@ grow_vertical = 2
 script = ExtResource("1_homsn")
 _ebus_editor = ExtResource("2_u5pvp")
 
-[node name="_title" type="HBoxContainer" parent="."]
+[node name="_title" type="HBoxContainer" parent="." unique_id=998588827]
 layout_mode = 2
 
-[node name="remove_list" type="Button" parent="_title"]
+[node name="remove_list" type="Button" parent="_title" unique_id=630599529]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(28, 28)
 layout_mode = 2
 icon = ExtResource("2_61flc")
 
-[node name="padding" type="Control" parent="_title"]
+[node name="padding" type="Control" parent="_title" unique_id=1003304835]
 custom_minimum_size = Vector2(28, 28)
 layout_mode = 2
 
-[node name="unsaved_label" type="Label" parent="_title"]
+[node name="unsaved_label" type="Label" parent="_title" unique_id=1217865863]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
@@ -34,12 +34,12 @@ size_flags_horizontal = 3
 text = "Unsaved changes*"
 horizontal_alignment = 2
 
-[node name="scenes" type="ScrollContainer" parent="."]
+[node name="scenes" type="ScrollContainer" parent="." unique_id=1654194592]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="container" type="VBoxContainer" parent="scenes"]
+[node name="container" type="VBoxContainer" parent="scenes" unique_id=528271902]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3

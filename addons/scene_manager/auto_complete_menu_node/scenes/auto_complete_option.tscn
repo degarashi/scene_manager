@@ -1,4 +1,4 @@
-[gd_scene load_steps=4 format=3 uid="uid://rphyeuffx7cl"]
+[gd_scene format=3 uid="uid://rphyeuffx7cl"]
 
 [ext_resource type="Script" uid="uid://oq7hl00ljame" path="res://addons/scene_manager/auto_complete_menu_node/scripts/option_button.gd" id="1_5a4qr"]
 [ext_resource type="Theme" uid="uid://cadhcdxa0snif" path="res://addons/scene_manager/themes/auto_complete_theme.tres" id="1_d2uxr"]
@@ -6,7 +6,7 @@
 [sub_resource type="LabelSettings" id="LabelSettings_un4au"]
 font_color = Color(0.572988, 0.572988, 0.572988, 1)
 
-[node name="BackgroundColorRect" type="ColorRect"]
+[node name="BackgroundColorRect" type="ColorRect" unique_id=2102150951]
 anchors_preset = 10
 anchor_right = 1.0
 offset_bottom = 30.0
@@ -15,7 +15,7 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 color = Color(0.129558, 0.129558, 0.129558, 1)
 
-[node name="CompleteText" type="Label" parent="."]
+[node name="CompleteText" type="Label" parent="." unique_id=918974385]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.02
@@ -28,7 +28,7 @@ text = "Complete_this"
 label_settings = SubResource("LabelSettings_un4au")
 vertical_alignment = 1
 
-[node name="Button" type="Button" parent="."]
+[node name="Button" type="Button" parent="." unique_id=703680445]
 modulate = Color(1, 1, 1, 0.156863)
 layout_mode = 1
 anchors_preset = 15

@@ -1,37 +1,37 @@
-[gd_scene load_steps=3 format=3 uid="uid://db0et8bmevjww"]
+[gd_scene format=3 uid="uid://db0et8bmevjww"]
 
 [ext_resource type="Script" uid="uid://bo434a87u2aec" path="res://addons/scene_manager/editor/widget/category_edit.gd" id="1_7tx63"]
 [ext_resource type="Resource" uid="uid://ra25t5in8erp" path="res://addons/scene_manager/editor/event_bus/ebus_editor.tres" id="2_7tx63"]
 
-[node name="CategoryEdit" type="VBoxContainer"]
+[node name="CategoryEdit" type="VBoxContainer" unique_id=351967343]
 offset_right = 355.0
 offset_bottom = 87.0
 script = ExtResource("1_7tx63")
 _ebus_editor = ExtResource("2_7tx63")
 
-[node name="LayerName" type="HBoxContainer" parent="."]
+[node name="LayerName" type="HBoxContainer" parent="." unique_id=678059410]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="LayerName"]
+[node name="Label" type="Label" parent="LayerName" unique_id=1432129388]
 layout_mode = 2
 text = "Layer Name"
 
-[node name="LayerNameEdit" type="LineEdit" parent="LayerName"]
+[node name="LayerNameEdit" type="LineEdit" parent="LayerName" unique_id=1478378537]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "(not specified)"
 alignment = 1
 
-[node name="LayerPriority" type="HBoxContainer" parent="."]
+[node name="LayerPriority" type="HBoxContainer" parent="." unique_id=1558834533]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="LayerPriority"]
+[node name="Label" type="Label" parent="LayerPriority" unique_id=265564621]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Layer Priority:"
 
-[node name="LayerPriorityBox" type="SpinBox" parent="LayerPriority"]
+[node name="LayerPriorityBox" type="SpinBox" parent="LayerPriority" unique_id=1464402931]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -41,39 +41,39 @@ value = 1.0
 rounded = true
 alignment = 1
 
-[node name="PauseFlag" type="HBoxContainer" parent="."]
+[node name="PauseFlag" type="HBoxContainer" parent="." unique_id=1322396363]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="PauseFlag"]
+[node name="Label" type="Label" parent="PauseFlag" unique_id=512684492]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Pause lower-priority layer"
 
-[node name="PauseFlagCB" type="CheckBox" parent="PauseFlag"]
+[node name="PauseFlagCB" type="CheckBox" parent="PauseFlag" unique_id=122041650]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="AlwaysProcess" type="HBoxContainer" parent="."]
+[node name="AlwaysProcess" type="HBoxContainer" parent="." unique_id=1269299685]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="AlwaysProcess"]
+[node name="Label" type="Label" parent="AlwaysProcess" unique_id=1785486743]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Always Process"
 
-[node name="AlwaysProcessCB" type="CheckBox" parent="AlwaysProcess"]
+[node name="AlwaysProcessCB" type="CheckBox" parent="AlwaysProcess" unique_id=1720257044]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="FollowViewport" type="HBoxContainer" parent="."]
+[node name="FollowViewport" type="HBoxContainer" parent="." unique_id=1918781307]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="FollowViewport"]
+[node name="Label" type="Label" parent="FollowViewport" unique_id=822115926]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Follow Viewport"
 
-[node name="FollowViewportCB" type="CheckBox" parent="FollowViewport"]
+[node name="FollowViewportCB" type="CheckBox" parent="FollowViewport" unique_id=385650365]
 unique_name_in_owner = true
 layout_mode = 2
 

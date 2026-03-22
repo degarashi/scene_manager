@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SMgrProjectSettings" load_steps=2 format=3 uid="uid://dn6eh4s0h8jhi"]
+[gd_resource type="Resource" script_class="SMgrProjectSettings" format=3 uid="uid://dn6eh4s0h8jhi"]
 
 [ext_resource type="Script" uid="uid://brrwqr4fwpe02" path="res://addons/scene_manager/project_settings.gd" id="1_bfv76"]
 

@@ -1,9 +1,9 @@
-[gd_scene load_steps=3 format=3 uid="uid://c8hgso5t68dd7"]
+[gd_scene format=3 uid="uid://c8hgso5t68dd7"]
 
 [ext_resource type="Script" uid="uid://cvyepml5aadq8" path="res://addons/scene_manager/editor/widget/category_name_label.gd" id="1_tf777"]
 [ext_resource type="Resource" uid="uid://ra25t5in8erp" path="res://addons/scene_manager/editor/event_bus/ebus_editor.tres" id="2_yojnu"]
 
-[node name="CategoryNameLabel" type="Label"]
+[node name="CategoryNameLabel" type="Label" unique_id=620587194]
 theme_override_font_sizes/font_size = 20
 text = "----"
 horizontal_alignment = 1

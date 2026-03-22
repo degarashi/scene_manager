@@ -1,6 +1,6 @@
-[gd_scene load_steps=7 format=3 uid="uid://b4edho3whn67t"]
+[gd_scene format=3 uid="uid://b4edho3whn67t"]
 
-[ext_resource type="Script" uid="uid://dookyr8uhx5wp" path="res://addons/scene_manager/editor/sub_section.gd" id="1_kgwwp"]
+[ext_resource type="Script" uid="uid://dookyr8uhx5wp" path="res://addons/scene_manager/editor/scene_tab/section.gd" id="1_kgwwp"]
 [ext_resource type="Texture2D" uid="uid://c7o4wjygnjhjc" path="res://addons/scene_manager/icons/GuiOptionArrowDown.svg" id="2_2rtdo"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_u6qci"]
@@ -23,15 +23,15 @@ content_margin_left = 5.0
 content_margin_right = 5.0
 bg_color = Color(0.6, 0.6, 0.6, 0)
 
-[node name="All" type="VBoxContainer"]
+[node name="All" type="VBoxContainer" unique_id=2120187699]
 offset_right = 1024.0
 offset_bottom = 23.0
 script = ExtResource("1_kgwwp")
 
-[node name="HBoxContainer" type="HBoxContainer" parent="."]
+[node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=2127958311]
 layout_mode = 2
 
-[node name="Button" type="Button" parent="HBoxContainer"]
+[node name="Button" type="Button" parent="HBoxContainer" unique_id=121589026]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
@@ -44,7 +44,7 @@ text = "All"
 icon = ExtResource("2_2rtdo")
 alignment = 0
 
-[node name="SceneItemContainer" type="VBoxContainer" parent="."]
+[node name="SceneItemContainer" type="VBoxContainer" parent="." unique_id=2085282304]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2

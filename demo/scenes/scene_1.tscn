@@ -1,15 +1,15 @@
-[gd_scene load_steps=3 format=3 uid="uid://di5525fdxb6mc"]
+[gd_scene format=3 uid="uid://di5525fdxb6mc"]
 
 [ext_resource type="Script" uid="uid://d4kgnvujmxe6r" path="res://demo/scenes/scene_1.gd" id="1_j8d63"]
 [ext_resource type="PackedScene" uid="uid://ecxo0comsyff" path="res://demo/scenes/scene_base.tscn" id="1_y5x6j"]
 
-[node name="Scene1" instance=ExtResource("1_y5x6j")]
+[node name="Scene1" unique_id=525139978 instance=ExtResource("1_y5x6j")]
 script = ExtResource("1_j8d63")
 
-[node name="ColorRect" parent="." index="0"]
+[node name="ColorRect" parent="." index="0" unique_id=1345516627]
 color = Color(0.28192267, 0.43124992, 0.10324424, 1)
 
-[node name="Label" type="Label" parent="." index="1"]
+[node name="Label" type="Label" parent="." index="1" unique_id=1987565021]
 layout_mode = 0
 offset_left = 350.0
 offset_top = 18.0
@@ -18,22 +18,22 @@ offset_bottom = 81.0
 theme_override_font_sizes/font_size = 45
 text = "SCENE 1"
 
-[node name="VBoxContainer" type="VBoxContainer" parent="." index="2"]
+[node name="VBoxContainer" type="VBoxContainer" parent="." index="2" unique_id=2034522654]
 layout_mode = 0
 offset_left = 409.0
 offset_top = 92.0
 offset_right = 584.0
 offset_bottom = 193.0
 
-[node name="LoadScene2Button" type="Button" parent="VBoxContainer" index="0"]
+[node name="LoadScene2Button" type="Button" parent="VBoxContainer" index="0" unique_id=321411768]
 layout_mode = 2
 text = "Load Scene2"
 
-[node name="ReloadButton" type="Button" parent="VBoxContainer" index="1"]
+[node name="ReloadButton" type="Button" parent="VBoxContainer" index="1" unique_id=337696896]
 layout_mode = 2
 text = "Reload Current Scene"
 
-[node name="QuitButton" type="Button" parent="VBoxContainer" index="2"]
+[node name="QuitButton" type="Button" parent="VBoxContainer" index="2" unique_id=990226845]
 layout_mode = 2
 text = "Quit"
 

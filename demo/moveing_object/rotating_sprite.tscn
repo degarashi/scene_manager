@@ -1,11 +1,11 @@
-[gd_scene load_steps=3 format=3 uid="uid://dr6m23f4i6vlj"]
+[gd_scene format=3 uid="uid://dr6m23f4i6vlj"]
 
 [ext_resource type="Script" uid="uid://bgq6np13fuxym" path="res://demo/moveing_object/rotating_sprite.gd" id="1_58st4"]
 [ext_resource type="Texture2D" uid="uid://vmvvsy30dhg7" path="res://icon.svg" id="1_bp3w3"]
 
-[node name="RotatingSprite" type="Node2D"]
+[node name="RotatingSprite" type="Node2D" unique_id=1783926723]
 script = ExtResource("1_58st4")
 
-[node name="ViewSprite" type="Sprite2D" parent="."]
+[node name="ViewSprite" type="Sprite2D" parent="." unique_id=362442084]
 unique_name_in_owner = true
 texture = ExtResource("1_bp3w3")
