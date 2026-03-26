@@ -123,8 +123,8 @@ func on_option_chosen(text: String) -> void:
 func get_option_text(option: Control) -> String:
 	# If case sensitivity is off, then normalize this to lower case
 	if case_sensitive:
-		return option.get_node("CompleteText").text
-	return option.get_node("CompleteText").text.to_lower()
+		return option.complete_text.text
+	return option.complete_text.text.to_lower()
 
 
 func compare_options(a: Control, b: Control) -> bool:
@@ -178,8 +178,8 @@ func load_terms(terms: Array, override_terms: bool = false) -> void:
 			continue
 		var option: Control = option_scene.instantiate()
 		option_holder.add_child(option)
-		option.get_node("CompleteText").text = term
-		option.get_node("Button").option_chosen.connect(on_option_chosen)
+		option.complete_text.text = term
+		option.option_chosen.connect(on_option_chosen)
 		all_nodes.append(option)
 
 	all_active_terms.append_array(terms)
@@ -195,8 +195,8 @@ func remove_terms(terms: Array) -> void:
 	visible_nodes = visible_nodes.filter(func(x: Control): return not x in remove_nodes)
 	all_nodes = all_nodes.filter(func(x: Control): return not x in remove_nodes)
 	all_active_terms = all_active_terms.filter(func(x: String): return not x in terms)
-	for node: Control in remove_nodes:
-		node.get_node("Button").option_chosen.disconnect(on_option_chosen)
+	for node in remove_nodes:
+		node.option_chosen.disconnect(on_option_chosen)
 		node.queue_free()
 
 	refresh_nodes(current_text)
@@ -262,11 +262,11 @@ func refresh_nodes(text: String) -> void:
 	resize()
 	if visible_nodes:
 		if grow_upwards:
-			edit.focus_neighbor_top = visible_nodes[0].get_node("Button").get_path()
-			visible_nodes[0].get_node("Button").focus_neighbor_bottom = edit.get_path()
+			edit.focus_neighbor_top = visible_nodes[0].complete_button.get_path()
+			visible_nodes[0].complete_button.focus_neighbor_bottom = edit.get_path()
 		else:
-			edit.focus_neighbor_bottom = visible_nodes[0].get_node("Button").get_path()
-			visible_nodes[0].get_node("Button").focus_neighbor_top = edit.get_path()
+			edit.focus_neighbor_bottom = visible_nodes[0].complete_button.get_path()
+			visible_nodes[0].complete_button.focus_neighbor_top = edit.get_path()
 
 	show_menu(false)
 
