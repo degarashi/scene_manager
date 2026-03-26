@@ -40,8 +40,8 @@ var is_in_focus: bool
 var is_in_selection: bool
 #endregion
 
-@onready var option_holder: Control = $ScrollContainer/OptionHolder
-@onready var scroll_container: ScrollContainer = $ScrollContainer
+@onready var option_holder: Control = %OptionHolder
+@onready var scroll_container: ScrollContainer = %ScrollContainer
 
 
 # ------------- [Callbacks] -------------
