@@ -17,10 +17,10 @@ func _enter_tree():
 	add_custom_type(
 		"Auto Complete Assistant",
 		"Node",
-		preload(
-			"res://addons/scene_manager/auto_complete_menu_node/scripts/auto_complete_assistant.gd"
-		),
-		preload("res://addons/scene_manager/icons/line-edit-complete-icon.svg")
+		# [auto_complete_assistant.gd]
+		preload("uid://btabfwj4vodlm"),
+		# [line-edit-complete-icon.svg]
+		preload("uid://cpepbcd57iype")
 	)
 
 	get_tree().create_timer(1.0).timeout.connect(_delay)
@@ -33,9 +33,8 @@ func _delay() -> void:
 	_main_panel.prepare(true)
 	add_control_to_dock(EditorPlugin.DOCK_SLOT_RIGHT_UL, _main_panel)
 
-	_inspector = (
-		preload("res://addons/scene_manager/property_editor/scene_inspector_plugin.gd").new()
-	)
+	# [scene_inspector_plugin.gd]
+	_inspector = (preload("uid://duwd2dwcofsrt").new())
 	add_inspector_plugin(_inspector)
 
 
