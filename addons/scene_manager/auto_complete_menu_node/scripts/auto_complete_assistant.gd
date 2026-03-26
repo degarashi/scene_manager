@@ -49,23 +49,27 @@ func _ready() -> void:
 
 
 func create_complete_menu(edit: LineEdit) -> void:
-	var location_info = get_location_boundaries(edit) # 0 is main direction as int (from enum) 1 is sub-direction so if north or south greater (for east-west) is max_size vector
+	# 0 is main direction as int (from enum) 1 is sub-direction
+	#   so if north or south greater (for east-west) is max_size vector
+	var location_info = get_location_boundaries(edit)
 	if location_info.size() == 0:
 		return
-	
+
 	var direction = location_info[0]
 	var placement_point = get_menu_placement_vec(edit, direction)
 	var new_menu: AutoCompleteMenu = complete_menu.instantiate()
 	add_child(new_menu)
 	new_menu.set_transform_values(margin, size_min, size_mult)
-	new_menu.set_up_menu(placement_point, direction, location_info[1], location_info[2], edit, case_sensitive_match)
+	new_menu.set_up_menu(
+		placement_point, direction, location_info[1], location_info[2], edit, case_sensitive_match
+	)
 	insert_terms(new_menu)
 
 	edit.connect("focus_entered", new_menu.show_menu)
 	edit.connect("focus_exited", new_menu.hide_menu)
 	menu_location_node.connect("resized", new_menu.resize)
 	new_menu.connect("resized", new_menu.resize)
-	
+
 	new_menu.hide_menu(true)
 
 
@@ -100,14 +104,14 @@ func get_location_boundaries(edit: LineEdit) -> Array:
 		menu_location_node = edit.get_parent_control()
 		while menu_location_node != null and menu_location_node.name != "Inspector":
 			menu_location_node = menu_location_node.get_parent_control()
-	
+
 	if not menu_location_node or not edit:
 		# If the menu location is still null and we're in the inspector, quietly quit as
 		# it may not be ready yet and we don't want to show errors in the output.
 		if not is_editor_inspector:
 			assert(false, "ERROR: NODE CONFIGURATION ERROR; LOCATION_NODE OR EDIT_NODE ARE NULL!")
 		return []
-	
+
 	var location_rect = menu_location_node.get_global_rect()
 	var edit_rect = edit.get_global_rect()
 	if not location_rect.intersects(edit_rect):
@@ -116,7 +120,7 @@ func get_location_boundaries(edit: LineEdit) -> Array:
 		if not is_editor_inspector:
 			assert(false, "ERROR: NODE CONFIGURATION ERROR; EDIT NOT WITHIN LOCATION_NODE")
 		return []
-	
+
 	var direction_rects = AutoCompleteHelpers.subtract_rects(location_rect, edit_rect)
 	var values = direction_rects["Values"]
 	var max_value = 0
@@ -126,15 +130,21 @@ func get_location_boundaries(edit: LineEdit) -> Array:
 		if max_value <= current_rect.get_area() and not disable_direction_arr[i]:
 			max_value = current_rect.get_area()
 			max_index = i
-	
+
 	var max_size = direction_rects["Values"][max_index].size
 	if max_index == 0 or max_index == 2:
 		max_size.x = (location_rect.size - (edit_rect.position - location_rect.position)).x
 	else:
 		max_size.y = (location_rect.size - (edit_rect.position - location_rect.position)).y
-	var vertical_direction = AutoCompleteEnums.Direction.NORTH if values[0].size.y > values[2].size.y else AutoCompleteEnums.Direction.SOUTH
-	
-	return [AutoCompleteEnums.Direction[direction_rects.keys()[max_index]], vertical_direction, max_size]
+	var vertical_direction = (
+		AutoCompleteEnums.Direction.NORTH
+		if values[0].size.y > values[2].size.y
+		else AutoCompleteEnums.Direction.SOUTH
+	)
+
+	return [
+		AutoCompleteEnums.Direction[direction_rects.keys()[max_index]], vertical_direction, max_size
+	]
 
 
 func get_menu_placement_vec(edit: LineEdit, direction) -> Vector2:
@@ -147,7 +157,7 @@ func get_menu_placement_vec(edit: LineEdit, direction) -> Vector2:
 			return_vec = Vector2(edit_rect.position.x, edit_rect.end.y)
 		_:
 			return_vec = edit_rect.position
-		
+
 	# TODO: add margins or stuff
 	return return_vec
 
@@ -159,7 +169,7 @@ func load_terms(new_terms: Array, override: bool = false) -> void:
 		terms = new_terms
 	else:
 		terms.append_array(new_terms)
-	
+
 	for menu in menus:
 		menu.load_terms(new_terms, override)
 
@@ -173,7 +183,8 @@ func add_edit(edit: LineEdit) -> void:
 		assert(false, "ERROR: trying to add new edit which already has a complete menu")
 
 
-## Removes an [param edit] and its menu if it exists. Will not remove the edit node from the scene just its connection to this node.
+## Removes an [param edit] and its menu if it exists.
+## Will not remove the edit node from the scene just its connection to this node.
 func remove_edit(edit: LineEdit) -> void:
 	if edit in line_edits:
 		for menu in menus:
