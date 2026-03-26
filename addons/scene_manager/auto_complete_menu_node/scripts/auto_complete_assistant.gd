@@ -65,10 +65,12 @@ func create_complete_menu(edit: LineEdit) -> void:
 	)
 	insert_terms(new_menu)
 
-	edit.connect("focus_entered", new_menu.show_menu)
-	edit.connect("focus_exited", new_menu.hide_menu)
-	menu_location_node.connect("resized", new_menu.resize)
-	new_menu.connect("resized", new_menu.resize)
+	edit.focus_entered.connect(new_menu.show_menu)
+	edit.focus_exited.connect(new_menu.hide_menu)
+	if menu_location_node:
+		menu_location_node.resized.connect(new_menu.resize)
+
+	new_menu.resized.connect(new_menu.resize)
 
 	new_menu.hide_menu(true)
 
