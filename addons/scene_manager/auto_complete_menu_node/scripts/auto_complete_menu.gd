@@ -7,8 +7,8 @@ extends Control
 const OPTION_SCENE := preload("uid://rphyeuffx7cl")
 
 # ------------- [Public Variable] -------------
-var visible_nodes: Array[Control]  ## All the term-nodes that are currently visible
-var all_nodes: Array[Control]  ## All the term nodes, one for each term
+var visible_nodes: Array[AutoCompleteOption]  ## All the term-nodes that are currently visible
+var all_nodes: Array[AutoCompleteOption]  ## All the term nodes, one for each term
 var edit: LineEdit  ## The edit this menu applies to
 var case_sensitive: bool  ## Whether or not the comparison will be case sensitive
 
@@ -94,7 +94,7 @@ func calc_anchor_point() -> void:
 
 
 ## Positions the nodes, based on the order they are given
-func reposition_nodes(ordered_nodes: Array[Control]) -> void:
+func reposition_nodes(ordered_nodes: Array[AutoCompleteOption]) -> void:
 	visible_nodes = ordered_nodes
 	var holder_size := node_size
 	# used instead of if-else everytime addition/subtraction is used
@@ -122,14 +122,14 @@ func on_option_chosen(text: String) -> void:
 	hide_menu(true)
 
 
-func get_option_text(option: Control) -> String:
+func get_option_text(option: AutoCompleteOption) -> String:
 	# If case sensitivity is off, then normalize this to lower case
 	if case_sensitive:
 		return option.complete_text.text
 	return option.complete_text.text.to_lower()
 
 
-func compare_options(a: Control, b: Control) -> bool:
+func compare_options(a: AutoCompleteOption, b: AutoCompleteOption) -> bool:
 	var a_text := get_option_text(a)
 	var b_text := get_option_text(b)
 
@@ -178,7 +178,7 @@ func load_terms(terms: Array, override_terms: bool = false) -> void:
 	for term: String in terms:
 		if term in all_active_terms:
 			continue
-		var option: Control = OPTION_SCENE.instantiate()
+		var option: AutoCompleteOption = OPTION_SCENE.instantiate()
 		option_holder.add_child(option)
 		option.complete_text.text = term
 		option.option_chosen.connect(on_option_chosen)
@@ -190,12 +190,12 @@ func load_terms(terms: Array, override_terms: bool = false) -> void:
 
 func remove_terms(terms: Array) -> void:
 	var remove_nodes: Array[Control] = []
-	for node: Control in all_nodes:
+	for node in all_nodes:
 		if get_option_text(node) in terms:
 			remove_nodes.append(node)
 
 	visible_nodes = visible_nodes.filter(func(x: Control): return not x in remove_nodes)
-	all_nodes = all_nodes.filter(func(x: Control): return not x in remove_nodes)
+	all_nodes = all_nodes.filter(func(x: AutoCompleteOption): return not x in remove_nodes)
 	all_active_terms = all_active_terms.filter(func(x: String): return not x in terms)
 	for node in remove_nodes:
 		node.option_chosen.disconnect(on_option_chosen)
@@ -240,15 +240,17 @@ func refresh_nodes(text: String) -> void:
 	if text.is_empty():
 		visible_nodes = all_nodes
 	else:
-		visible_nodes = all_nodes.filter(func(x: Control): return text in get_option_text(x))
-		for node: Control in all_nodes.filter(
-			func(x: Control): return not text in get_option_text(x)
+		visible_nodes = all_nodes.filter(
+			func(x: AutoCompleteOption) -> bool: return text in get_option_text(x)
+		)
+		for node in all_nodes.filter(
+			func(x: AutoCompleteOption) -> bool: return not text in get_option_text(x)
 		):
 			node.visible = false
 
 	visible_nodes.assign(
 		visible_nodes.map(
-			func(x: Control) -> Control:
+			func(x: AutoCompleteOption) -> Control:
 				x.visible = true
 				return x,
 		)
