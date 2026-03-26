@@ -2,7 +2,8 @@
 class_name AutoCompleteAssistant
 extends Node
 
-var complete_menu = preload("res://addons/scene_manager/auto_complete_menu_node/scenes/auto_complete_menu.tscn")
+# [auto_complete_menu.tscn]
+var complete_menu = preload("uid://cebls7f645328")
 
 ## The line_edit nodes this node should spawn menus for
 @export var line_edits: Array[LineEdit]

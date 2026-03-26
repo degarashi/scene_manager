@@ -33,8 +33,8 @@ var is_in_focus: bool
 var is_in_selection: bool
 #endregion
 
-var option_scene = preload("res://addons/scene_manager/auto_complete_menu_node/scenes/auto_complete_option.tscn")
-
+# [auto_complete_option.tscn]
+var option_scene = preload("uid://rphyeuffx7cl")
 @onready var option_holder: Control = $ScrollContainer/OptionHolder
 @onready var scroll_container: ScrollContainer = $ScrollContainer
 
