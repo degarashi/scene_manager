@@ -1,8 +1,10 @@
 @tool
 extends Button
 
-signal option_chosen(option_text)
+# ------------- [Signal] -------------
+signal option_chosen(option_text: String)
 
 
+# ------------- [Callbacks] -------------
 func _pressed() -> void:
-	emit_signal("option_chosen", get_parent().get_node("CompleteText").text)
+	option_chosen.emit(get_parent().get_node("CompleteText").text)

@@ -1,13 +1,15 @@
 class_name AutoCompleteHelpers
 extends Object
 
+# ------------- [Constants] -------------
 const AUTO_DIRECTION_STRINGS: Array[String] = ["NORTH", "EAST", "SOUTH", "WEST"]
 
 
+# ------------- [Public Static Method] -------------
 ## Subtracts a [param sub_rect] from a [param base_rect]
 ##   and returns a dict of up to 4 new rects around the subtracted rect.
 static func subtract_rects(base_rect: Rect2, sub_rect: Rect2) -> Dictionary:
-	var return_dict = {}
+	var return_dict := {}
 	var direction_rects: Array[Rect2] = [Rect2(), Rect2(), Rect2(), Rect2()]
 
 	# Calculate the rectangles around the directions following the AUTO_DIRECTION_STRINGS constant
@@ -47,19 +49,23 @@ static func subtract_rects(base_rect: Rect2, sub_rect: Rect2) -> Dictionary:
 
 ## Debuging collection by printing everything in it.
 static func print_collection(
-	collection, name = "Collection", add_separator: bool = false, sep_max: int = 100
+	collection: Variant,
+	name: String = "Collection",
+	add_separator: bool = false,
+	sep_max: int = 100
 ) -> void:
-	var type_collection = typeof(collection)
+	var type_collection := typeof(collection)
 	if type_collection != TYPE_ARRAY and type_collection != TYPE_DICTIONARY:
 		assert(false, "ERROR: ONLY ACCEPTS DICT/ARRAY VALUES")
 		return
 
 	var print_str: String = name + ":\n"
-	var max_size = name.length() + 2
-	var indent_size = max_size
+	var max_size := name.length() + 2
+	var indent_size := max_size
 	var keys = collection.keys() if type_collection == TYPE_DICTIONARY else null
-	for i in collection.size():
-		var indent = keys[i] if keys else " "
+
+	for i: int in collection.size():
+		var indent: String = str(keys[i]) if keys else " "
 		indent = indent.rpad(indent_size, " ")
 		var value = collection[keys[i]] if keys else collection[i]
 		var value_line = "  " + indent + str(value) + "\n"
@@ -70,6 +76,7 @@ static func print_collection(
 	max_size = min(max_size, sep_max)
 
 	if add_separator:
-		print_str = "\n".lpad(max_size, "-") + print_str + "\n".lpad(max_size, "-")
+		var sep := "".lpad(max_size, "-") + "\n"
+		print_str = sep + print_str + sep
 
 	print(print_str)
