@@ -2,6 +2,10 @@
 class_name AutoCompleteMenu
 extends Control
 
+# ------------- [Constant] -------------
+# [auto_complete_option.tscn]
+const OPTION_SCENE := preload("uid://rphyeuffx7cl")
+
 # ------------- [Public Variable] -------------
 var visible_nodes: Array[Control]  ## All the term-nodes that are currently visible
 var all_nodes: Array[Control]  ## All the term nodes, one for each term
@@ -36,8 +40,6 @@ var is_in_focus: bool
 var is_in_selection: bool
 #endregion
 
-# [auto_complete_option.tscn]
-var option_scene := preload("uid://rphyeuffx7cl")
 @onready var option_holder: Control = $ScrollContainer/OptionHolder
 @onready var scroll_container: ScrollContainer = $ScrollContainer
 
@@ -176,7 +178,7 @@ func load_terms(terms: Array, override_terms: bool = false) -> void:
 	for term: String in terms:
 		if term in all_active_terms:
 			continue
-		var option: Control = option_scene.instantiate()
+		var option: Control = OPTION_SCENE.instantiate()
 		option_holder.add_child(option)
 		option.complete_text.text = term
 		option.option_chosen.connect(on_option_chosen)
