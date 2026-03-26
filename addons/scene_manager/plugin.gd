@@ -1,17 +1,31 @@
 @tool
 extends EditorPlugin
 
+# ------------- [Constants] -------------
 const MAIN_PANEL_SCENE = preload("uid://crnf0w0s44hxx")
 const MAIN_PANEL_NAME = "Scene Manager"
 const AUTOLOAD_PREFIX = "autoload/"
 const AF = preload("uid://dlgh4u64a7qxk")
+
+# ------------- [Private Variable] -------------
 var _ps := preload("uid://dn6eh4s0h8jhi")
 var _main_panel: SMgrMainPanel
 var _inspector: EditorInspectorPlugin
 
 
+# ------------- [Inner Class] -------------
+class AutoloadInfo:
+	var name: String
+	var path: String
+
+	func _init(p_name: String, p_path: String) -> void:
+		name = p_name
+		path = p_path
+
+
+# ------------- [Godot-Callback] -------------
 # Plugin installation
-func _enter_tree():
+func _enter_tree() -> void:
 	_ps.setup_project_settings()
 
 	add_custom_type(
@@ -26,18 +40,6 @@ func _enter_tree():
 	get_tree().create_timer(1.0).timeout.connect(_delay)
 
 
-func _delay() -> void:
-	# --- main panel ---
-	_main_panel = MAIN_PANEL_SCENE.instantiate()
-	_main_panel.name = MAIN_PANEL_NAME
-	_main_panel.prepare(true)
-	add_control_to_dock(EditorPlugin.DOCK_SLOT_RIGHT_UL, _main_panel)
-
-	# [scene_inspector_plugin.gd]
-	_inspector = (preload("uid://duwd2dwcofsrt").new())
-	add_inspector_plugin(_inspector)
-
-
 # Plugin uninstallation
 func _exit_tree() -> void:
 	# TODO: We can use this function but it removes the saved value of it
@@ -50,10 +52,12 @@ func _exit_tree() -> void:
 	#
 	# We just don't remove the settings for now
 	remove_custom_type("Auto Complete Assistant")
-	remove_control_from_docks(_main_panel)
-	_main_panel.free()
+	if _main_panel:
+		remove_control_from_docks(_main_panel)
+		_main_panel.free()
 
-	remove_inspector_plugin(_inspector)
+	if _inspector:
+		remove_inspector_plugin(_inspector)
 
 
 func _enable_plugin() -> void:
@@ -73,17 +77,33 @@ func _disable_plugin() -> void:
 	_unregister_autoloads()
 
 
+# ------------- [Private Method] -------------
+func _delay() -> void:
+	# --- main panel ---
+	_main_panel = MAIN_PANEL_SCENE.instantiate()
+	_main_panel.name = MAIN_PANEL_NAME
+	_main_panel.prepare(true)
+	add_control_to_dock(EditorPlugin.DOCK_SLOT_RIGHT_UL, _main_panel)
+
+	# [scene_inspector_plugin.gd]
+	_inspector = preload("uid://duwd2dwcofsrt").new()
+	add_inspector_plugin(_inspector)
+
+
 func _setup_default_data() -> bool:
-	if not FileAccess.file_exists(_ps.scene_data_path) or not FileAccess.file_exists(_ps.scene_path):
-		var source_dir: String = "res://addons/scene_manager/default_data/"
-		var dir: DirAccess = DirAccess.open(source_dir)
+	if (
+		not FileAccess.file_exists(_ps.scene_data_path)
+		or not FileAccess.file_exists(_ps.scene_path)
+	):
+		var source_dir := "res://addons/scene_manager/default_data/"
+		var dir := DirAccess.open(source_dir)
 		if dir:
 			dir.list_dir_begin()
-			var file_name: String = dir.get_next()
+			var file_name := dir.get_next()
 			while file_name != "":
 				if not dir.current_is_dir():
-					var source_path: String = source_dir.path_join(file_name)
-					var target_path: String = "res://scene_manager_data".path_join(file_name)
+					var source_path := source_dir.path_join(file_name)
+					var target_path := "res://scene_manager_data".path_join(file_name)
 
 					# Copy file
 					dir.copy(source_path, target_path)
@@ -99,16 +119,16 @@ func _setup_default_data() -> bool:
 				file_name = dir.get_next()
 
 			# Start filesystem scan and notify that a scan is required
-			var fs: EditorFileSystem = EditorInterface.get_resource_filesystem()
+			var fs := EditorInterface.get_resource_filesystem()
 			fs.scan()
 			return true
 	return false
 
 
-func _get_autoload_list() -> Array:
+func _get_autoload_list() -> Array[AutoloadInfo]:
 	return [
-		{"name": "Scenes", "path": _ps.scene_path},
-		{"name": "SceneManager", "path": "res://addons/scene_manager/scene_manager.tscn"},
+		AutoloadInfo.new("Scenes", _ps.scene_path),
+		AutoloadInfo.new("SceneManager", "res://addons/scene_manager/scene_manager.tscn"),
 	]
 
 
