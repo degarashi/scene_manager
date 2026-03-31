@@ -1,101 +1,295 @@
-
 # Scene Manager
-
-## In Progress
-**Current Changes**:
-- Scenes can be specified as enums now to prevent typo errors using strings
-- Shader is removed to make it not depend on it, especially for web builds that can conflict.
-- Restructuring files and folder structure
 
 <p align="center">
 <img src="icon.svg" width=256/>
 </p>
 
-A tool to manage transition between different scenes for Godot 4, featuring an editor for adding scenes and an auto-generated scene file.
+A comprehensive scene lifecycle management addon for Godot 4, featuring an editor for managing scenes with categories and auto-generated scene enums. Supports multiple loading patterns, layer-based scene management, and smooth visual transitions.
 
 Auto-complete node incorporated and modified from https://github.com/Lenrow/line-edit-complete-godot by Lenrow.
 
 ## Features
 
-* A tool menu structure to manage and categorize your scene in the editor
-* Duplication check for scene names and list names
-* Include folder feature in UI to only add scenes in the specified folder or the scene file itself
-* Categorization for scenes
-* Can go back to a previous scene using the ring buffer the `Scene Manager` tracks. Size of the ring buffer can be adjusted.
-* Reset `Scene Manager` function to assume the current scene as the first ever seen scene and resetting the back buffer
-* Default fade in and fade out to black built-in
-* You can create instance of a scene just by calling the scene with a key
-* Project/Settings includes addon settings to customize the `Scene Manager`
-  * Can specify the location of the `scene.gd` file that's generated
-  * Global default fade in and out times for the built-in fade transition
-  * Auto save is an internal property setting the addon uses to keep track of whether or not to automatically save changes made to the scene manager tool
-* Support for the following signals to get information throughout the scene loading:
-  * load_finished
-  * load_percent_changed(value: int)
-  * scene_loaded
-  * fade_in_started
-  * fade_out_started
-  * fade_in_finished
-  * fade_out_finished
-* Ability to navigate to the scene path in filesystem on godot when clicked on scene address in Scene Manager tool
-* Can open a desired scene from Scene Manager tab
+* **Scene Organization & Management**
+  - Editor UI to manage and categorize scenes
+  - Duplication check for scene names and categories
+  - Include folder feature to auto-discover scenes in specified paths
+  - Auto-generated `Scenes.Id` enums to prevent typo errors
+  - Export `SceneResource` property for inspector-based scene selection with auto-complete
 
-## How To Use?
+* **Multiple Loading Patterns**
+  - Exclusive scene loading (removes all existing scenes)
+  - Additive scene loading (load multiple scenes simultaneously)
+  - Scene transitions with customizable visual effects
+  - Async loading with progress tracking and transition scenes
+  - Scene reload functionality
 
-1. Copy and paste `scene_manager` folder which is inside `addons` folder. (don't change the `scene_manager` folder name)
-2. From editor toolbar, choose **`Project > Project Settings...`** then in **`Plugins`** tab, activate scene_manager plugin.
-3. Use `Scene Manager` tab on right side of the screen (on default godot theme view) to manage your scenes.
-4. After you are done with managing your scenes, always **save** your changes so that your changes have effect inside your actual game.
+* **Layer & Priority System**
+  - CanvasLayer-based scene wrapping with z-index ordering
+  - Layer priority system for scene rendering order
+  - Pause/process control for lower-priority layers
+  - Viewport following per-layer configuration
+  - Auto-disposal of empty layers
 
-> **Note**: After activating `Scene Manager` tool, you have access to **SceneManager** script globally from anywhere in your scripts. For more information, read [SceneManager](#scenemanager) section.
+* **Scene History & Navigation**
+  - Ring buffer-based scene history (go back to previous scenes)
+  - Offset-based history navigation
+  - Configurable history buffer size
+  - Reset Scene Manager to clear history and assume current scene as first
 
-> **Note**: This tool saves your scenes data inside `res://scenes.gd` file by default. If you want to have your latest changes and avoid redefining your scene keys, **do not** remove it, **do not** change it or modify it in anyway.
+* **Visual Transitions**
+  - Built-in fade in/fade out to black
+  - Customizable transition timing (play_out_time, play_in_time)
+  - Input blocking during transitions
+  - Abstract transitioner base class for custom transition effects
+
+* **Async Loading & Progress**
+  - Threaded resource loading with progress tracking (0-100%)
+  - Batch resource loading support
+  - Pre-instantiation with transition scenes (loading screens)
+  - Callback hooks before scene instantiation
+
+* **Comprehensive Signal Support**
+  - `load_percent_changed(value: int)` - Async loading progress
+  - `load_finished` - Async load completed
+  - `load_failed` - Async load failed
+  - `scene_loaded(scene_id: Scenes.Id)` - Scene instantiated
+  - `scene_transition_completed(scene_id: Scenes.Id)` - Full transition complete
+  - `category_changed(diff: SMgrData.CategoryDiff)` - Scene categories changed
+  - `category_reapplied(tags: Array[Scenes.CategoryId])` - Scene reloaded
+  - `category_tags_notified(tags: Array[Scenes.CategoryId])` - Categories notified to listeners
+  - `on_game_end` - Game exit initiated
+
+* **Editor Integration**
+  - Real-time editor panel for scene/category management
+  - Scene filesystem path navigation
+  - Unsaved changes notification
+  - Direct scene opening from Scene Manager tab
+  - Project Settings integration for addon configuration
+
+## How To Use
+
+1. Copy the `scene_manager` folder from `addons` to your project's `addons` directory. (Do not rename the `scene_manager` folder)
+2. Open **`Project > Project Settings...`**, go to the **`Plugins`** tab, and enable the `scene_manager` plugin.
+3. A **`Scene Manager`** tab will appear on the right side of the editor (default theme view).
+4. Use this tab to:
+   - Create and organize scene categories
+   - Add scenes to the manager
+   - Set layer priorities and pause behavior
+   - Configure async loading settings
+5. After making changes, click **`Save`** to persist your configuration.
+
+> **Note**: After activating the Scene Manager plugin, the `SMgrInstance` (Scene Manager) is available globally as an autoload. Access it via static methods like `SMgrInstance.switch_to_scene()` or connect to signals like `SMgrInstance.scene_transition_completed.connect(...)`.
+
+> **Note**: The addon auto-generates a `Scenes.Id` enum file. By default, it's saved to `res://scenes.gd`. Do not manually edit this file — it will be overwritten by the editor UI.
 
 ## Tool View
 
-This is the tool that you will see on your right side of the godot editor after activating `scene_manager` plugin. With the **Add** button under scenes categories, you can create new categories to manage your scenes which will show up as tabs. Note that it will notify you if there's unsaved changes to the scene information in the top right corner. Scenes can be loaded directly with the button on the right.
+The Scene Manager tab provides a visual interface to manage your scenes. You can:
+- Create categories (tabs) to organize scenes
+- Add scenes to categories from your filesystem
+- Set scene metadata (priority, pause behavior, etc.)
+- View unsaved changes indicator in the top-right corner
+- Open scenes directly in the editor with the play button
 
 <p align="center">
 <img src="images/tool.png"/>
 </p>
 
-### Double key checker
+### Scene Categories
 
-If editing of a scene key causes at least two keys of another scene match, both of them will get red color and you have to fix the duplication, otherwise the plugin does not work properly as you expect it to work. Editing scene keys will also automatically normalize the formatting as you type to lower case and underscores as spaces to keep everything in the same style and make it valid to store in a dictionary. Symbols and other invalid characters can't be entered and will be stripped out.
+Scene categories allow you to organize scenes logically and manage their behavior together (pause state, rendering priority, etc.). Each category can be assigned:
+- **Name** - Unique identifier for the category
+- **Priority** - Z-order for rendering (higher priority renders on top)
+- **Pause Lower Layers** - Whether to pause scenes below this priority
+- **Always Process** - Whether to process this scene even when paused
+- **Follow Viewport** - Whether this scene's CanvasLayer follows the main viewport
 
-<p align="center">
-<img src="images/tool_double_key.png"/>
-</p>
+### Include Paths
 
-### Include Folder
-
-Every folder and file that is added inside this section will be included and scenes inside them will get added to the tool with default keys matching the file name.
+You can automatically discover scenes by adding folder or file paths to the Include Paths section. Scenes found in these paths will be automatically added to the manager with enum names derived from their file names.
 
 <p align="center">
 <img src="images/include.png"/>
 </p>
 
-## Scene Menu
+## SceneManager API
 
-Every scene has a button beside them which will open up a menu to configure the category of that specific scene.
+After activating the addon, you can access the Scene Manager globally via the `SMgrInstance` autoload. Below are the most commonly used functions.
 
-<p align="center">
-<img src="images/menu.png"/>
-</p>
+### Loading Scenes
+
+**Switch to a new scene (exclusive loading):**
+```gdscript
+# Simple switch using Scenes.Id enum
+SMgrInstance.switch_to_scene(Scenes.Id.LEVEL_1)
+
+# With custom options
+var options = SceneLoadOptions.new()
+options.play_out_time = 0.5
+options.play_in_time = 0.5
+options.clickable = false  # Allow input during transition
+SMgrInstance.switch_to_scene(Scenes.Id.LEVEL_1, true, options)
+```
+
+**Add scene additively (without removing others):**
+```gdscript
+var options = SceneLoadOptions.new()
+options.node_name = "UI"  # Parent node name
+SMgrInstance.add_scene(Scenes.Id.HUD, SMgrInstance.DuplicateNameMode.REMOVE_OLD, options)
+```
+
+**Async load with progress:**
+```gdscript
+var options = SceneLoadOptions.new()
+options.play_out_time = 1.0
+options.play_in_time = 1.0
+
+# Connect to signals
+SMgrInstance.load_percent_changed.connect(func(percent: int):
+    progress_bar.value = percent
+)
+
+SMgrInstance.load_finished.connect(func():
+    SMgrInstance.instantiate_async_result()
+)
+
+# Start async load (with transition scene)
+SMgrInstance.load_scene_with_transition(
+    Scenes.Id.LEVEL_2,
+    Scenes.Id.LOADING_SCREEN,
+    true,
+    options
+)
+```
+
+### History Navigation
+
+```gdscript
+# Go back to previous scene
+if not SMgrInstance.load_previous_scene():
+    print("No previous scene in history")
+
+# Jump back by N scenes
+SMgrInstance.back_to_previous_by_offset(2)
+
+# Reload current scene
+SMgrInstance.reload_current_scene()
+
+# Get history info
+var history: Array[Scenes.Id] = SMgrInstance.get_history_list()
+var count: int = SMgrInstance.get_history_count()
+```
+
+### Utility Functions
+
+```gdscript
+# Exit game with fade
+SMgrInstance.exit_game(fade_time)
+
+# Get current scene data
+var scene_data = SMgrInstance.get_scene_data()
+var path = scene_data.get_scene_path_from_enum(Scenes.Id.LEVEL_1)
+
+# Connect to transition completion
+SMgrInstance.scene_transition_completed.connect(func(scene_id: Scenes.Id):
+    print("Scene loaded: ", scene_id)
+)
+```
+
+### SceneLoadOptions
+
+Customize scene loading behavior with `SceneLoadOptions`:
+
+```gdscript
+var options = SceneLoadOptions.new()
+options.node_name = "World"           # Parent node for the scene
+options.play_out_time = 1.0           # Fade out duration in seconds
+options.play_in_time = 1.0            # Fade in duration in seconds
+options.clickable = false             # Block input during transition
+
+# Pre-instantiation callback (called on wrapper node)
+options.pre_wrap_cb = func(layer: SMgrSceneLayer):
+    print("Wrapper node created")
+
+# Pre-node callback (called on scene node)
+options.pre_node_cb = func(node: Node):
+    print("Scene node created")
+```
 
 # Demo
 
-## Demo Description
+## Demo Scenarios
+
 The demo project showcases the primary workflows of the Scene Manager:
-- **Direct Switching**: Immediate transition between scenes with basic fade effects.
-- **Loading Screen**: Utilizing `ResourceLoader` asynchronously to display real-time progress.
-- **Additive Loading**: Keeping the current scene while loading another on top (e.g., for UI overlays or small mini-games).
-- **History Management**: Navigating back through previous scenes using the built-in stack.
 
-## Demo Code
+- **Direct Switching**: Simple button-press scene transitions with fade effects
+- **Loading Screen**: Async resource loading with real-time progress display
+- **Additive Loading**: Keep current scene while loading UI/overlays on top
+- **History Navigation**: Use back button to return to previous scenes from history
 
-### Simple Example Without any Loading Screen
+## Demo Code Examples
+
+### Simple Scene Switch
 ```gdscript
-# Simple switch using Enums
-func _on_button_pressed():
-    SceneManager.switch_to_scene(Scenes.Id.LEVEL_1)
+func _on_level_button_pressed():
+    SMgrInstance.switch_to_scene(Scenes.Id.LEVEL_1)
+```
+
+### Async Loading with Progress Display
+```gdscript
+func start_level_with_loading_screen():
+    var options = SceneLoadOptions.new()
+    options.play_out_time = 0.8
+    options.play_in_time = 0.8
+    
+    SMgrInstance.load_percent_changed.connect(_on_load_progress)
+    SMgrInstance.load_finished.connect(_on_load_finished)
+    
+    SMgrInstance.load_scene_with_transition(
+        Scenes.Id.LEVEL_1,
+        Scenes.Id.LOADING_SCREEN,
+        true,
+        options
+    )
+
+func _on_load_progress(percent: int):
+    progress_label.text = "%d%%" % percent
+
+func _on_load_finished():
+    SMgrInstance.instantiate_async_result()
+```
+
+### Additive UI Loading
+```gdscript
+func show_pause_menu():
+    var ui_options = SceneLoadOptions.new()
+    ui_options.node_name = "UI"
+    ui_options.play_out_time = 0.3
+    ui_options.play_in_time = 0.3
+    
+    SMgrInstance.add_scene(Scenes.Id.PAUSE_MENU, 
+        SMgrInstance.DuplicateNameMode.REMOVE_OLD, 
+        ui_options)
+
+func hide_pause_menu():
+    SMgrInstance.unload_scene_by_name("UI")
+```
+
+### History Navigation
+```gdscript
+func _on_back_button_pressed():
+    if not SMgrInstance.load_previous_scene():
+        print("No previous scene to go back to")
+
+func _on_restart_pressed():
+    SMgrInstance.reload_current_scene()
+```
+
+## Project Settings
+
+The Scene Manager includes project-level settings to customize behavior:
+
+- **Scene Manager Path** - Where to save the auto-generated `scenes.gd` file (default: `res://`)
+- **Default Fade Time** - Default fade duration for transitions (default: 1.0 seconds)
+- **History Buffer Size** - How many scenes to keep in history (default: 10)
