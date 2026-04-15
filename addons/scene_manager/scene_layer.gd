@@ -30,17 +30,18 @@ func prepare(
 
 
 func _get_scene_by_id(recv: Array[SMgrSceneLayer], q_id: int) -> void:
-	if q_id == self.scene_id:
+	if not is_queued_for_deletion() and q_id == self.scene_id:
 		recv.append(self)
 
 
 func _get_scene_by_name(recv: Array[SMgrSceneLayer], q_name: String) -> void:
-	if q_name == self.name:
+	if not is_queued_for_deletion() and q_name == self.name:
 		recv.append(self)
 
 
 func _process_scene_layer(proc: Callable) -> void:
-	proc.call(self)
+	if not is_queued_for_deletion():
+		proc.call(self)
 
 
 func _pause_threshold_changed(priority: int) -> void:
