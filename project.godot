@@ -22,6 +22,7 @@ config/icon="res://icon.svg"
 
 Scenes="*res://scene_manager_data/scenes.gd"
 SceneManager="*res://addons/scene_manager/scene_manager.tscn"
+DLogger="*uid://dk8w65jl35vbd"
 
 [debug]
 
@@ -30,6 +31,10 @@ gdscript/warnings/unsafe_method_access=2
 gdscript/warnings/unsafe_cast=2
 gdscript/warnings/unsafe_call_argument=2
 gdscript/warnings/unsafe_void_return=2
+d_logger/enable_console_log=false
+d_logger/min_log_level=0
+d_logger/enable_file_log=false
+d_logger/log_file_path="user://debug.log"
 
 [display]
 
@@ -37,7 +42,7 @@ window/size/resizable=false
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/scene_manager/plugin.cfg")
+enabled=PackedStringArray("res://addons/d_logger/plugin.cfg", "res://addons/scene_manager/plugin.cfg")
 
 [filesystem]
 
