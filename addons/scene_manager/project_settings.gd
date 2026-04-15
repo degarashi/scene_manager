@@ -100,7 +100,7 @@ var _last_enable_log: bool = false
 func _ensure_data_dir_exists(dir_path: String) -> void:
 	if not DirAccess.dir_exists_absolute(dir_path):
 		DirAccess.make_dir_recursive_absolute(dir_path)
-		print("Scene Manager: Created data directory at ", dir_path)
+		DLogger.debug("Created data directory at {0}", [dir_path], "Scene Manager")
 
 
 func _save() -> void:
