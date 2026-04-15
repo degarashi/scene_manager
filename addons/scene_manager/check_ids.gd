@@ -4,7 +4,7 @@ const _PS := preload("uid://dn6eh4s0h8jhi")
 
 
 static func check_invalid_ids() -> void:
-	print("Scene Manager: Checking for invalid Scenes.Id references...")
+	DLogger.debug("Checking for invalid Scenes.Id references...", null, "Scene Manager")
 
 	# Reload the script to ensure Scenes.Id enum is up to date
 	var script: GDScript = ResourceLoader.load(
@@ -15,9 +15,9 @@ static func check_invalid_ids() -> void:
 
 	var count: int = _scan_project_for_invalid_ids("res://")
 	if count == 0:
-		print("Scene Manager: No invalid Scenes.Id references found.")
+		DLogger.debug("No invalid Scenes.Id references found.", null, "Scene Manager")
 	else:
-		print("Scene Manager: Found %d invalid references." % count)
+		DLogger.debug("Found %d invalid references." % count, null, "Scene Manager")
 
 
 static func _scan_project_for_invalid_ids(path: String) -> int:
