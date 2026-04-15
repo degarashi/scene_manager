@@ -61,5 +61,5 @@ func add_node(p_node: Node) -> void:
 func _on_child_order_changed() -> void:
 	# If the number of child nodes (content) becomes zero, self-destruct
 	if get_child_count() == 0:
-		layer_disposed.emit(scene_id)
 		queue_free()
+		layer_disposed.emit(scene_id)

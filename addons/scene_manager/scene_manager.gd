@@ -191,9 +191,9 @@ func _create_scene_layer(
 	)
 	layer.layer_disposed.connect(_on_layer_disposed)
 
-	# Pause lower layers if necessary
-	if summary.pauses_lower:
-		_ebus.pause_threshold_changed.emit(summary.max_priority)
+	# Update process mode of all layers (including the new one)
+	_recalculate_pause_threshold()
+
 	if summary.always_process:
 		layer.process_mode = Node.PROCESS_MODE_ALWAYS
 
@@ -201,13 +201,18 @@ func _create_scene_layer(
 
 
 func _on_layer_disposed(_scene_id: Scenes.Id) -> void:
-	var max_p := _C.MIN_LAYER_PRIORITY
+	_recalculate_pause_threshold()
+
+
+func _recalculate_pause_threshold() -> void:
+	var max_p_wrap := [_C.MIN_LAYER_PRIORITY]
 	_ebus.process_scene_layer.emit(
 		func(sc: SMgrSceneLayer) -> void:
-			if sc.pause_lower:
-				max_p = max(max_p, sc.l_priority)
+			if not sc.is_queued_for_deletion() and sc.pause_lower:
+				max_p_wrap[0] = max(max_p_wrap[0], sc.l_priority)
 	)
 
+	var max_p: int = max_p_wrap[0]
 	if max_p != _C.MIN_LAYER_PRIORITY:
 		_ebus.pause_threshold_changed.emit(max_p)
 	else:
