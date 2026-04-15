@@ -77,4 +77,4 @@ func _on_signal_emitted(...args: Array) -> void:
 
 		log_msg += ": <{0}>".format([", ".join(formatted_args)])
 
-	print(log_msg)
+	DLogger.debug(log_msg, null, "Scene Manager")
