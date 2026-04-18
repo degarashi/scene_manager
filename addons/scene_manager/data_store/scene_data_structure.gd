@@ -27,6 +27,10 @@ const _DEBOUNCE_TIME = 0.3
 		_on_any_data_changed()
 
 
+# ------------- [Private Variable] -------------
+var _is_sorting: bool = false
+
+
 ## Initialize debouncer (connect signals)
 func _init() -> void:
 	# Initialize the debouncer inherited from DebouncedResource
@@ -35,6 +39,12 @@ func _init() -> void:
 
 ## Common processing when any data changes are detected
 func _on_any_data_changed() -> void:
+	if _is_sorting:
+		return
+	_is_sorting = true
+	sort_data_structures()
+	_is_sorting = false
+
 	# Conventional immediate signal (necessary for Inspector updates, etc.)
 	# This triggers the inherited DebouncedResource's _on_resource_changed()
 	emit_changed()
