@@ -7,7 +7,6 @@
 font_color = Color(0.572988, 0.572988, 0.572988, 1)
 
 [node name="AutoCompleteOption" type="ColorRect" unique_id=2102150951]
-anchors_preset = 10
 anchor_right = 1.0
 offset_bottom = 30.0
 grow_horizontal = 2
@@ -15,11 +14,6 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 color = Color(0.129558, 0.129558, 0.129558, 1)
 script = ExtResource("1_ugh68")
-metadata/dg_old_source = ["@tool
-extends ColorRect
-
-signal option_chosen(option_text: String)
-"]
 
 [node name="CompleteText" type="Label" parent="." unique_id=918974385]
 unique_name_in_owner = true
