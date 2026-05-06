@@ -385,7 +385,7 @@ func add_scene(
 
 			DuplicateNameMode.WARN_AND_SKIP:
 				DLogger.warn(
-					"Scene with name '%s' is already loaded. Skipping.", [target_name], CAT
+					"Scene with name '{0}' is already loaded. Skipping.", [target_name], CAT
 				)
 				return null
 
