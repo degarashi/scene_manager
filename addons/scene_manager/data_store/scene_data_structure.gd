@@ -39,15 +39,21 @@ func _init() -> void:
 
 ## Common processing when any data changes are detected
 func _on_any_data_changed() -> void:
+	# Conventional immediate signal (necessary for Inspector updates, etc.)
+	# This triggers the inherited DebouncedResource's _on_resource_changed()
+	emit_changed()
+
+
+## Called when the debouncer timer finishes. (Overridden from DebouncedResource)
+func _on_debounce_timeout() -> void:
 	if _is_sorting:
 		return
 	_is_sorting = true
 	sort_data_structures()
 	_is_sorting = false
 
-	# Conventional immediate signal (necessary for Inspector updates, etc.)
-	# This triggers the inherited DebouncedResource's _on_resource_changed()
-	emit_changed()
+	# Emit the debounced signal after sorting
+	data_changed_debounced.emit()
 
 
 ## Ensure all managed data objects have their changed signals connected

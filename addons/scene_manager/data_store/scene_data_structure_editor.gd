@@ -46,6 +46,7 @@ func _init(p_data: SMgrData, ebus: SMgrEbusEditor, p_log: SMgrLogBase) -> void:
 
 	# Detect changes on the SMgrData side and update its own signals and dirty flag
 	_data.changed.connect(_on_data_changed)
+	_data.data_changed_debounced.connect(_on_data_changed)
 	_setup_filesystem_monitoring.call_deferred()
 
 	_connect_ebus(ebus)
@@ -389,19 +390,18 @@ func sync_with_filesystem() -> void:
 			if uid != ResourceUID.INVALID_ID:
 				found_uids.append(uid)
 
-	# Handle path changes for existing scenes (Movement Support)
+	# Handle path changes for ALL existing scenes (Movement Support)
+	# By checking all scenes regardless of found_uids, we can recover paths
+	# for scenes that were moved outside of include paths or were manually added.
 	for sc in _data.get_scenes_all():
-		if sc.uid in found_uids:
-			var current_actual_path := ResourceUID.get_id_path(sc.uid)
-			if not current_actual_path.is_empty() and sc.path != current_actual_path:
-				_log.info(
-					(
-						"  Updating path for scene: %s (%s -> %s)"
-						% [sc.name, sc.path, current_actual_path]
-					)
-				)
-				# (SMgrDataScene's setter or emit_changed will trigger the dirty flag)
-				sc.path = current_actual_path
+		var current_actual_path := ResourceUID.get_id_path(sc.uid)
+		if not current_actual_path.is_empty() and sc.path != current_actual_path:
+			_log.info(
+				"  Updating path for scene: %s (%s -> %s)"
+				% [sc.name, sc.path, current_actual_path]
+			)
+			# (SMgrDataScene's setter or emit_changed will trigger the dirty flag)
+			sc.path = current_actual_path
 
 	# Remove UIDs that should be under the include list but were not found during the scan
 	var uids_to_remove: Array[int] = []
