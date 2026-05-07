@@ -3,6 +3,7 @@ extends Control
 ## Management class for safely deleting unnecessary scene nodes.
 
 
+# ------------- [Callbacks] -------------
 func _init() -> void:
 	name = "SMgrTrashCan"
 	# Stop processing and hide to minimize load
@@ -10,6 +11,7 @@ func _init() -> void:
 	visible = false
 
 
+# ------------- [Public Method] -------------
 ## Moves the node to the trash can, frees its name, and then calls queue_free.
 func collect(target_node: Node) -> void:
 	if not is_instance_valid(target_node):

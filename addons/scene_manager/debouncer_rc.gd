@@ -4,9 +4,11 @@
 class_name DebouncerRC
 extends RefCounted
 
+# ------------- [Signal] -------------
 ## Emitted when the debounce _delay has successfully completed.
 signal timeout
 
+# ------------- [Private Variable] -------------
 ## The _delay time in seconds.
 var _delay: float = 0.5
 
@@ -19,11 +21,13 @@ var _one_shot: bool = true
 var _active_id: int = 0
 
 
+# ------------- [Callbacks] -------------
 func _init(p_delay: float = 0.5, p_one_shot: bool = true) -> void:
 	_delay = p_delay
 	_one_shot = p_one_shot
 
 
+# ------------- [Public Method] -------------
 ## Starts or restarts the debounce process.
 ## If called repeatedly, previous calls are ignored, and the timeout emits only
 ## after the specified _delay following the final call.

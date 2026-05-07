@@ -3,6 +3,7 @@ class_name SMgrDataScene
 extends DebouncedResource
 
 const _DEBOUNCE_TIME = 0.3
+static var _log := DLoggerClass.new("Scene Manager")
 
 # ------------- [Exports] -------------
 ## Identifier name of the scene (used for Enums, etc.)
@@ -73,9 +74,9 @@ static func initialize(sc_name: String, target_path: String, target_uid: int) ->
 			final_uid = id_from_path
 		elif not target_path.is_empty():
 			if not FileAccess.file_exists(target_path):
-				printerr("Scene Manager: Entry is broken (File not found): ", target_path)
+				_log.error("Scene Manager: Entry is broken (File not found): {0}", [target_path])
 			else:
-				printerr("Scene Manager: Could not resolve UID for path: ", target_path)
+				_log.error("Scene Manager: Could not resolve UID for path: {0}", [target_path])
 
 	# Instantiate only if valid information is determined
 	if not final_path.is_empty():

@@ -4,17 +4,21 @@
 class_name Debouncer
 extends Node
 
+# ------------- [Signal] -------------
 ## Emitted when the debounce delay has successfully completed.
 signal timeout
 
+# ------------- [Exports] -------------
 ## The delay time in seconds.
 @export var delay: float = 0.5
 ## If true, the timer only fires once (standard debounce behavior).
 @export var one_shot: bool = true
 
+# ------------- [Private Variable] -------------
 var _timer: Timer
 
 
+# ------------- [Callbacks] -------------
 func _init(p_delay: float = 0.5, p_one_shot: bool = true) -> void:
 	delay = p_delay
 	one_shot = p_one_shot
@@ -31,6 +35,7 @@ func _ready() -> void:
 	add_child(_timer)
 
 
+# ------------- [Public Method] -------------
 ## Starts or restarts the debounce process.
 ## Calling this repeatedly resets the timer, ignoring previous calls.
 func call_debounced() -> void:

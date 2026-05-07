@@ -12,6 +12,7 @@ const DEFAULT_SCENES_DATA_FILENAME = "scenes_data.tres"
 const DEFAULT_PLAY_OUT_TIME: float = 1
 const DEFAULT_PLAY_IN_TIME: float = 1
 const _AF = preload("uid://dlgh4u64a7qxk")
+static var _log := DLoggerClass.new("Scene Manager")
 
 
 # Setting Paths
@@ -100,13 +101,13 @@ var _last_enable_log: bool = false
 func _ensure_data_dir_exists(dir_path: String) -> void:
 	if not DirAccess.dir_exists_absolute(dir_path):
 		DirAccess.make_dir_recursive_absolute(dir_path)
-		DLogger.debug("Created data directory at {0}", [dir_path], "Scene Manager")
+		_log.debug("Created data directory at {0}", [dir_path])
 
 
 func _save() -> void:
 	var error: Error = ProjectSettings.save()
 	if error != OK:
-		push_error("SceneManager: Failed to _save ProjectSettings (Error code: %d)" % error)
+		_log.error("SceneManager: Failed to _save ProjectSettings (Error code: {0})", [error])
 
 
 ## Handler to detect changes made to settings from external sources like the Project Settings window

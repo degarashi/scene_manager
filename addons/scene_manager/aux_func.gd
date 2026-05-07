@@ -1,6 +1,9 @@
 extends Object
 
+# ------------- [Constants] -------------
+static var _log := DLoggerClass.new("Scene Manager")
 
+# ------------- [Public Method] -------------
 ## Connects the signal to the callable only if the connection does not already exist
 static func connect_if_not_connected(sig: Signal, callable: Callable) -> void:
 	if not sig.is_connected(callable):
@@ -58,12 +61,12 @@ static func convert_to_array_string(src: Array) -> Array[String]:
 ## @param path Target resource file path
 static func change_resource_uid(path: String) -> void:
 	if not FileAccess.file_exists(path):
-		push_error("File does not exist: " + path)
+		_log.error("File does not exist: {0}", [path])
 		return
 
 	var res := ResourceLoader.load(path)
 	if not res:
-		push_error("Failed to load resource: " + path)
+		_log.error("Failed to load resource: {0}", [path])
 		return
 
 	# Change UID
@@ -76,7 +79,7 @@ static func change_resource_uid(path: String) -> void:
 	# Save to temp
 	var save_error := ResourceSaver.save(res, tmp_path)
 	if save_error != OK:
-		push_error("Save failed. Code: %d. Path: %s" % [save_error, tmp_path])
+		_log.error("Save failed. Code: {0}. Path: {1}", [save_error, tmp_path])
 		return
 
 	var dir := DirAccess.open("res://")
@@ -107,6 +110,6 @@ static func change_resource_uid(path: String) -> void:
 				dir.remove(rel_tmp_uid_path)
 
 		if rename_error != OK:
-			push_error("Rename failed: " + str(rename_error))
+			_log.error("Rename failed: {0}", [rename_error])
 	else:
-		push_error("DirAccess failed.")
+		_log.error("DirAccess failed.")

@@ -4,6 +4,7 @@ extends SMgrResource
 
 # ------------- [Constants] -------------
 const _AF = preload("uid://dlgh4u64a7qxk")
+static var _log := DLoggerClass.new("Scene Manager")
 
 # ------------- [Private Variable] -------------
 ## Cache to hold signal argument names { signal_name: Array[String] }
@@ -77,4 +78,4 @@ func _on_signal_emitted(...args: Array) -> void:
 
 		log_msg += ": <{0}>".format([", ".join(formatted_args)])
 
-	DLogger.debug(log_msg, null, "Scene Manager")
+	_log.debug(log_msg)

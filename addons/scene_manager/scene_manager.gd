@@ -33,7 +33,8 @@ const _RING_BUFFER = preload("uid://b6phac21mxnxr")
 const _RESOURCE_LOADER = preload("uid://dabq3s83q0iku")
 const _SCENE_LAYER = preload("uid://do8sylacoy3u4")
 const _AF = preload("uid://dlgh4u64a7qxk")
-const CAT = "Scene Manager"
+
+static var _log := DLoggerClass.new("Scene Manager")
 
 @export var _loading_node_name: String = "===Transition==="
 @export var _initial_play_in_time = 1.0
@@ -163,19 +164,20 @@ func _get_custom_transitioner(options: SceneLoadOptions) -> ScreenTransitioner:
 
 	var path := _scene_db.get_scene_path_from_enum(options.transition_id)
 	if path.is_empty():
-		push_error(
-			"Scene Manager: Custom transition scene not found for ID: %d" % options.transition_id
+		_log.error(
+			"Scene Manager: Custom transition scene not found for ID: {0}", [options.transition_id]
 		)
 		return null
 
 	var scene := load(path) as PackedScene
 	if not scene:
-		push_error("Scene Manager: Failed to load custom transition scene at: " + path)
+		_log.error("Scene Manager: Failed to load custom transition scene at: {0}", [path])
+
 		return null
 
 	var instance = scene.instantiate()
 	if not instance is ScreenTransitioner:
-		push_error(
+		_log.error(
 			"Scene Manager: Custom transition scene does not inherit from ScreenTransitioner."
 		)
 		instance.free()
@@ -253,10 +255,9 @@ func _get_actual_scene_container() -> Node:
 	var target_node := get_node_or_null(_actual_scene_container_path)
 	if target_node:
 		return target_node
-	DLogger.warn(
+	_log.warn(
 		"_actual_scene_container_path '%s' is invalid. Falling back to root node.",
-		[_actual_scene_container_path],
-		CAT
+		[_actual_scene_container_path]
 	)
 	return get_tree().root
 
@@ -264,7 +265,9 @@ func _get_actual_scene_container() -> Node:
 func _on_initial_setup() -> void:
 	if _wrap_initial_scene:
 		var scene_node := get_tree().current_scene
-		assert(scene_node != null, "Scene Manager: current_scene is null during initial setup.")
+		if scene_node == null:
+			_log.warn("Scene Manager: current_scene is null during initial setup. Skipping wrap.")
+			return
 
 		# Find Scenes.Id enum by current scene's path
 		var current_path := scene_node.scene_file_path
@@ -275,7 +278,7 @@ func _on_initial_setup() -> void:
 		_get_actual_scene_container().add_child(layer)
 		layer.add_node(scene_node)
 		if _current_scene_enum == Scenes.Id.NONE:
-			DLogger.warn("Initial scene not found in DB (Scenes.Id.NONE).", null, CAT)
+			_log.warn("Initial scene not found in DB (Scenes.Id.NONE).")
 
 	# Initial fade-in effect
 	_transition_player.set_clickable(false)
@@ -297,7 +300,7 @@ func _remove_name_node(sc: SMgrSceneLayer, p_name: String) -> void:
 func _perform_scene_setup(scene: Scenes.Id, options: SceneLoadOptions) -> Node:
 	var new_scene_node := _create_scene_instance_blocking(scene)
 	if not new_scene_node:
-		push_error("Scene Manager: Failed to instantiate scene: %s" % Scenes.Id.find_key(scene))
+		_log.error("Scene Manager: Failed to instantiate scene: {0}", [Scenes.Id.find_key(scene)])
 		return null
 
 	# Create layer (node_name will be ignored if category has layer_name)
@@ -323,7 +326,7 @@ func get_history_count() -> int:
 ## Unloads a SceneLayer matching the specified node name.
 func unload_scene_by_name(node_name: String) -> void:
 	if node_name.is_empty():
-		DLogger.warn("unload_scene_by_name called with empty name.", null, CAT)
+		_log.warn("unload_scene_by_name called with empty name.")
 		return
 
 	# Leverages existing logic to safely move the node to the trash can
@@ -335,7 +338,7 @@ func switch_to_scene(
 	scene_id: Scenes.Id, add_to_back: bool, options := SceneLoadOptions.new()
 ) -> Node:
 	if scene_id == Scenes.Id.NONE:
-		DLogger.warn("switch_to_scene called with NONE.", null, CAT)
+		_log.warn("switch_to_scene called with NONE.")
 		return null
 
 	# Even if reloading the same scene, the instance is recreated.
@@ -365,11 +368,9 @@ func switch_to_scene(
 	# Instantiate and setup the scene (this internally emits 'scene_loaded')
 	var new_scene_node := _perform_scene_setup(scene_id, options)
 	if not new_scene_node:
-		push_error(
-			(
-				"Scene Manager: Failed to instantiate switch_to_scene: %s"
-				% Scenes.Id.find_key(scene_id)
-			)
+		_log.error(
+			"Scene Manager: Failed to instantiate switch_to_scene: {0}",
+			[Scenes.Id.find_key(scene_id)]
 		)
 		player.set_clickable(true)
 		if custom_player:
@@ -404,7 +405,7 @@ func add_scene(
 	options := SceneLoadOptions.new()
 ) -> Node:
 	if scene_id == Scenes.Id.NONE:
-		DLogger.warn("add_scene called with NONE.", null, CAT)
+		_log.warn("add_scene called with NONE.")
 		return null
 
 	var summary := _get_category_summary(scene_id)
@@ -421,9 +422,7 @@ func add_scene(
 				unload_scene_by_name(target_name)
 
 			DuplicateNameMode.WARN_AND_SKIP:
-				DLogger.warn(
-					"Scene with name '{0}' is already loaded. Skipping.", [target_name], CAT
-				)
+				_log.warn("Scene with name '{0}' is already loaded. Skipping.", [target_name])
 				return null
 
 			DuplicateNameMode.RENAME_NEW:
@@ -457,7 +456,7 @@ func add_scene(
 
 func load_previous_scene(options := SceneLoadOptions.new()) -> bool:
 	if _history_stack.size() == 0:
-		DLogger.warn("Attempted to load previous scene, but history is empty.", null, CAT)
+		_log.warn("Attempted to load previous scene, but history is empty.")
 		return false
 
 	back_to_previous_by_offset(1, options)
@@ -468,7 +467,7 @@ func load_previous_scene(options := SceneLoadOptions.new()) -> bool:
 ## from the current scene and transition to that scene.
 func back_to_previous_by_offset(offset: int, options := SceneLoadOptions.new()) -> void:
 	if offset <= 0:
-		DLogger.warn("Scene Manager: offset must be greater than 0.", null, CAT)
+		_log.warn("Scene Manager: offset must be greater than 0.")
 		return
 
 	var target_scene := Scenes.Id.NONE
@@ -480,9 +479,7 @@ func back_to_previous_by_offset(offset: int, options := SceneLoadOptions.new()) 
 			break
 
 	if target_scene == Scenes.Id.NONE:
-		DLogger.warn(
-			"Scene Manager: Failed to go back, history is empty or offset out of bounds.", null, CAT
-		)
+		_log.warn("Scene Manager: Failed to go back, history is empty or offset out of bounds.")
 		return
 
 	switch_to_scene(target_scene, false, options)
@@ -493,7 +490,7 @@ func back_to_previous_by_offset(offset: int, options := SceneLoadOptions.new()) 
 func reload_current_scene(options := SceneLoadOptions.new()) -> bool:
 	# Use the same parent node the scene currently has to keep it consistent.
 	if _current_scene_enum == Scenes.Id.NONE:
-		DLogger.warn("Attempted to reload current scene, but current scene is NONE.", null, CAT)
+		_log.warn("Attempted to reload current scene, but current scene is NONE.")
 		return false
 
 	# The reload logic is handled within switch_to_scene(), so simply calling it is sufficient.
@@ -513,7 +510,7 @@ func exit_game(fade_time: float = 1.0) -> void:
 # ------------- [Async Loading] -------------
 func start_async_load(scene: Scenes.Id, use_sub_threads: bool = true) -> void:
 	if scene == Scenes.Id.NONE:
-		DLogger.warn("Scene Manager: start_async_load called with Scenes.Id.NONE.", null, CAT)
+		_log.warn("Scene Manager: start_async_load called with Scenes.Id.NONE.")
 		return
 
 	var path := _scene_db.get_scene_path_from_enum(scene)
@@ -526,7 +523,7 @@ func start_async_load(scene: Scenes.Id, use_sub_threads: bool = true) -> void:
 				load_finished.emit()
 			else:
 				load_failed.emit()
-				push_error("Scene Manager: Async load failed for %s" % path),
+				_log.error("Scene Manager: Async load failed for {0}", [path]),
 		use_sub_threads
 	)
 
@@ -556,7 +553,7 @@ func load_scene_with_transition(
 func instantiate_async_result() -> void:
 	var path := _scene_db.get_scene_path_from_enum(_reserved.scene_id)
 	if path == "" or _reserved.scene_id == Scenes.Id.NONE:
-		DLogger.warn("instantiate_async_result: No reserved scene to instantiate.", null, CAT)
+		_log.warn("instantiate_async_result: No reserved scene to instantiate.")
 		return
 
 	# Add current scene to history before switching
@@ -589,7 +586,7 @@ func instantiate_async_result() -> void:
 ## This is the final step of the 'load_scene_with_transition' flow.
 func activate_prepared_scene() -> Node:
 	if _reserved.scene_id == Scenes.Id.NONE:
-		DLogger.warn("activate_prepared_scene called but no scene is reserved.", null, CAT)
+		_log.warn("activate_prepared_scene called but no scene is reserved.")
 		return null
 
 	var recv: Array[SMgrSceneLayer]
@@ -642,7 +639,7 @@ func activate_prepared_scene() -> Node:
 # ------------- [Utils] -------------
 func _get_scene_blocking(scene: Scenes.Id) -> PackedScene:
 	if scene == Scenes.Id.NONE:
-		DLogger.warn("Scene Manager: _get_scene_blocking called with Scenes.Id.NONE.", null, CAT)
+		_log.warn("Scene Manager: _get_scene_blocking called with Scenes.Id.NONE.")
 		return null
 	return load(_scene_db.get_scene_path_from_enum(scene))
 

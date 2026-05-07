@@ -9,6 +9,9 @@ signal load_completed(path: String, resource: Resource)
 ## Emitted when a batch of tasks is completed.
 signal batch_completed(resources: Dictionary)
 
+# ------------- [Constants] -------------
+static var _log := DLoggerClass.new("Scene Manager")
+
 
 # ------------- [Defines] -------------
 class _LoadTask:
@@ -98,7 +101,7 @@ func _update_task(task: _LoadTask) -> bool:
 			return true
 
 		ResourceLoader.THREAD_LOAD_FAILED, ResourceLoader.THREAD_LOAD_INVALID_RESOURCE:
-			push_warning("ResourceLoaderMgr: Load failed or invalid resource: " + task.path)
+			_log.warn("ResourceLoaderMgr: Load failed or invalid resource: {0}", [task.path])
 			_finalize_task(task, null)  # Still finalize to notify batches of "completion" (even if null)
 			return true
 
@@ -128,7 +131,7 @@ func _finalize_task(task: _LoadTask, res: Resource = null) -> void:
 				_finalize_batch(batch)
 		_path_to_batches.erase(task.path)
 
-#[[TODO: BatchTaskのメンバ関数にする]]
+
 func _finalize_batch(batch: _BatchTask) -> void:
 	batch_completed.emit(batch.results)
 	if batch.on_all_complete.is_valid():
@@ -156,7 +159,7 @@ func request(path: String, callback: Callable, use_sub_threads: bool = true) -> 
 		_tasks[path] = _LoadTask.new(path, callback)
 		set_process(true)
 	else:
-		push_warning("ResourceLoaderMgr: Request failed for path: %s (Error: %d)" % [path, err])
+		_log.warn("ResourceLoaderMgr: Request failed for path: {0} (Error: {1})", [path, err])
 
 
 ## Request multiple resources to be loaded

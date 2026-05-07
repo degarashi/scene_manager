@@ -3,6 +3,7 @@ extends Object
 
 # ------------- [Constants] -------------
 const AUTO_DIRECTION_STRINGS: Array[String] = ["NORTH", "EAST", "SOUTH", "WEST"]
+static var _log := DLoggerClass.new("Scene Manager")
 
 
 # ------------- [Public Static Method] -------------
@@ -79,4 +80,4 @@ static func print_collection(
 		var sep := "".lpad(max_size, "-") + "\n"
 		print_str = sep + print_str + sep
 
-	print(print_str)
+	_log.debug(print_str)
