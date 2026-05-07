@@ -18,3 +18,20 @@ enum Id {
 }
 enum CategoryId {
 }
+
+
+## Returns the PackedScene associated with the given Scene ID.
+static func get_scene(id: Id) -> PackedScene:
+	if id == Id.NONE:
+		return null
+	var path := ResourceUID.get_id_path(id)
+	if path.is_empty():
+		return null
+	return load(path) as PackedScene
+
+
+## Returns the file path associated with the given Scene ID.
+static func get_scene_path(id: Id) -> String:
+	if id == Id.NONE:
+		return ""
+	return ResourceUID.get_id_path(id)

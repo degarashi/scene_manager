@@ -156,9 +156,8 @@ func _export_scene_enum_string() -> String:
 	var scenes := _data.get_scenes_all()
 	# Sort alphabetically based on scene-name (Natural No Case Compare)
 	scenes.sort_custom(
-		func(a: SMgrDataScene, b: SMgrDataScene) -> bool: return (
-			a.name.naturalnocasecmp_to(b.name) < 0
-		)
+		func(a: SMgrDataScene, b: SMgrDataScene) -> bool:
+			return a.name.naturalnocasecmp_to(b.name) < 0
 	)
 
 	for sc in scenes:
@@ -174,9 +173,8 @@ func _export_category_enum_string() -> String:
 
 	# Sort alphabetically based on category name (Natural No Case Compare)
 	categories.sort_custom(
-		func(a: SMgrCategoryData, b: SMgrCategoryData) -> bool: return (
-			a.name.naturalnocasecmp_to(b.name) < 0
-		)
+		func(a: SMgrCategoryData, b: SMgrCategoryData) -> bool:
+			return a.name.naturalnocasecmp_to(b.name) < 0
 	)
 
 	for c_data in categories:
@@ -184,6 +182,26 @@ func _export_category_enum_string() -> String:
 		ret += "\t{0} = {1},\n".format([c_data.name.to_upper(), c_uid])
 	ret += "}\n"
 	return ret
+
+
+func _export_utility_functions() -> String:
+	return """
+## Returns the PackedScene associated with the given Scene ID.
+static func get_scene(id: Id) -> PackedScene:
+	if id == Id.NONE:
+		return null
+	var path := ResourceUID.get_id_path(id)
+	if path.is_empty():
+		return null
+	return load(path) as PackedScene
+
+
+## Returns the file path associated with the given Scene ID.
+static func get_scene_path(id: Id) -> String:
+	if id == Id.NONE:
+		return ""
+	return ResourceUID.get_id_path(id)
+"""
 
 
 # ------------- [Public Method] -------------
@@ -207,6 +225,7 @@ func save_data(path: String, data_path: String) -> void:
 	file.store_string(_SCENE_DATA_HEADER)
 	file.store_string(_export_scene_enum_string())
 	file.store_string(_export_category_enum_string())
+	file.store_string(_export_utility_functions())
 	file.close()
 
 	# --- save this resource itself ---
@@ -397,8 +416,7 @@ func sync_with_filesystem() -> void:
 		var current_actual_path := ResourceUID.get_id_path(sc.uid)
 		if not current_actual_path.is_empty() and sc.path != current_actual_path:
 			_log.info(
-				"  Updating path for scene: %s (%s -> %s)"
-				% [sc.name, sc.path, current_actual_path]
+				"  Updating path for scene: %s (%s -> %s)" % [sc.name, sc.path, current_actual_path]
 			)
 			# (SMgrDataScene's setter or emit_changed will trigger the dirty flag)
 			sc.path = current_actual_path
