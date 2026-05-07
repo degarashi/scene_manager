@@ -16,6 +16,8 @@ static var _empty_cb := func(_arg: Node) -> void: pass
 @export var play_out_time: float = 0.5
 ## Duration of the fade in effect.
 @export var play_in_time: float = 0.5
+## Override the default transitioner with a custom one by specifying its Scene ID.
+@export var transition_id: Scenes.Id = Scenes.Id.NONE
 
 @export_group("Interaction")
 ## Whether or not to block mouse input during the scene load.
@@ -45,6 +47,7 @@ func _init(
 	p_play_in: float = -1.0,
 	p_pre_wrap_cb: Callable = _empty_cb,
 	p_pre_node_cb: Callable = _empty_cb,
+	p_transition_id: Scenes.Id = Scenes.Id.NONE,
 ) -> void:
 	# Logic for determining default values
 	var settings := get_default_settings()
@@ -68,6 +71,7 @@ func _init(
 
 	pre_wrap_cb = p_pre_wrap_cb
 	pre_node_cb = p_pre_node_cb
+	transition_id = p_transition_id
 
 
 ## Create a deep copy of the SceneLoadOptions instance.
@@ -77,6 +81,9 @@ func copy() -> SceneLoadOptions:
 
 func _to_string() -> String:
 	return (
-		"SceneLoadOptions(node_name='%s', play_out_time=%.2f, play_in_time=%.2f, clickable=%s)"
-		% [node_name, play_out_time, play_in_time, clickable]
+		(
+			"SceneLoadOptions(node_name='%s', play_out_time=%.2f,"
+			+ " play_in_time=%.2f, clickable=%s, transition_id=%s)"
+		)
+		% [node_name, play_out_time, play_in_time, clickable, transition_id]
 	)
