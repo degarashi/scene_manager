@@ -157,6 +157,34 @@ func _init_effector() -> void:
 	add_child(_transition_player)
 
 
+func _get_custom_transitioner(options: SceneLoadOptions) -> ScreenTransitioner:
+	if options.transition_id == Scenes.Id.NONE:
+		return null
+
+	var path := _scene_db.get_scene_path_from_enum(options.transition_id)
+	if path.is_empty():
+		push_error(
+			"Scene Manager: Custom transition scene not found for ID: %d" % options.transition_id
+		)
+		return null
+
+	var scene := load(path) as PackedScene
+	if not scene:
+		push_error("Scene Manager: Failed to load custom transition scene at: " + path)
+		return null
+
+	var instance = scene.instantiate()
+	if not instance is ScreenTransitioner:
+		push_error(
+			"Scene Manager: Custom transition scene does not inherit from ScreenTransitioner."
+		)
+		instance.free()
+		return null
+
+	add_child(instance)
+	return instance as ScreenTransitioner
+
+
 func _init_trash_node() -> void:
 	_trash_can = SMgrTrashCan.new()
 	add_child(_trash_can)
@@ -321,8 +349,11 @@ func switch_to_scene(
 			options.node_name = recv[0].name
 
 	# --- Transition Start ---
-	_transition_player.set_clickable(options.clickable)
-	await _transition_player.play_out(options.play_out_time)
+	var custom_player := _get_custom_transitioner(options)
+	var player := custom_player if custom_player else _transition_player
+
+	player.set_clickable(options.clickable)
+	await player.play_out(options.play_out_time)
 
 	# Remove existing layers before setting up the new scene
 	_ebus.process_scene_layer.emit(_remove_node_safely)
@@ -340,7 +371,9 @@ func switch_to_scene(
 				% Scenes.Id.find_key(scene_id)
 			)
 		)
-		_transition_player.set_clickable(true)
+		player.set_clickable(true)
+		if custom_player:
+			custom_player.queue_free()
 		return null
 
 	var category_diff := _scene_db.compare_scene_categories(_current_scene_enum, scene_id)
@@ -354,8 +387,12 @@ func switch_to_scene(
 		category_changed.emit(category_diff)
 		category_tags_notified.emit(category_diff.added)
 
-	await _transition_player.play_in(options.play_in_time)
-	_transition_player.set_clickable(true)
+	await player.play_in(options.play_in_time)
+	player.set_clickable(true)
+
+	if custom_player:
+		custom_player.queue_free()
+
 	scene_transition_completed.emit(scene_id)
 	return new_scene_node
 
@@ -560,8 +597,11 @@ func activate_prepared_scene() -> Node:
 	assert(not recv.is_empty(), "Scene Manager: Reserved scene entry missing.")
 	var layer := recv[0]
 
-	_transition_player.set_clickable(_reserved.options.clickable)
-	await _transition_player.play_out(_reserved.options.play_out_time)
+	var custom_player := _get_custom_transitioner(_reserved.options)
+	var player := custom_player if custom_player else _transition_player
+
+	player.set_clickable(_reserved.options.clickable)
+	await player.play_out(_reserved.options.play_out_time)
 
 	var diff := _scene_db.compare_scene_categories(_current_scene_enum, _reserved.scene_id)
 
@@ -586,10 +626,14 @@ func activate_prepared_scene() -> Node:
 	scene_loaded.emit(_current_scene_enum)
 
 	# Show the new scene
-	await _transition_player.play_in(_reserved.options.play_in_time)
+	await player.play_in(_reserved.options.play_in_time)
 
 	_reserved.clear()
-	_transition_player.set_clickable(true)
+	player.set_clickable(true)
+
+	if custom_player:
+		custom_player.queue_free()
+
 	scene_transition_completed.emit(_current_scene_enum)
 
 	return layer.get_child(0)
