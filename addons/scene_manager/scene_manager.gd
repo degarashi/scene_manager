@@ -316,6 +316,26 @@ func _perform_scene_setup(scene_id: Scenes.Id, options: SceneLoadOptions) -> Nod
 	return new_scene_node
 
 
+func _setup_transition_player(options: SceneLoadOptions) -> ScreenTransitioner:
+	var custom_player := _get_custom_transitioner(options)
+	var player := custom_player if custom_player else _transition_player
+	player.set_clickable(options.clickable)
+	return player
+
+
+func _get_unique_layer_name(base_name: String) -> String:
+	var suffix := 2
+	var new_name := base_name + str(suffix)
+	var check_recv: Array[SMgrSceneLayer]
+	_ebus.get_scene_by_name.emit(check_recv, new_name)
+	while not check_recv.is_empty():
+		suffix += 1
+		new_name = base_name + str(suffix)
+		check_recv.clear()
+		_ebus.get_scene_by_name.emit(check_recv, new_name)
+	return new_name
+
+
 # ------------- [Public Methods] -------------
 func get_history_list() -> Array[Scenes.Id]:
 	return _history_stack.get_all_items()
@@ -354,10 +374,7 @@ func switch_to_scene(
 			options.node_name = recv[0].name
 
 	# --- Transition Start ---
-	var custom_player := _get_custom_transitioner(options)
-	var player := custom_player if custom_player else _transition_player
-
-	player.set_clickable(options.clickable)
+	var player := _setup_transition_player(options)
 	await player.play_out(options.play_out_time)
 
 	# Remove existing layers before setting up the new scene
@@ -375,8 +392,8 @@ func switch_to_scene(
 			[Scenes.Id.find_key(scene_id)]
 		)
 		player.set_clickable(true)
-		if custom_player:
-			custom_player.queue_free()
+		if player != _transition_player:
+			player.queue_free()
 		return null
 
 	var category_diff := _scene_db.compare_scene_categories(_current_scene_enum, scene_id)
@@ -393,8 +410,8 @@ func switch_to_scene(
 	await player.play_in(options.play_in_time)
 	player.set_clickable(true)
 
-	if custom_player:
-		custom_player.queue_free()
+	if player != _transition_player:
+		player.queue_free()
 
 	scene_transition_completed.emit(scene_id)
 	return new_scene_node
@@ -428,17 +445,7 @@ func add_scene(
 				return null
 
 			DuplicateNameMode.RENAME_NEW:
-				# Logic to find a unique name by appending a numeric suffix
-				var suffix := 2
-				var new_name := target_name + str(suffix)
-				var check_recv: Array[SMgrSceneLayer]
-				_ebus.get_scene_by_name.emit(check_recv, new_name)
-				while not check_recv.is_empty():
-					suffix += 1
-					new_name = target_name + str(suffix)
-					check_recv.clear()
-					_ebus.get_scene_by_name.emit(check_recv, new_name)
-				options.node_name = new_name
+				options.node_name = _get_unique_layer_name(target_name)
 
 			DuplicateNameMode.APPEND:
 				# Instead of creating a new layer, append the instance to the existing layer
@@ -596,10 +603,7 @@ func activate_prepared_scene() -> Node:
 	assert(not recv.is_empty(), "Scene Manager: Reserved scene entry missing.")
 	var layer := recv[0]
 
-	var custom_player := _get_custom_transitioner(_reserved.options)
-	var player := custom_player if custom_player else _transition_player
-
-	player.set_clickable(_reserved.options.clickable)
+	var player := _setup_transition_player(_reserved.options)
 	await player.play_out(_reserved.options.play_out_time)
 
 	var diff := _scene_db.compare_scene_categories(_current_scene_enum, _reserved.scene_id)
@@ -630,8 +634,8 @@ func activate_prepared_scene() -> Node:
 	_reserved.clear()
 	player.set_clickable(true)
 
-	if custom_player:
-		custom_player.queue_free()
+	if player != _transition_player:
+		player.queue_free()
 
 	scene_transition_completed.emit(_current_scene_enum)
 
