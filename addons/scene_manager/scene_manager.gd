@@ -37,7 +37,7 @@ const _AF = preload("uid://dlgh4u64a7qxk")
 static var _log := DLoggerClass.new("Scene Manager")
 
 @export var _loading_node_name: String = "===Transition==="
-@export var _initial_play_in_time = 1.0
+@export var _initial_play_in_time: float = 1.0
 @export var _actual_scene_container_path: NodePath = "/root"
 @export var _wrap_initial_scene := true
 @export var _transitioner_source: PackedScene = preload("uid://2iy8wfgenjka")
@@ -175,7 +175,7 @@ func _get_custom_transitioner(options: SceneLoadOptions) -> ScreenTransitioner:
 
 		return null
 
-	var instance = scene.instantiate()
+	var instance := scene.instantiate()
 	if not instance is ScreenTransitioner:
 		_log.error(
 			"Scene Manager: Custom transition scene does not inherit from ScreenTransitioner."
@@ -297,20 +297,22 @@ func _remove_name_node(sc: SMgrSceneLayer, p_name: String) -> void:
 		_remove_node_safely(sc)
 
 
-func _perform_scene_setup(scene: Scenes.Id, options: SceneLoadOptions) -> Node:
-	var new_scene_node := _create_scene_instance_blocking(scene)
+func _perform_scene_setup(scene_id: Scenes.Id, options: SceneLoadOptions) -> Node:
+	var new_scene_node := _create_scene_instance_blocking(scene_id)
 	if not new_scene_node:
-		_log.error("Scene Manager: Failed to instantiate scene: {0}", [Scenes.Id.find_key(scene)])
+		_log.error(
+			"Scene Manager: Failed to instantiate scene: {0}", [Scenes.Id.find_key(scene_id)]
+		)
 		return null
 
 	# Create layer (node_name will be ignored if category has layer_name)
-	var layer := _create_scene_layer(scene, options.node_name)
+	var layer := _create_scene_layer(scene_id, options.node_name)
 	layer.add_node(new_scene_node)
 
 	options.call_pre_cb(layer, new_scene_node)
 	_get_actual_scene_container().add_child(layer)
 
-	scene_loaded.emit(scene)
+	scene_loaded.emit(scene_id)
 	return new_scene_node
 
 
@@ -472,7 +474,7 @@ func back_to_previous_by_offset(offset: int, options := SceneLoadOptions.new()) 
 
 	var target_scene := Scenes.Id.NONE
 	for i in range(offset):
-		var popped = _history_stack.pop()
+		var popped := _history_stack.pop() as Scenes.Id
 		if popped != Scenes.Id.NONE:
 			target_scene = popped
 		else:
@@ -508,13 +510,13 @@ func exit_game(fade_time: float = 1.0) -> void:
 
 
 # ------------- [Async Loading] -------------
-func start_async_load(scene: Scenes.Id, use_sub_threads: bool = true) -> void:
-	if scene == Scenes.Id.NONE:
+func start_async_load(scene_id: Scenes.Id, use_sub_threads: bool = true) -> void:
+	if scene_id == Scenes.Id.NONE:
 		_log.warn("Scene Manager: start_async_load called with Scenes.Id.NONE.")
 		return
 
-	var path := _scene_db.get_scene_path_from_enum(scene)
-	_load_scene_id = scene
+	var path := _scene_db.get_scene_path_from_enum(scene_id)
+	_load_scene_id = scene_id
 
 	_loader_mgr.request(
 		path,
@@ -637,15 +639,15 @@ func activate_prepared_scene() -> Node:
 
 
 # ------------- [Utils] -------------
-func _get_scene_blocking(scene: Scenes.Id) -> PackedScene:
-	if scene == Scenes.Id.NONE:
+func _get_scene_blocking(scene_id: Scenes.Id) -> PackedScene:
+	if scene_id == Scenes.Id.NONE:
 		_log.warn("Scene Manager: _get_scene_blocking called with Scenes.Id.NONE.")
 		return null
-	return load(_scene_db.get_scene_path_from_enum(scene))
+	return load(_scene_db.get_scene_path_from_enum(scene_id))
 
 
-func _create_scene_instance_blocking(scene: Scenes.Id) -> Node:
-	var pack := _get_scene_blocking(scene)
+func _create_scene_instance_blocking(scene_id: Scenes.Id) -> Node:
+	var pack := _get_scene_blocking(scene_id)
 	return pack.instantiate() if pack else null
 
 
