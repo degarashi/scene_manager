@@ -16,6 +16,7 @@ const _SCENE_DATA_HEADER: String = """#
 # DO NOT EDIT.
 #
 @tool
+class_name ScenesClass
 extends Node
 
 """

@@ -3,6 +3,7 @@
 # DO NOT EDIT.
 #
 @tool
+class_name ScenesClass
 extends Node
 
 enum Id {
