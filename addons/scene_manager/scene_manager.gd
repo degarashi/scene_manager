@@ -273,6 +273,11 @@ func _on_initial_setup() -> void:
 		var current_path := scene_node.scene_file_path
 		_current_scene_enum = _scene_db.get_scene_enum_by_path(current_path)
 
+		_log.info(
+			"Initial setup: wrapping current scene '{0}' (ID: {1})",
+			[current_path, Scenes.Id.find_key(_current_scene_enum)]
+		)
+
 		# Force using DEFAULT_TREE_NODE_NAME by passing it as override_name
 		var layer := _create_scene_layer(_current_scene_enum, "", _C.DEFAULT_TREE_NODE_NAME)
 		_get_actual_scene_container().add_child(layer)
@@ -366,6 +371,12 @@ func switch_to_scene(
 	# Even if reloading the same scene, the instance is recreated.
 	# We preserve the existing layer name and re-notify categories to maintain consistency.
 	var is_reloading := scene_id == _current_scene_enum
+
+	_log.info(
+		"Switching to scene: {0} (is_reloading: {1})",
+		[Scenes.Id.find_key(scene_id), is_reloading]
+	)
+
 	if is_reloading:
 		var recv: Array[SMgrSceneLayer]
 		_ebus.get_scene_by_id.emit(recv, scene_id)
@@ -413,6 +424,7 @@ func switch_to_scene(
 	if player != _transition_player:
 		player.queue_free()
 
+	_log.debug("Scene transition completed: {0}", [Scenes.Id.find_key(scene_id)])
 	scene_transition_completed.emit(scene_id)
 	return new_scene_node
 
@@ -426,6 +438,8 @@ func add_scene(
 	if scene_id == Scenes.Id.NONE:
 		_log.warn("add_scene called with NONE.")
 		return null
+
+	_log.info("Adding scene: {0}", [Scenes.Id.find_key(scene_id)])
 
 	var summary := _get_category_summary(scene_id)
 	var target_name := (
@@ -548,6 +562,11 @@ func load_scene_with_transition(
 	assert(next_scene != Scenes.Id.NONE, "Scene Manager: next_scene cannot be NONE.")
 	assert(transition_scene != Scenes.Id.NONE, "Scene Manager: transition_scene cannot be NONE.")
 
+	_log.info(
+		"Loading scene with transition: {0} -> {1}",
+		[Scenes.Id.find_key(transition_scene), Scenes.Id.find_key(next_scene)]
+	)
+
 	_reserved.scene_id = next_scene
 	_reserved.options = opt_activate.copy()
 	_reserved.is_additive = false
@@ -598,6 +617,8 @@ func activate_prepared_scene() -> Node:
 		_log.warn("activate_prepared_scene called but no scene is reserved.")
 		return null
 
+	_log.info("Activating prepared scene: {0}", [Scenes.Id.find_key(_reserved.scene_id)])
+
 	var recv: Array[SMgrSceneLayer]
 	_ebus.get_scene_by_id.emit(recv, _reserved.scene_id)
 	assert(not recv.is_empty(), "Scene Manager: Reserved scene entry missing.")
@@ -637,6 +658,7 @@ func activate_prepared_scene() -> Node:
 	if player != _transition_player:
 		player.queue_free()
 
+	_log.debug("Scene transition completed: {0}", [Scenes.Id.find_key(_current_scene_enum)])
 	scene_transition_completed.emit(_current_scene_enum)
 
 	return layer.get_child(0)
