@@ -53,7 +53,7 @@ Godot 4向けの包括的なシーンライフサイクル管理アドオンで�
   - `load_percent_changed(value: int)` - 非同期ローディング進捗
   - `load_finished` - 非同期ロード完了
   - `load_failed` - 非同期ロード失敗
-  - `scene_loaded(scene_id: Scenes.Id)` - シーンインスタンス化
+  - `scene_loaded(scene_id: Scenes.Id, node: Node)` - シーンインスタンス化とツリーへの追加完了
   - `scene_transition_completed(scene_id: Scenes.Id)` - トランジション完全完了
   - `category_changed(diff: SMgrData.CategoryDiff)` - シーンカテゴリ変更
   - `category_reapplied(tags: Array[Scenes.CategoryId])` - シーンリロード
@@ -130,6 +130,12 @@ options.play_out_time = 0.5
 options.play_in_time = 0.5
 options.clickable = false  # トランジション中に入力を許可
 SMgrInstance.switch_to_scene(Scenes.Id.LEVEL_1, true, options)
+
+# または scene_loaded_cb コールバックを直接渡して、フェード完了前にノードにアクセス
+SMgrInstance.switch_to_scene(Scenes.Id.LEVEL_1, true, SceneLoadOptions.new(),
+    func(node: Node):
+        print("シーンが早期ロードされました: ", node.name)
+)
 ```
 
 **シーンを加算的に追加（他を削除せずに）：**

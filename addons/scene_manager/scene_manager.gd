@@ -9,7 +9,7 @@ signal load_finished
 signal load_failed
 
 ## Emitted when scene instantiation is completed.
-signal scene_loaded(scene_id: Scenes.Id)
+signal scene_loaded(scene_id: Scenes.Id, node: Node)
 ## Emitted when the entire transition (including visual effects) is finished.
 signal scene_transition_completed(scene_id: Scenes.Id)
 signal on_game_end
@@ -312,7 +312,10 @@ func _perform_scene_setup(scene_id: Scenes.Id, options: SceneLoadOptions) -> Nod
 	options.call_pre_cb(layer, new_scene_node)
 	_get_actual_scene_container().add_child(layer)
 
-	scene_loaded.emit(scene_id)
+	if options.scene_loaded_cb.is_valid():
+		options.scene_loaded_cb.call(new_scene_node)
+
+	scene_loaded.emit(scene_id, new_scene_node)
 	return new_scene_node
 
 
@@ -363,11 +366,17 @@ func unload_scene_by_name(node_name: String) -> void:
 
 ## Discards the current main scene and switches to a new one. (Main Routine)
 func switch_to_scene(
-	scene_id: Scenes.Id, add_to_back: bool, options := SceneLoadOptions.new()
+	scene_id: Scenes.Id,
+	add_to_back: bool,
+	options := SceneLoadOptions.new(),
+	scene_loaded_cb: Callable = Callable()
 ) -> Node:
 	if scene_id == Scenes.Id.NONE:
 		_log.warn("switch_to_scene called with NONE.")
 		return null
+
+	if scene_loaded_cb.is_valid():
+		options.scene_loaded_cb = scene_loaded_cb
 
 	# Even if reloading the same scene, the instance is recreated.
 	# We preserve the existing layer name and re-notify categories to maintain consistency.
@@ -466,8 +475,12 @@ func add_scene(
 					target_layer.add_node(new_node)
 					# Apply pre-callback to the existing layer and new node
 					options.call_pre_cb(target_layer, new_node)
+
+					if options.scene_loaded_cb.is_valid():
+						options.scene_loaded_cb.call(new_node)
+
 					# Manually emit since we bypass _perform_scene_setup
-					scene_loaded.emit(scene_id)
+					scene_loaded.emit(scene_id, new_node)
 				return new_node
 
 	# For other modes (or if no duplicate was found), proceed with standard setup
@@ -606,6 +619,11 @@ func instantiate_async_result() -> void:
 		var target := _get_actual_scene_container()
 		target.add_child(layer)
 
+		if _reserved.options.scene_loaded_cb.is_valid():
+			_reserved.options.scene_loaded_cb.call(scene_node)
+
+		scene_loaded.emit(_reserved.scene_id, scene_node)
+
 
 ## Finalizes the transition by swapping the old scene with the pre-instantiated one.
 ## This is the final step of the 'load_scene_with_transition' flow.
@@ -644,7 +662,9 @@ func activate_prepared_scene() -> Node:
 
 	category_changed.emit(diff)
 	category_tags_notified.emit(diff.added)
-	scene_loaded.emit(_current_scene_enum)
+
+	var node := layer.get_child(0)
+	scene_loaded.emit(_current_scene_enum, node)
 
 	# Show the new scene
 	await player.play_in(_reserved.options.play_in_time)

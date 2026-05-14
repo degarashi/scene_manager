@@ -53,7 +53,7 @@ Auto-complete node incorporated and modified from https://github.com/Lenrow/line
   - `load_percent_changed(value: int)` - Async loading progress
   - `load_finished` - Async load completed
   - `load_failed` - Async load failed
-  - `scene_loaded(scene_id: Scenes.Id)` - Scene instantiated
+  - `scene_loaded(scene_id: Scenes.Id, node: Node)` - Scene instantiated and added to the tree
   - `scene_transition_completed(scene_id: Scenes.Id)` - Full transition complete
   - `category_changed(diff: SMgrData.CategoryDiff)` - Scene categories changed
   - `category_reapplied(tags: Array[Scenes.CategoryId])` - Scene reloaded
@@ -130,6 +130,12 @@ options.play_out_time = 0.5
 options.play_in_time = 0.5
 options.clickable = false  # Allow input during transition
 SMgrInstance.switch_to_scene(Scenes.Id.LEVEL_1, true, options)
+
+# Or pass scene_loaded_cb callback directly to switch_to_scene for early access
+SMgrInstance.switch_to_scene(Scenes.Id.LEVEL_1, true, SceneLoadOptions.new(),
+    func(node: Node):
+        print("Scene loaded early: ", node.name)
+)
 ```
 
 **Add scene additively (without removing others):**
