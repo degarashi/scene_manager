@@ -165,9 +165,7 @@ func _get_custom_transitioner(options: SceneLoadOptions) -> ScreenTransitioner:
 
 	var path := _scene_db.get_scene_path_from_enum(options.transition_id)
 	if path.is_empty():
-		_log.error(
-			"Custom transition scene not found for ID: {0}", [options.transition_id]
-		)
+		_log.error("Custom transition scene not found for ID: {0}", [options.transition_id])
 		return null
 
 	var scene := load(path) as PackedScene
@@ -178,9 +176,7 @@ func _get_custom_transitioner(options: SceneLoadOptions) -> ScreenTransitioner:
 
 	var instance := scene.instantiate()
 	if not instance is ScreenTransitioner:
-		_log.error(
-			"Custom transition scene does not inherit from ScreenTransitioner."
-		)
+		_log.error("Custom transition scene does not inherit from ScreenTransitioner.")
 		instance.free()
 		return null
 
@@ -306,9 +302,7 @@ func _remove_name_node(sc: SMgrSceneLayer, p_name: String) -> void:
 func _perform_scene_setup(scene_id: Scenes.Id, options: SceneLoadOptions) -> Node:
 	var new_scene_node := _create_scene_instance_blocking(scene_id)
 	if not new_scene_node:
-		_log.error(
-			"Failed to instantiate scene: {0}", [Scenes.Id.find_key(scene_id)]
-		)
+		_log.error("Failed to instantiate scene: {0}", [Scenes.Id.find_key(scene_id)])
 		return null
 
 	# Create layer (node_name will be ignored if category has layer_name)
@@ -380,8 +374,7 @@ func switch_to_scene(
 	var is_reloading := scene_id == _current_scene_enum
 
 	_log.info(
-		"Switching to scene: {0} (is_reloading: {1})",
-		[Scenes.Id.find_key(scene_id), is_reloading]
+		"Switching to scene: {0} (is_reloading: {1})", [Scenes.Id.find_key(scene_id), is_reloading]
 	)
 
 	if is_reloading:
@@ -405,10 +398,7 @@ func switch_to_scene(
 	# Instantiate and setup the scene (this internally emits 'scene_loaded')
 	var new_scene_node := _perform_scene_setup(scene_id, options)
 	if not new_scene_node:
-		_log.error(
-			"Failed to instantiate switch_to_scene: {0}",
-			[Scenes.Id.find_key(scene_id)]
-		)
+		_log.error("Failed to instantiate switch_to_scene: {0}", [Scenes.Id.find_key(scene_id)])
 		player.set_clickable(true)
 		if player != _transition_player:
 			player.queue_free()
