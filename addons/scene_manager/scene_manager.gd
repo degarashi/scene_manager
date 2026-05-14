@@ -165,20 +165,20 @@ func _get_custom_transitioner(options: SceneLoadOptions) -> ScreenTransitioner:
 	var path := _scene_db.get_scene_path_from_enum(options.transition_id)
 	if path.is_empty():
 		_log.error(
-			"Scene Manager: Custom transition scene not found for ID: {0}", [options.transition_id]
+			"Custom transition scene not found for ID: {0}", [options.transition_id]
 		)
 		return null
 
 	var scene := load(path) as PackedScene
 	if not scene:
-		_log.error("Scene Manager: Failed to load custom transition scene at: {0}", [path])
+		_log.error("Failed to load custom transition scene at: {0}", [path])
 
 		return null
 
 	var instance := scene.instantiate()
 	if not instance is ScreenTransitioner:
 		_log.error(
-			"Scene Manager: Custom transition scene does not inherit from ScreenTransitioner."
+			"Custom transition scene does not inherit from ScreenTransitioner."
 		)
 		instance.free()
 		return null
@@ -306,7 +306,7 @@ func _perform_scene_setup(scene_id: Scenes.Id, options: SceneLoadOptions) -> Nod
 	var new_scene_node := _create_scene_instance_blocking(scene_id)
 	if not new_scene_node:
 		_log.error(
-			"Scene Manager: Failed to instantiate scene: {0}", [Scenes.Id.find_key(scene_id)]
+			"Failed to instantiate scene: {0}", [Scenes.Id.find_key(scene_id)]
 		)
 		return null
 
@@ -399,7 +399,7 @@ func switch_to_scene(
 	var new_scene_node := _perform_scene_setup(scene_id, options)
 	if not new_scene_node:
 		_log.error(
-			"Scene Manager: Failed to instantiate switch_to_scene: {0}",
+			"Failed to instantiate switch_to_scene: {0}",
 			[Scenes.Id.find_key(scene_id)]
 		)
 		player.set_clickable(true)
@@ -490,7 +490,7 @@ func load_previous_scene(options := SceneLoadOptions.new()) -> bool:
 ## from the current scene and transition to that scene.
 func back_to_previous_by_offset(offset: int, options := SceneLoadOptions.new()) -> void:
 	if offset <= 0:
-		_log.warn("Scene Manager: offset must be greater than 0.")
+		_log.warn("Offset must be greater than 0.")
 		return
 
 	var target_scene := Scenes.Id.NONE
@@ -502,7 +502,7 @@ func back_to_previous_by_offset(offset: int, options := SceneLoadOptions.new()) 
 			break
 
 	if target_scene == Scenes.Id.NONE:
-		_log.warn("Scene Manager: Failed to go back, history is empty or offset out of bounds.")
+		_log.warn("Failed to go back, history is empty or offset out of bounds.")
 		return
 
 	switch_to_scene(target_scene, false, options)
@@ -533,7 +533,7 @@ func exit_game(fade_time: float = 1.0) -> void:
 # ------------- [Async Loading] -------------
 func start_async_load(scene_id: Scenes.Id, use_sub_threads: bool = true) -> void:
 	if scene_id == Scenes.Id.NONE:
-		_log.warn("Scene Manager: start_async_load called with Scenes.Id.NONE.")
+		_log.warn("Start_async_load called with Scenes.Id.NONE.")
 		return
 
 	var path := _scene_db.get_scene_path_from_enum(scene_id)
@@ -546,7 +546,7 @@ func start_async_load(scene_id: Scenes.Id, use_sub_threads: bool = true) -> void
 				load_finished.emit()
 			else:
 				load_failed.emit()
-				_log.error("Scene Manager: Async load failed for {0}", [path]),
+				_log.error("Async load failed for {0}", [path]),
 		use_sub_threads
 	)
 
@@ -667,7 +667,7 @@ func activate_prepared_scene() -> Node:
 # ------------- [Utils] -------------
 func _get_scene_blocking(scene_id: Scenes.Id) -> PackedScene:
 	if scene_id == Scenes.Id.NONE:
-		_log.warn("Scene Manager: _get_scene_blocking called with Scenes.Id.NONE.")
+		_log.warn("_get_scene_blocking called with Scenes.Id.NONE.")
 		return null
 	return load(_scene_db.get_scene_path_from_enum(scene_id))
 
