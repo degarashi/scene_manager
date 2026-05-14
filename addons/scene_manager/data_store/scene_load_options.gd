@@ -27,6 +27,7 @@ static var _empty_cb := func(_arg: Node) -> void: pass
 
 var pre_wrap_cb: Callable
 var pre_node_cb: Callable
+var on_loaded: Callable
 
 
 ## Helper (static method) to get default values from project settings, etc.
@@ -51,6 +52,7 @@ func _init(
 	p_pre_node_cb: Callable = _empty_cb,
 	p_transition_id: Scenes.Id = Scenes.Id.NONE,
 	p_transition_layer: int = -1,
+	p_on_loaded: Callable = _empty_cb,
 ) -> void:
 	# Logic for determining default values
 	var settings := get_default_settings()
@@ -80,6 +82,7 @@ func _init(
 	pre_wrap_cb = p_pre_wrap_cb
 	pre_node_cb = p_pre_node_cb
 	transition_id = p_transition_id
+	on_loaded = p_on_loaded
 
 
 ## Create a deep copy of the SceneLoadOptions instance.
@@ -91,7 +94,15 @@ func _to_string() -> String:
 	return (
 		(
 			"SceneLoadOptions(node_name='%s', play_out_time=%.2f,"
-			+ " play_in_time=%.2f, clickable=%s, transition_id=%s, transition_layer=%d)"
+			+ " play_in_time=%.2f, clickable=%s, transition_id=%s, transition_layer=%d, has_on_loaded=%s)"
 		)
-		% [node_name, play_out_time, play_in_time, clickable, transition_id, transition_layer]
+		% [
+			node_name,
+			play_out_time,
+			play_in_time,
+			clickable,
+			transition_id,
+			transition_layer,
+			str(on_loaded.is_valid())
+		]
 	)
