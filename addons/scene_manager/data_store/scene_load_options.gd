@@ -18,6 +18,8 @@ static var _empty_cb := func(_arg: Node) -> void: pass
 @export var play_in_time: float = 0.5
 ## Override the default transitioner with a custom one by specifying its Scene ID.
 @export var transition_id: Scenes.Id = Scenes.Id.NONE
+## Layer priority for the transition CanvasLayer. (-1 to use project default)
+@export var transition_layer: int = -1
 
 @export_group("Interaction")
 ## Whether or not to block mouse input during the scene load.
@@ -48,6 +50,7 @@ func _init(
 	p_pre_wrap_cb: Callable = _empty_cb,
 	p_pre_node_cb: Callable = _empty_cb,
 	p_transition_id: Scenes.Id = Scenes.Id.NONE,
+	p_transition_layer: int = -1,
 ) -> void:
 	# Logic for determining default values
 	var settings := get_default_settings()
@@ -69,6 +72,11 @@ func _init(
 	elif settings != null:
 		play_in_time = settings.play_in_time
 
+	if p_transition_layer != -1:
+		transition_layer = p_transition_layer
+	elif settings != null:
+		transition_layer = settings.transition_layer
+
 	pre_wrap_cb = p_pre_wrap_cb
 	pre_node_cb = p_pre_node_cb
 	transition_id = p_transition_id
@@ -83,7 +91,7 @@ func _to_string() -> String:
 	return (
 		(
 			"SceneLoadOptions(node_name='%s', play_out_time=%.2f,"
-			+ " play_in_time=%.2f, clickable=%s, transition_id=%s)"
+			+ " play_in_time=%.2f, clickable=%s, transition_id=%s, transition_layer=%d)"
 		)
-		% [node_name, play_out_time, play_in_time, clickable, transition_id]
+		% [node_name, play_out_time, play_in_time, clickable, transition_id, transition_layer]
 	)

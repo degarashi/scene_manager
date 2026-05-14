@@ -11,6 +11,7 @@ const DEFAULT_PATH_TO_SCENES := DEFAULT_DATA_DIR + "/" + DEFAULT_SCENES_FILENAME
 const DEFAULT_SCENES_DATA_FILENAME = "scenes_data.tres"
 const DEFAULT_PLAY_OUT_TIME: float = 1
 const DEFAULT_PLAY_IN_TIME: float = 1
+const DEFAULT_TRANSITION_LAYER: int = 100
 const _AF = preload("uid://dlgh4u64a7qxk")
 static var _log := DLoggerClass.new("Scene Manager")
 
@@ -22,6 +23,7 @@ class Property:
 	const PLAY_IN_TIME = "scene_manager/scenes/default_play_in_time"
 	const AUTO_SAVE = "scene_manager/scenes/autosave"
 	const INCLUDES_VISIBLE = "scene_manager/scenes/includes_visible"
+	const TRANSITION_LAYER = "scene_manager/scenes/transition_layer"
 	const ENABLE_LOG = "scene_manager/general/enable_log"
 
 
@@ -82,6 +84,14 @@ var includes_visible: bool:
 	set(value):
 		if includes_visible != value:
 			ProjectSettings.set_setting(Property.INCLUDES_VISIBLE, value)
+			_save()
+
+var transition_layer: int:
+	get:
+		return ProjectSettings.get_setting(Property.TRANSITION_LAYER, DEFAULT_TRANSITION_LAYER)
+	set(value):
+		if transition_layer != value:
+			ProjectSettings.set_setting(Property.TRANSITION_LAYER, value)
 			_save()
 
 var enable_log: bool:
@@ -164,6 +174,12 @@ func setup_project_settings() -> void:
 			Key.DEFAULT: true,
 			Key.TYPE: TYPE_BOOL,
 			Key.INTERNAL: true,
+		},
+		Property.TRANSITION_LAYER:
+		{
+			Key.DEFAULT: DEFAULT_TRANSITION_LAYER,
+			Key.TYPE: TYPE_INT,
+			Key.BASIC: true,
 		},
 		Property.ENABLE_LOG:
 		{

@@ -9,6 +9,7 @@ class _AnimKey:
 
 @onready var _fade_color_rect: ColorRect = %fade
 @onready var _animation_player: AnimationPlayer = %animation_player
+@onready var _canvas: CanvasLayer = %canvas
 
 
 ## [Virtual]
@@ -16,6 +17,11 @@ func set_clickable(clickable: bool) -> void:
 	_fade_color_rect.mouse_filter = (
 		Control.MOUSE_FILTER_IGNORE if clickable else Control.MOUSE_FILTER_STOP
 	)
+
+
+## [Virtual]
+func set_layer(layer: int) -> void:
+	_canvas.layer = layer
 
 
 ## Common playback logic.

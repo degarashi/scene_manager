@@ -8,6 +8,9 @@ var _is_playing: bool = false
 ## [Abstract] マウスイベントの透過設定
 @abstract func set_clickable(_clickable: bool) -> void
 
+## 表示レイヤーの設定
+@abstract func set_layer(_layer: int) -> void
+
 ## [Abstract] 演出（開始）の実行
 @abstract func play_out(_speed: float) -> void
 

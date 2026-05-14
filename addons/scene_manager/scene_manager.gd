@@ -33,6 +33,7 @@ const _RING_BUFFER = preload("uid://b6phac21mxnxr")
 const _RESOURCE_LOADER = preload("uid://dabq3s83q0iku")
 const _SCENE_LAYER = preload("uid://do8sylacoy3u4")
 const _AF = preload("uid://dlgh4u64a7qxk")
+const _PS := preload("uid://dn6eh4s0h8jhi")
 
 static var _log := DLoggerClass.new("Scene Manager")
 
@@ -124,9 +125,8 @@ func _ready() -> void:
 	_init_effector()
 	_init_trash_node()
 
-	var PS := preload("uid://dn6eh4s0h8jhi")
 	# SMgrData is a Resource, so read it with the loader
-	_scene_db = load(PS.scene_data_path)
+	_scene_db = load(_PS.scene_data_path)
 	assert(_scene_db != null, "Scene Manager: Failed to load scene database resource.")
 
 	_on_initial_setup.call_deferred()
@@ -156,6 +156,7 @@ func _init_resourece_loader() -> void:
 func _init_effector() -> void:
 	_transition_player = _transitioner_source.instantiate()
 	add_child(_transition_player)
+	_transition_player.set_layer(_PS.transition_layer)
 
 
 func _get_custom_transitioner(options: SceneLoadOptions) -> ScreenTransitioner:
@@ -325,6 +326,12 @@ func _setup_transition_player(options: SceneLoadOptions) -> ScreenTransitioner:
 	var custom_player := _get_custom_transitioner(options)
 	var player := custom_player if custom_player else _transition_player
 	player.set_clickable(options.clickable)
+
+	var layer := options.transition_layer
+	if layer == -1:
+		layer = _PS.transition_layer
+	player.set_layer(layer)
+
 	return player
 
 

@@ -30,6 +30,7 @@ process_mode = 3
 script = ExtResource("1_rnvl1")
 
 [node name="canvas" type="CanvasLayer" parent="." unique_id=1880141432]
+unique_name_in_owner = true
 layer = 100
 
 [node name="fade" type="ColorRect" parent="canvas" unique_id=1601483379]
