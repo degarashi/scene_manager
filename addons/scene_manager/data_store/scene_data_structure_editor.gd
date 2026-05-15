@@ -78,7 +78,7 @@ func _cleanup_filesystem_monitoring() -> void:
 ## Registers a scene file based on its UID
 ## @param full_path Full path to the scene file
 ## @return Registered UID (even if it already existed)
-func _register_scene_file(full_path: String) -> int:
+func register_scene_file(full_path: String) -> int:
 	var uid := ResourceLoader.get_resource_uid(full_path)
 	if uid == ResourceUID.INVALID_ID or _data.get_scene_from_uid(uid) != null:
 		return uid
@@ -123,7 +123,7 @@ func _scan_dir_recursive(dir_path: String) -> void:
 			if file_name != "." and file_name != "..":
 				_scan_dir_recursive(full_path)
 		elif file_name.ends_with(".tscn"):
-			_register_scene_file(full_path)
+			register_scene_file(full_path)
 
 		file_name = dir.get_next()
 
@@ -142,7 +142,7 @@ func _scan_and_collect_uids(dir_path: String, collected_uids: Array[int]) -> voi
 			if file_name != "." and file_name != "..":
 				_scan_and_collect_uids(full_path, collected_uids)
 		elif file_name.ends_with(".tscn"):
-			var uid := _register_scene_file(full_path)
+			var uid := register_scene_file(full_path)
 			if uid != ResourceUID.INVALID_ID:
 				_log.debug("Found scene: %s (UID: %d)" % [file_name, uid])
 				collected_uids.append(uid)
@@ -384,7 +384,7 @@ func add_include_path(inc_path: String) -> bool:
 	if is_dir:
 		_scan_dir_recursive(inc_path)
 	else:
-		_register_scene_file(inc_path)
+		register_scene_file(inc_path)
 
 	_log.info("Successfully added path '%s'." % inc_path)
 	return true
@@ -406,7 +406,7 @@ func sync_with_filesystem() -> void:
 			_scan_and_collect_uids(path, found_uids)
 		elif FileAccess.file_exists(path) and path.ends_with(".tscn"):
 			_log.debug("  Checking scene file: " + path)
-			var uid := _register_scene_file(path)
+			var uid := register_scene_file(path)
 			if uid != ResourceUID.INVALID_ID:
 				found_uids.append(uid)
 

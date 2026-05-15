@@ -17,13 +17,24 @@ var _initial_categories_state: Dictionary[int, bool] = {}
 @onready var _popup_menu: PopupMenu = %popup_menu
 @onready var _scene_name_edit: LineEdit = %scene_name_edit
 @onready var _scene_path_edit: LineEdit = %scene_path
+@onready var _thumbnail: TextureRect = %thumbnail
 
 
 func activate(sc_uid: int) -> void:
 	_scene_uid = sc_uid
+	if is_node_ready():
+		_refresh_ui_from_uid()
+
+
+func _refresh_ui_from_uid() -> void:
+	if _scene_uid == ResourceUID.INVALID_ID:
+		return
 
 	var recv: Array[SMgrDataScene]
-	_ebus_editor.get_scene_info.emit(recv, sc_uid)
+	_ebus_editor.get_scene_info.emit(recv, _scene_uid)
+	if recv.is_empty():
+		return
+
 	var info: SMgrDataScene = recv[0]
 	_scene_name_edit.text = info.name
 
@@ -31,6 +42,23 @@ func activate(sc_uid: int) -> void:
 	_scene_path_edit.tooltip_text = info.path
 	# Move caret to the end so the end of the string is visible
 	_scene_path_edit.caret_column = _scene_path_edit.text.length()
+
+	_request_thumbnail(info.path)
+
+
+func _request_thumbnail(path: String) -> void:
+	if not Engine.is_editor_hint():
+		return
+
+	var previewer := EditorInterface.get_resource_previewer()
+	previewer.queue_resource_preview(path, self, "_on_thumbnail_ready", null)
+
+
+func _on_thumbnail_ready(
+	path: String, preview: Texture2D, _thumbnail_preview: Texture2D, _userdata: Variant
+) -> void:
+	if path == get_scene_path() and preview:
+		_thumbnail.texture = preview
 
 
 func get_scene_name() -> String:
@@ -64,6 +92,15 @@ func _on_scene_path_mouse_entered() -> void:
 
 func _on_scene_path_mouse_exited() -> void:
 	_mouse_is_over_path = false
+
+
+func _on_gui_input(event: InputEvent) -> void:
+	if (
+		event is InputEventMouseButton
+		and event.is_pressed()
+		and event.button_index == MOUSE_BUTTON_LEFT
+	):
+		_ebus_editor.on_scene_selected.emit(_scene_uid)
 
 
 func _on_popup_button_button_up() -> void:
@@ -178,3 +215,15 @@ func _submit_scene_name() -> void:
 
 func _on_scene_name_edit_focus_entered() -> void:
 	_previous_name = _scene_name_edit.text
+
+
+func _on_tree_entered() -> void:
+	pass
+
+
+func _on_tree_exited() -> void:
+	pass
+
+
+func _ready() -> void:
+	_refresh_ui_from_uid()

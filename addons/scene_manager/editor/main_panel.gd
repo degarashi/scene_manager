@@ -40,6 +40,18 @@ var _connect_ebus: bool = false
 
 @onready var _garbage_bin: Control = %GarbageBin
 
+# --- Preview ---
+@onready var _preview_image: TextureRect = %PreviewImage
+@onready var _sub_viewport: SubViewport = %SubViewport
+@onready var _play_transition_button: Button = %PlayTransitionButton
+@onready var _notification_dialog: AcceptDialog = %NotificationDialog
+
+# --- Drop Data ---
+@onready var _drop_confirm_dialog: ConfirmationDialog = %DropConfirmDialog
+var _pending_drop_files: Array[String] = []
+
+var _selected_scene_id: int = ResourceUID.INVALID_ID
+
 
 func _ebus_get_scene_enums_as_string(recv: Array[String]) -> void:
 	assert(recv.is_empty())
@@ -60,6 +72,12 @@ func _ready() -> void:
 	_refresh_ui()
 
 	_show_includes_list(_ps.includes_visible)
+
+	# Setup drop confirmation dialog
+	var add_include_btn := _drop_confirm_dialog.add_button("Add Directory", false, "add_include")
+	add_include_btn.button_up.connect(_on_drop_confirm_add_include)
+	_drop_confirm_dialog.confirmed.connect(_on_drop_confirm_register_only)
+	_drop_confirm_dialog.canceled.connect(_on_drop_confirm_canceled)
 
 	# subscribe to editor file system changes
 	if Engine.is_editor_hint():
@@ -99,6 +117,65 @@ func _on_dirty_flag_changed(dirty: bool) -> void:
 	_ebus_editor.on_dirty_flag_changed.emit(dirty)
 
 
+func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
+	if typeof(data) == TYPE_DICTIONARY and data.has("type") and data["type"] == "files":
+		var files: Array = data["files"]
+		for file in files:
+			if file.ends_with(".tscn"):
+				return true
+	return false
+
+
+func _drop_data(_at_position: Vector2, data: Variant) -> void:
+	_pending_drop_files.clear()
+	var files: Array = data["files"]
+	for file in files:
+		if file.ends_with(".tscn"):
+			_pending_drop_files.append(file)
+
+	if not _pending_drop_files.is_empty():
+		_drop_confirm_dialog.dialog_text = (
+			"How would you like to register {0} dropped scenes?"
+			. format([_pending_drop_files.size()])
+		)
+		_drop_confirm_dialog.popup_centered()
+
+
+func _on_drop_confirm_register_only() -> void:
+	var added_count := 0
+	for file in _pending_drop_files:
+		if _manager_data.add_include_path(file):
+			added_count += 1
+
+	if added_count > 0:
+		_log.info("Registered {0} scenes as individual include paths.".format([added_count]))
+		_refresh_ui()
+	_pending_drop_files.clear()
+
+
+func _on_drop_confirm_add_include() -> void:
+	# Extract unique directories from pending files
+	var dirs: Dictionary[String, bool] = {}
+	for file in _pending_drop_files:
+		dirs[file.get_base_dir()] = true
+
+	var added_dirs := 0
+	for dir in dirs.keys():
+		if _manager_data.add_include_path(dir):
+			added_dirs += 1
+
+	if added_dirs > 0:
+		_log.info("Added {0} directories to include paths.".format([added_dirs]))
+		_refresh_ui()
+
+	_drop_confirm_dialog.hide()
+	_pending_drop_files.clear()
+
+
+func _on_drop_confirm_canceled() -> void:
+	_pending_drop_files.clear()
+
+
 func _on_save_button_button_up() -> void:
 	_manager_data.save_data(_ps.scene_path, _ps.scene_data_path)
 	# Update the time immediately after saving as it is a self-initiated change
@@ -129,6 +206,8 @@ func _do_connect_ebus() -> void:
 	_AF.connect_if_not_connected(
 		_ebus_ins.get_scene_enums_as_string, _ebus_get_scene_enums_as_string
 	)
+	_AF.connect_if_not_connected(_ebus_editor.on_scene_selected, _on_scene_selected)
+	_AF.connect_if_not_connected(_play_transition_button.button_up, _on_play_transition_button_up)
 
 
 func _disconnect_ebus() -> void:
@@ -137,7 +216,79 @@ func _disconnect_ebus() -> void:
 	_AF.disconnect_if_connected(
 		_ebus_ins.get_scene_enums_as_string, _ebus_get_scene_enums_as_string
 	)
+	_AF.disconnect_if_connected(_ebus_editor.on_scene_selected, _on_scene_selected)
+	_AF.disconnect_if_connected(_play_transition_button.button_up, _on_play_transition_button_up)
 	_connect_ebus = false
+
+
+func _on_scene_selected(scene_id: int) -> void:
+	_selected_scene_id = scene_id
+	var recv: Array[SMgrDataScene]
+	_ebus_editor.get_scene_info.emit(recv, scene_id)
+	if recv.is_empty():
+		return
+	var info := recv[0]
+
+	# Request large preview for the Preview tab
+	var previewer := EditorInterface.get_resource_previewer()
+	previewer.queue_resource_preview(info.path, self, "_on_preview_ready", null)
+
+	# Check if it might be a transitioner
+	var scene := load(info.path) as PackedScene
+	if scene:
+		var state := scene.get_state()
+		var is_transitioner := false
+		for i in state.get_node_count():
+			var node_name := state.get_node_name(i)
+			if i == 0:  # Root node
+				# Check script or inheritance (difficult without instantiating)
+				# For now, let's just enable it if it's a transitioner or we want to try
+				is_transitioner = true
+				break
+		_play_transition_button.disabled = not is_transitioner
+
+
+func _on_preview_ready(
+	path: String, preview: Texture2D, _thumbnail_preview: Texture2D, _userdata: Variant
+) -> void:
+	var recv: Array[SMgrDataScene]
+	_ebus_editor.get_scene_info.emit(recv, _selected_scene_id)
+	if not recv.is_empty() and recv[0].path == path:
+		_preview_image.texture = preview
+
+
+func _on_play_transition_button_up() -> void:
+	var recv: Array[SMgrDataScene]
+	_ebus_editor.get_scene_info.emit(recv, _selected_scene_id)
+	if recv.is_empty():
+		return
+	var info := recv[0]
+
+	var scene_res := load(info.path) as PackedScene
+	if not scene_res:
+		return
+
+	# Cleanup previous preview
+	for child in _sub_viewport.get_children():
+		if child != _preview_image:
+			child.queue_free()
+
+	var instance := scene_res.instantiate()
+	if instance is ScreenTransitioner:
+		_sub_viewport.add_child(instance)
+		_preview_image.visible = false
+		await instance.play_out(1.0)
+		await instance.play_in(1.0)
+		_preview_image.visible = true
+		instance.queue_free()
+	else:
+		_log.warn("Scene is not a ScreenTransitioner.")
+		_notification_dialog.dialog_text = (
+			"The selected scene does not inherit from ScreenTransitioner.\n"
+			+ "Inheriting from the ScreenTransitioner class is required for preview playback."
+		)
+		_notification_dialog.popup_centered()
+		instance.free()
 
 
 func _remove_include_path(item: SMgrRemovableItem) -> void:

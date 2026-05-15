@@ -68,7 +68,43 @@ text = "+ Category"
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
-current_tab = 1
+current_tab = 2
+
+[node name="Preview" type="VBoxContainer" parent="MainContainer/VSplitContainer/MiscTab" unique_id=987654321]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+metadata/_tab_index = 0
+
+[node name="PreviewToolbar" type="HBoxContainer" parent="MainContainer/VSplitContainer/MiscTab/Preview" unique_id=987654322]
+layout_mode = 2
+
+[node name="PlayTransitionButton" type="Button" parent="MainContainer/VSplitContainer/MiscTab/Preview/PreviewToolbar" unique_id=987654323]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Play Transition"
+
+[node name="PreviewContainer" type="SubViewportContainer" parent="MainContainer/VSplitContainer/MiscTab/Preview" unique_id=987654324]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+stretch = true
+
+[node name="SubViewport" type="SubViewport" parent="MainContainer/VSplitContainer/MiscTab/Preview/PreviewContainer" unique_id=987654325]
+unique_name_in_owner = true
+handle_input_locally = false
+size = Vector2i(2, 2)
+render_target_update_mode = 0
+
+[node name="PreviewImage" type="TextureRect" parent="MainContainer/VSplitContainer/MiscTab/Preview/PreviewContainer/SubViewport" unique_id=987654326]
+unique_name_in_owner = true
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 5
 
 [node name="Include" type="VBoxContainer" parent="MainContainer/VSplitContainer/MiscTab" unique_id=653634237]
 unique_name_in_owner = true
@@ -76,7 +112,7 @@ visible = false
 layout_mode = 2
 size_flags_vertical = 3
 size_flags_stretch_ratio = 0.3
-metadata/_tab_index = 0
+metadata/_tab_index = 1
 
 [node name="Container" type="VBoxContainer" parent="MainContainer/VSplitContainer/MiscTab/Include" unique_id=1055687251]
 layout_mode = 2
@@ -151,7 +187,7 @@ text = "Add"
 
 [node name="CategoryInfo" type="VBoxContainer" parent="MainContainer/VSplitContainer/MiscTab" unique_id=1650104190]
 layout_mode = 2
-metadata/_tab_index = 1
+metadata/_tab_index = 2
 
 [node name="CategoryNameLabel" parent="MainContainer/VSplitContainer/MiscTab/CategoryInfo" unique_id=698089813 instance=ExtResource("5_8cjhe")]
 layout_mode = 2
@@ -202,6 +238,7 @@ size_flags_horizontal = 3
 [node name="SaveButton" parent="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer/SaveRefreshContainer/SaveContainer" unique_id=117147505 instance=ExtResource("5_efl6f")]
 unique_name_in_owner = true
 layout_mode = 2
+disabled = false
 
 [node name="AutoSaveRefreshContainer" type="HBoxContainer" parent="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer" unique_id=297657268]
 layout_mode = 2
@@ -232,6 +269,19 @@ layout_mode = 2
 unique_name_in_owner = true
 wait_time = 0.05
 one_shot = true
+
+[node name="DropConfirmDialog" type="ConfirmationDialog" parent="." unique_id=1122334455]
+unique_name_in_owner = true
+title = "Register Scene"
+initial_position = 2
+size = Vector2i(400, 140)
+ok_button_text = "Add single file"
+
+[node name="NotificationDialog" type="AcceptDialog" parent="." unique_id=-2061521730]
+unique_name_in_owner = true
+title = "Notice"
+initial_position = 2
+size = Vector2i(300, 100)
 
 [connection signal="tab_changed" from="MainContainer/VSplitContainer/VBoxContainer/Scenes/CategoryTabContainer" to="." method="_on_category_tab_container_tab_changed"]
 [connection signal="text_changed" from="MainContainer/VSplitContainer/VBoxContainer/AddCategoryContainer/AddCategoryContainer/CategoryNameToAdd" to="." method="_on_category_name_text_changed"]

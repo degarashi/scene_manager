@@ -17,6 +17,13 @@ custom_minimum_size = Vector2(28, 28)
 layout_mode = 2
 icon = ExtResource("3")
 
+[node name="thumbnail" type="TextureRect" parent="." unique_id=123456789]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(32, 28)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
 [node name="scene_name_edit" type="LineEdit" parent="." unique_id=800064547]
 unique_name_in_owner = true
 layout_mode = 2
@@ -44,6 +51,7 @@ unfocusable = true
 hide_on_item_selection = false
 hide_on_checkable_item_selection = false
 
+[connection signal="gui_input" from="." to="." method="_on_gui_input"]
 [connection signal="tree_entered" from="." to="." method="_on_tree_entered"]
 [connection signal="tree_exited" from="." to="." method="_on_tree_exited"]
 [connection signal="button_up" from="popup_button" to="." method="_on_popup_button_button_up"]
