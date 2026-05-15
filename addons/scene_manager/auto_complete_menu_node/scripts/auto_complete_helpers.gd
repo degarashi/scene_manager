@@ -81,3 +81,73 @@ static func print_collection(
 		print_str = sep + print_str + sep
 
 	_log.debug(print_str)
+
+
+## Performs fuzzy matching between a query and a target string.
+## Returns a dictionary with:
+## - "matched": bool
+## - "score": float (higher is better)
+## - "indices": Array[int] (indices of matched characters for highlighting)
+static func fuzzy_match(query: String, target: String, case_sensitive: bool = false) -> Dictionary:
+	if query.is_empty():
+		return {"matched": true, "score": 1.0, "indices": []}
+
+	var q := query if case_sensitive else query.to_lower()
+	var t := target if case_sensitive else target.to_lower()
+
+	var score := 0.0
+	var indices: Array[int] = []
+	var t_idx := 0
+	var q_idx := 0
+
+	var last_match_idx := -1
+	var continuous_count := 0
+
+	while q_idx < q.length() and t_idx < t.length():
+		if q[q_idx] == t[t_idx]:
+			indices.append(t_idx)
+
+			# --- Scoring Logic ---
+			var char_score := 10.0
+
+			# Bonus for starting match
+			if t_idx == 0:
+				char_score += 15.0
+
+			# Bonus for continuous matching
+			if last_match_idx != -1 and t_idx == last_match_idx + 1:
+				continuous_count += 1
+				char_score += 5.0 * continuous_count
+			else:
+				continuous_count = 0
+
+			# Bonus for word boundaries (snake_case, PascalCase)
+			if t_idx > 0:
+				var prev_char := target[t_idx - 1]
+				var curr_char := target[t_idx]
+				# snake_case boundary
+				if prev_char == "_":
+					char_score += 12.0
+				# PascalCase/camelCase boundary
+				elif prev_char.to_lower() == prev_char and curr_char.to_upper() == curr_char:
+					char_score += 12.0
+
+			# Penalty for gaps
+			if last_match_idx != -1:
+				var gap := t_idx - last_match_idx - 1
+				char_score -= gap * 1.5
+
+			score += char_score
+			last_match_idx = t_idx
+			q_idx += 1
+
+		t_idx += 1
+
+	var matched := q_idx == q.length()
+	# Normalize score by query length to avoid bias towards long queries
+	if matched:
+		score /= q.length()
+	else:
+		score = 0.0
+
+	return {"matched": matched, "score": score, "indices": indices}

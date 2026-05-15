@@ -15,7 +15,7 @@ size_flags_vertical = 3
 color = Color(0.129558, 0.129558, 0.129558, 1)
 script = ExtResource("1_ugh68")
 
-[node name="CompleteText" type="Label" parent="." unique_id=918974385]
+[node name="CompleteText" type="RichTextLabel" parent="." unique_id=918974385]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = -1
@@ -25,8 +25,12 @@ anchor_right = 0.98
 anchor_bottom = 0.99
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
+bbcode_enabled = true
 text = "Complete_this"
-label_settings = SubResource("LabelSettings_un4au")
+fit_content = true
+scroll_active = false
+autowrap_mode = 0
 vertical_alignment = 1
 
 [node name="CompleteButton" type="Button" parent="." unique_id=703680445]

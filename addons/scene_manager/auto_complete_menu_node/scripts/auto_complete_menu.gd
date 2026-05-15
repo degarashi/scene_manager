@@ -48,6 +48,9 @@ var is_in_selection: bool
 ## Makes it so the optionmenu can be navigated with the arrow keys,
 ##   by interrupting default lineEdit key behavior
 func _input(event: InputEvent) -> void:
+	if not self.visible:
+		return
+
 	if event is InputEventKey:
 		var select_nav_button := "ui_up" if grow_upwards else "ui_down"
 		var back_nav_button := "ui_down" if grow_upwards else "ui_up"
@@ -60,8 +63,26 @@ func _input(event: InputEvent) -> void:
 			is_in_selection = true
 			get_node(edit_focus_neighbor).grab_focus()
 
-		if event.is_action_pressed(back_nav_button) and is_in_selection:
+		elif event.is_action_pressed(back_nav_button) and is_in_selection:
 			is_in_selection = false
+			edit.grab_focus()
+
+		elif event.is_action_pressed("ui_cancel"):
+			get_viewport().set_input_as_handled()
+			hide_menu(true)
+
+		elif (
+			(event.is_action_pressed("ui_accept") or event.is_action_pressed("ui_focus_next"))
+			and is_in_selection
+			and visible_nodes
+		):
+			get_viewport().set_input_as_handled()
+			var focused_node := get_viewport().gui_get_focus_owner()
+			# Check if the focused node is one of our buttons
+			for node in visible_nodes:
+				if node.complete_button == focused_node:
+					on_option_chosen(node.raw_text)
+					break
 
 	if event is InputEventMouseButton:
 		if event.is_released():
@@ -69,7 +90,7 @@ func _input(event: InputEvent) -> void:
 				get_global_rect().has_point(get_global_mouse_position())
 				or edit.get_global_rect().has_point(get_global_mouse_position())
 			):
-				edit.release_focus()
+				hide_menu(true)
 
 
 # ------------- [Private Method] -------------
@@ -125,26 +146,21 @@ func on_option_chosen(text: String) -> void:
 func get_option_text(option: AutoCompleteOption) -> String:
 	# If case sensitivity is off, then normalize this to lower case
 	if case_sensitive:
-		return option.complete_text.text
-	return option.complete_text.text.to_lower()
+		return option.raw_text
+	return option.raw_text.to_lower()
 
 
 func compare_options(a: AutoCompleteOption, b: AutoCompleteOption) -> bool:
-	var a_text := get_option_text(a)
-	var b_text := get_option_text(b)
+	# Sort by fuzzy score descending
+	if not is_equal_approx(a.fuzzy_score, b.fuzzy_score):
+		return a.fuzzy_score > b.fuzzy_score
 
-	var score := 0
-	score = b_text.length() - a_text.length()
+	# If scores are equal, prefer shorter strings
+	if a.raw_text.length() != b.raw_text.length():
+		return a.raw_text.length() < b.raw_text.length()
 
-	if case_sensitive:
-		score += b_text.find(current_text) - a_text.find(current_text)
-	else:
-		score += (
-			b_text.to_lower().find(current_text.to_lower())
-			- a_text.to_lower().find(current_text.to_lower())
-		)
-
-	return score > 0
+	# Finally, alphabetical order
+	return a.raw_text < b.raw_text
 
 
 # ------------- [Public Method] -------------
@@ -180,7 +196,7 @@ func load_terms(terms: Array, override_terms: bool = false) -> void:
 			continue
 		var option: AutoCompleteOption = OPTION_SCENE.instantiate()
 		option_holder.add_child(option)
-		option.complete_text.text = term
+		option.set_text(term)
 		option.option_chosen.connect(on_option_chosen)
 		all_nodes.append(option)
 
@@ -189,12 +205,12 @@ func load_terms(terms: Array, override_terms: bool = false) -> void:
 
 
 func remove_terms(terms: Array) -> void:
-	var remove_nodes: Array[Control] = []
+	var remove_nodes: Array[AutoCompleteOption] = []
 	for node in all_nodes:
-		if get_option_text(node) in terms:
+		if node.raw_text in terms:
 			remove_nodes.append(node)
 
-	visible_nodes = visible_nodes.filter(func(x: Control): return not x in remove_nodes)
+	visible_nodes = visible_nodes.filter(func(x: AutoCompleteOption): return not x in remove_nodes)
 	all_nodes = all_nodes.filter(func(x: AutoCompleteOption): return not x in remove_nodes)
 	all_active_terms = all_active_terms.filter(func(x: String): return not x in terms)
 	for node in remove_nodes:
@@ -221,10 +237,6 @@ func resize(new_size: Vector2 = Vector2.INF) -> void:
 
 ## Sorts the nodes anew based on the new text and calls the reposition method
 func refresh_nodes(text: String) -> void:
-	# Normalize the text if case sensitivity is off
-	if not case_sensitive:
-		text = text.to_lower()
-
 	var terms := text.split(" ")
 	var t_length := 0
 	var whitespace_i := 0
@@ -237,24 +249,24 @@ func refresh_nodes(text: String) -> void:
 		whitespace_i += 1
 	current_text = text
 
+	visible_nodes.clear()
 	if text.is_empty():
-		visible_nodes = all_nodes
+		for node in all_nodes:
+			node.fuzzy_score = 0.0
+			node.set_text(node.raw_text)
+			node.visible = true
+			visible_nodes.append(node)
 	else:
-		visible_nodes = all_nodes.filter(
-			func(x: AutoCompleteOption) -> bool: return text in get_option_text(x)
-		)
-		for node in all_nodes.filter(
-			func(x: AutoCompleteOption) -> bool: return not text in get_option_text(x)
-		):
-			node.visible = false
+		for node in all_nodes:
+			var result := AutoCompleteHelpers.fuzzy_match(text, node.raw_text, case_sensitive)
+			if result.matched:
+				node.fuzzy_score = result.score
+				node.set_text(node.raw_text, result.indices)
+				node.visible = true
+				visible_nodes.append(node)
+			else:
+				node.visible = false
 
-	visible_nodes.assign(
-		visible_nodes.map(
-			func(x: AutoCompleteOption) -> Control:
-				x.visible = true
-				return x,
-		)
-	)
 	visible_nodes.sort_custom(compare_options)
 
 	reposition_nodes(visible_nodes)
