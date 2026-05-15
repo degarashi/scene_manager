@@ -1,3 +1,4 @@
+@tool
 ## シーン演出の基底抽象クラス
 @abstract class_name ScreenTransitioner
 extends Node
