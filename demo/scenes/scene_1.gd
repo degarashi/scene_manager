@@ -1,11 +1,11 @@
 extends "./scene_base.gd"
 
-# implements IFadeInNotify, IFadeOutNotify
+# implements IFadeInNotify, IFadeOutNotify, ISceneInitializer
 
 
 # --- INTERFACE LIST (AUTO-GENERATED) ---
 static func implements_list() -> Array[Script]:
-	return [IFadeInNotify, IFadeOutNotify]
+	return [IFadeInNotify, IFadeOutNotify, ISceneInitializer]
 
 
 # --- INTERFACE METHODS (STUBS) ---
@@ -15,6 +15,10 @@ func on_fade_in_end() -> void:
 
 func on_fade_out_end() -> void:
 	DLogger.info("Scene 1: on_fade_out_end")
+
+
+func on_scene_init(params: Variant) -> void:
+	DLogger.info("Scene 1: on_scene_init with params: {0}", [params])
 
 
 func _on_load_scene_2_button_button_up() -> void:
