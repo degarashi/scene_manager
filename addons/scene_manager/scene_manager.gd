@@ -115,11 +115,14 @@ func _get_actual_scene_container() -> Node:
 
 
 func _on_initial_setup() -> void:
+	var initial_node: Node = null
 	if _wrap_initial_scene:
 		var scene_node := get_tree().current_scene
 		if scene_node == null:
 			_log.warn("Scene Manager: current_scene is null during initial setup. Skipping wrap.")
 			return
+
+		initial_node = scene_node
 
 		# Find Scenes.Id enum by current scene's path
 		var current_path := scene_node.scene_file_path
@@ -143,6 +146,10 @@ func _on_initial_setup() -> void:
 	var player := _transition_service.get_main_player()
 	player.set_clickable(false)
 	await player.play_in(_initial_play_in_time)
+
+	if initial_node:
+		_notify_fade_in(initial_node)
+
 	player.set_clickable(true)
 	scene_transition_completed.emit(_current_scene_enum)
 
@@ -229,6 +236,8 @@ func switch_to_scene(
 	var player := _transition_service.setup_transition_player(options)
 	await player.play_out(options.play_out_time)
 
+	_notify_fade_out()
+
 	# Remove existing layers before setting up the new scene
 	_ebus.process_scene_layer.emit(_remove_node_safely)
 
@@ -257,6 +266,7 @@ func switch_to_scene(
 		category_tags_notified.emit(category_diff.added)
 
 	await player.play_in(options.play_in_time)
+	_notify_fade_in(new_scene_node)
 	player.set_clickable(true)
 
 	if player != _transition_service.get_main_player():
@@ -481,6 +491,7 @@ func activate_prepared_scene() -> Node:
 	unload_scene_by_name(_loading_node_name)
 
 	if not _reserved.is_additive:
+		_notify_fade_out(_reserved.scene_id)
 		# Cleanup: Remove all layers except the new one and revert the temporary name
 		_ebus.process_scene_layer.emit(
 			func(sc: SMgrSceneLayer) -> void:
@@ -501,6 +512,7 @@ func activate_prepared_scene() -> Node:
 
 	# Show the new scene
 	await player.play_in(_reserved.options.play_in_time)
+	_notify_fade_in(node)
 
 	_reserved.clear()
 	player.set_clickable(true)
@@ -525,6 +537,24 @@ func _get_scene_blocking(scene_id: Scenes.Id) -> PackedScene:
 func _create_scene_instance_blocking(scene_id: Scenes.Id) -> Node:
 	var pack := _get_scene_blocking(scene_id)
 	return pack.instantiate() if pack else null
+
+
+func _notify_fade_out(exclude_id: Scenes.Id = Scenes.Id.NONE) -> void:
+	_ebus.process_scene_layer.emit(
+		func(layer: SMgrSceneLayer) -> void:
+			if exclude_id != Scenes.Id.NONE and layer.scene_id == exclude_id:
+				return
+			for child in layer.get_children():
+				Interface.proc_interface(
+					child, IFadeOutNotify, func(ifc: IFadeOutNotify) -> void: ifc.on_fade_out_end()
+				)
+	)
+
+
+func _notify_fade_in(node: Node) -> void:
+	Interface.proc_interface(
+		node, IFadeInNotify, func(ifc: IFadeInNotify) -> void: ifc.on_fade_in_end()
+	)
 
 
 ## Returns the currently reserved scene Enum.
