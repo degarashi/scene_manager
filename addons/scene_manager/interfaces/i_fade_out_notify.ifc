@@ -1,1 +1,2 @@
+func on_fade_out_start() -> void
 func on_fade_out_end() -> void
