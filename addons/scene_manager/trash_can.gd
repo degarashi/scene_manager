@@ -22,5 +22,5 @@ func collect(target_node: Node) -> void:
 	if target_node.get_parent():
 		target_node.reparent(self)
 
-	target_node.name = "dying_" + str(target_node.get_instance_id())
+	target_node.name = "dying_" + String.num_uint64(target_node.get_instance_id())
 	target_node.queue_free()
