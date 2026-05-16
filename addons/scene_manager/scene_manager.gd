@@ -170,6 +170,8 @@ func _perform_scene_setup(scene_id: Scenes.Id, options: SceneLoadOptions) -> Nod
 		_log.error("Failed to instantiate scene: {0}", [Scenes.Id.find_key(scene_id)])
 		return null
 
+	_notify_scene_init(new_scene_node, options.params)
+
 	# Create layer (node_name will be ignored if category has layer_name)
 	var layer := _layer_mgr.create_scene_layer(scene_id, options.node_name)
 	layer.add_node(new_scene_node)
@@ -447,6 +449,8 @@ func instantiate_async_result() -> void:
 		var scene_node := res.instantiate()
 		scene_node.scene_file_path = path
 
+		_notify_scene_init(scene_node, _reserved.options.params)
+
 		# Create the layer with a temporary unique name.
 		# This prevents name collisions with the current active scene
 		# while this new layer sits hidden in the background.
@@ -554,6 +558,12 @@ func _notify_fade_out(exclude_id: Scenes.Id = Scenes.Id.NONE) -> void:
 func _notify_fade_in(node: Node) -> void:
 	Interface.proc_interface(
 		node, IFadeInNotify, func(ifc: IFadeInNotify) -> void: ifc.on_fade_in_end()
+	)
+
+
+func _notify_scene_init(node: Node, params: Variant) -> void:
+	Interface.proc_interface(
+		node, ISceneInitializer, func(ifc: ISceneInitializer) -> void: ifc.on_scene_init(params)
 	)
 
 

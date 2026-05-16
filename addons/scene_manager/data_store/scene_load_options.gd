@@ -21,6 +21,10 @@ static var _empty_cb := func(_arg: Node) -> void: pass
 ## Layer priority for the transition CanvasLayer. (-1 to use project default)
 @export var transition_layer: int = -1
 
+@export_group("Data")
+## Parameters to pass to the scene via ISceneInitializer.
+@export var params: Variant = null
+
 @export_group("Interaction")
 ## Whether or not to block mouse input during the scene load.
 @export var clickable: bool = DEFAULT_CLICKABLE_FLAG
