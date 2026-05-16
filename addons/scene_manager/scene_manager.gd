@@ -236,9 +236,10 @@ func switch_to_scene(
 
 	# --- Transition Start ---
 	var player := _transition_service.setup_transition_player(options)
+	_notify_fade_out_start()
 	await player.play_out(options.play_out_time)
 
-	_notify_fade_out()
+	_notify_fade_out_end()
 
 	# Remove existing layers before setting up the new scene
 	_ebus.process_scene_layer.emit(_remove_node_safely)
@@ -487,6 +488,10 @@ func activate_prepared_scene() -> Node:
 	var layer := recv[0]
 
 	var player := _transition_service.setup_transition_player(_reserved.options)
+
+	if not _reserved.is_additive:
+		_notify_fade_out_start(_reserved.scene_id)
+
 	await player.play_out(_reserved.options.play_out_time)
 
 	var diff := _scene_db.compare_scene_categories(_current_scene_enum, _reserved.scene_id)
@@ -495,7 +500,7 @@ func activate_prepared_scene() -> Node:
 	unload_scene_by_name(_loading_node_name)
 
 	if not _reserved.is_additive:
-		_notify_fade_out(_reserved.scene_id)
+		_notify_fade_out_end(_reserved.scene_id)
 		# Cleanup: Remove all layers except the new one and revert the temporary name
 		_ebus.process_scene_layer.emit(
 			func(sc: SMgrSceneLayer) -> void:
@@ -543,7 +548,21 @@ func _create_scene_instance_blocking(scene_id: Scenes.Id) -> Node:
 	return pack.instantiate() if pack else null
 
 
-func _notify_fade_out(exclude_id: Scenes.Id = Scenes.Id.NONE) -> void:
+func _notify_fade_out_start(exclude_id: Scenes.Id = Scenes.Id.NONE) -> void:
+	_ebus.process_scene_layer.emit(
+		func(layer: SMgrSceneLayer) -> void:
+			if exclude_id != Scenes.Id.NONE and layer.scene_id == exclude_id:
+				return
+			for child in layer.get_children():
+				Interface.proc_interface(
+					child,
+					IFadeOutNotify,
+					func(ifc: IFadeOutNotify) -> void: ifc.on_fade_out_start()
+				)
+	)
+
+
+func _notify_fade_out_end(exclude_id: Scenes.Id = Scenes.Id.NONE) -> void:
 	_ebus.process_scene_layer.emit(
 		func(layer: SMgrSceneLayer) -> void:
 			if exclude_id != Scenes.Id.NONE and layer.scene_id == exclude_id:

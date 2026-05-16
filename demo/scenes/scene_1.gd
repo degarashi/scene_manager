@@ -13,6 +13,10 @@ func on_fade_in_end() -> void:
 	DLogger.info("Scene 1: on_fade_in_end")
 
 
+func on_fade_out_start() -> void:
+	DLogger.info("Scene 1: on_fade_out_start")
+
+
 func on_fade_out_end() -> void:
 	DLogger.info("Scene 1: on_fade_out_end")
 
