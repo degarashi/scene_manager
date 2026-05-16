@@ -1,0 +1,14 @@
+[remap]
+
+importer="d_interface.ifc_importer"
+type="Resource"
+uid="uid://dr8cqbyh3cuhp"
+path="res://.godot/imported/i_fade_in_notify.ifc-d26ac66cdb9eb447201c17e37e5e3d59.res"
+
+[deps]
+
+source_file="res://addons/scene_manager/interfaces/i_fade_in_notify.ifc"
+dest_files=["res://.godot/imported/i_fade_in_notify.ifc-d26ac66cdb9eb447201c17e37e5e3d59.res"]
+
+[params]
+

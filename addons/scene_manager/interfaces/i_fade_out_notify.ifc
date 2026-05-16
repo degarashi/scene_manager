@@ -1,0 +1,1 @@
+func on_fade_out_end() -> void
