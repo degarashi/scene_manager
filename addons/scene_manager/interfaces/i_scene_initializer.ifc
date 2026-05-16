@@ -1,0 +1,2 @@
+## Interface for initializing a scene with parameters.
+func on_scene_init(params: Variant) -> void

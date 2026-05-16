@@ -1,0 +1,14 @@
+[remap]
+
+importer="d_interface.ifc_importer"
+type="Resource"
+uid="uid://banatxgfvjet2"
+path="res://.godot/imported/i_scene_initializer.ifc-8ad590d4cd1f91fed4bc54692c0d9076.res"
+
+[deps]
+
+source_file="res://addons/scene_manager/interfaces/i_scene_initializer.ifc"
+dest_files=["res://.godot/imported/i_scene_initializer.ifc-8ad590d4cd1f91fed4bc54692c0d9076.res"]
+
+[params]
+
