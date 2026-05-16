@@ -1,5 +1,21 @@
 extends "./scene_base.gd"
 
+# implements IFadeInNotify, IFadeOutNotify
+
+
+# --- INTERFACE LIST (AUTO-GENERATED) ---
+static func implements_list() -> Array[Script]:
+	return [IFadeInNotify, IFadeOutNotify]
+
+
+# --- INTERFACE METHODS (STUBS) ---
+func on_fade_in_end() -> void:
+	DLogger.info("Scene 1: on_fade_in_end")
+
+
+func on_fade_out_end() -> void:
+	DLogger.info("Scene 1: on_fade_out_end")
+
 
 func _on_load_scene_2_button_button_up() -> void:
 	SceneManager.switch_to_scene(Scenes.Id.SCENE_2, true, opt)
@@ -11,3 +27,6 @@ func _on_reload_button_button_up() -> void:
 
 func _on_quit_button_button_up() -> void:
 	SceneManager.exit_game(opt.play_out_time)
+
+# --- INTERFACE IMPLEMENTER (AUTO-GENERATED) ---
+# --- END INTERFACE IMPLEMENTER ---
