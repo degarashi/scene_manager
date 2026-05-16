@@ -42,7 +42,7 @@ window/size/resizable=false
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/d_logger/plugin.cfg", "res://addons/scene_manager/plugin.cfg")
+enabled=PackedStringArray("res://addons/d_interface/plugin.cfg", "res://addons/d_logger/plugin.cfg", "res://addons/scene_manager/plugin.cfg")
 
 [filesystem]
 
