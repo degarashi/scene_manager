@@ -20,13 +20,6 @@ signal category_reapplied(tags: Array[Scenes.CategoryId])
 ## Emitted to notify added or current categories depending on the transition type.
 signal category_tags_notified(tags: Array[Scenes.CategoryId])
 
-## Defines how to handle cases where a SceneLayer name already exists.
-enum DuplicateNameMode {
-	REMOVE_OLD,  ## Remove the existing SceneLayer before adding the new one.
-	WARN_AND_SKIP,  ## Print a warning and abort the addition.
-	RENAME_NEW,  ## Append a numeric suffix to the new SceneLayer to avoid collision.
-	APPEND,  ## Add the new scene to the existing SceneLayer.
-}
 # ------------- [Constants] -------------
 const _C = preload("uid://c3vvdktou45u")
 const _RING_BUFFER = preload("uid://b6phac21mxnxr")
@@ -34,8 +27,19 @@ const _RESOURCE_LOADER = preload("uid://dabq3s83q0iku")
 const _AF = preload("uid://dlgh4u64a7qxk")
 const _PS := preload("uid://dn6eh4s0h8jhi")
 
+# ------------- [Defines] -------------
+## Defines how to handle cases where a SceneLayer name already exists.
+enum DuplicateNameMode {
+	REMOVE_OLD,  ## Remove the existing SceneLayer before adding the new one.
+	WARN_AND_SKIP,  ## Print a warning and abort the addition.
+	RENAME_NEW,  ## Append a numeric suffix to the new SceneLayer to avoid collision.
+	APPEND,  ## Add the new scene to the existing SceneLayer.
+}
+
+# ------------- [Static Variable] -------------
 static var _log := DLoggerClass.new("Scene Manager")
 
+# ------------- [Exports] -------------
 @export var _loading_node_name: String = "===Transition==="
 @export var _initial_play_in_time: float = 1.0
 @export var _actual_scene_container_path: NodePath = "/root"
@@ -83,7 +87,7 @@ func _ready() -> void:
 	_on_initial_setup.call_deferred()
 
 
-# ------------- [Private Methods] -------------
+# ------------- [Private Method] -------------
 func _init_resource_loader() -> void:
 	_loader_mgr = _RESOURCE_LOADER.new()
 	_loader_mgr.name = "ResourceLoader"
@@ -186,7 +190,19 @@ func _perform_scene_setup(scene_id: Scenes.Id, options: SceneLoadOptions) -> Nod
 	return new_scene_node
 
 
-# ------------- [Public Methods] -------------
+func _get_layer_by_id(scene_id: Scenes.Id) -> SMgrSceneLayer:
+	var recv: Array[SMgrSceneLayer] = []
+	_ebus.get_scene_by_id.emit(recv, scene_id)
+	return recv[0] if not recv.is_empty() else null
+
+
+func _get_layer_by_name(node_name: String) -> SMgrSceneLayer:
+	var recv: Array[SMgrSceneLayer] = []
+	_ebus.get_scene_by_name.emit(recv, node_name)
+	return recv[0] if not recv.is_empty() else null
+
+
+# ------------- [Public Method] -------------
 func get_history_list() -> Array[Scenes.Id]:
 	return _history_stack.get_all_items()
 
@@ -199,18 +215,6 @@ func get_history_count() -> int:
 func get_current_scene_node() -> Node:
 	var layer := _get_layer_by_id(_current_scene_enum)
 	return layer.get_main_node() if layer else null
-
-
-func _get_layer_by_id(scene_id: Scenes.Id) -> SMgrSceneLayer:
-	var recv: Array[SMgrSceneLayer] = []
-	_ebus.get_scene_by_id.emit(recv, scene_id)
-	return recv[0] if not recv.is_empty() else null
-
-
-func _get_layer_by_name(node_name: String) -> SMgrSceneLayer:
-	var recv: Array[SMgrSceneLayer] = []
-	_ebus.get_scene_by_name.emit(recv, node_name)
-	return recv[0] if not recv.is_empty() else null
 
 
 ## Unloads a SceneLayer matching the specified node name.
