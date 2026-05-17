@@ -1,6 +1,6 @@
 extends Object
 
-# ------------- [Constants] -------------
+# ------------- [Static Variable] -------------
 static var _log := DLoggerClass.new("Scene Manager")
 
 

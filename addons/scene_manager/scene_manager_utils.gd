@@ -4,6 +4,7 @@ extends Node
 ## Helper class for the scene manager
 
 
+# ------------- [Public Method] -------------
 ## Returns the string form of the Scenes.Id enum.
 ##
 ## Note that this only works for unique enum values. If there are duplicate values
