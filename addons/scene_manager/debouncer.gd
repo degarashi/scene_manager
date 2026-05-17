@@ -52,4 +52,11 @@ func cancel() -> void:
 ## Updates the delay time dynamically.
 func set_delay(new_delay: float) -> void:
 	delay = new_delay
-	_timer.wait_time = delay
+	if _timer:
+		_timer.wait_time = delay
+
+
+func set_one_shot(p_one_shot: bool) -> void:
+	one_shot = p_one_shot
+	if _timer:
+		_timer.one_shot = one_shot
