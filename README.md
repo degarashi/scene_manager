@@ -79,9 +79,21 @@ Auto-complete node incorporated and modified from https://github.com/Lenrow/line
    - Configure async loading settings
 5. After making changes, click **`Save`** to persist your configuration.
 
-> **Note**: After activating the Scene Manager plugin, the `SMgrInstance` (Scene Manager) is available globally as an autoload. Access it via static methods like `SMgrInstance.switch_to_scene()` or connect to signals like `SMgrInstance.scene_transition_completed.connect(...)`.
+> **Note**: After activating the Scene Manager plugin, the `SceneManager` is available globally as an autoload. Access it via static methods like `SceneManager.switch_to_scene()` or connect to signals like `SceneManager.scene_transition_completed.connect(...)`.
 
 > **Note**: The addon auto-generates a `Scenes.Id` enum file. By default, it's saved to `res://scenes.gd`. Do not manually edit this file — it will be overwritten by the editor UI.
+
+### Scene Enum & Resource
+
+The `Scenes.Id` enum is auto-generated as you add scenes in the tool view. You can also use the `SceneResource` class to export a scene selection property in the inspector with auto-complete support.
+
+```gdscript
+@export var scene: SceneResource
+```
+
+<p align="center">
+<img src="images/inspector.png"/>
+</p>
 
 ## Tool View
 
@@ -115,24 +127,24 @@ You can automatically discover scenes by adding folder or file paths to the Incl
 
 ## SceneManager API
 
-After activating the addon, you can access the Scene Manager globally via the `SMgrInstance` autoload. Below are the most commonly used functions.
+After activating the addon, you can access the Scene Manager globally via the `SceneManager` autoload. Below are the most commonly used functions.
 
 ### Loading Scenes
 
 **Switch to a new scene (exclusive loading):**
 ```gdscript
 # Simple switch using Scenes.Id enum
-SMgrInstance.switch_to_scene(Scenes.Id.LEVEL_1)
+SceneManager.switch_to_scene(Scenes.Id.LEVEL_1, true)
 
 # With custom options
 var options = SceneLoadOptions.new()
 options.play_out_time = 0.5
 options.play_in_time = 0.5
 options.clickable = false  # Allow input during transition
-SMgrInstance.switch_to_scene(Scenes.Id.LEVEL_1, true, options)
+SceneManager.switch_to_scene(Scenes.Id.LEVEL_1, true, options)
 
 # Or pass scene_loaded_cb callback directly to switch_to_scene for early access
-SMgrInstance.switch_to_scene(Scenes.Id.LEVEL_1, true, SceneLoadOptions.new(),
+SceneManager.switch_to_scene(Scenes.Id.LEVEL_1, true, SceneLoadOptions.new(),
     func(node: Node):
         print("Scene loaded early: ", node.name)
 )
@@ -142,7 +154,7 @@ SMgrInstance.switch_to_scene(Scenes.Id.LEVEL_1, true, SceneLoadOptions.new(),
 ```gdscript
 var options = SceneLoadOptions.new()
 options.node_name = "UI"  # Parent node name
-SMgrInstance.add_scene(Scenes.Id.HUD, SMgrInstance.DuplicateNameMode.REMOVE_OLD, options)
+SceneManager.add_scene(Scenes.Id.HUD, SMgrInstance.DuplicateNameMode.REMOVE_OLD, options)
 ```
 
 **Async load with progress:**
@@ -152,19 +164,20 @@ options.play_out_time = 1.0
 options.play_in_time = 1.0
 
 # Connect to signals
-SMgrInstance.load_percent_changed.connect(func(percent: int):
+SceneManager.load_percent_changed.connect(func(percent: int):
     progress_bar.value = percent
 )
 
-SMgrInstance.load_finished.connect(func():
-    SMgrInstance.instantiate_async_result()
+SceneManager.load_finished.connect(func():
+    SceneManager.instantiate_async_result()
 )
 
 # Start async load (with transition scene)
-SMgrInstance.load_scene_with_transition(
+SceneManager.load_scene_with_transition(
     Scenes.Id.LEVEL_2,
     Scenes.Id.LOADING_SCREEN,
     true,
+    SMgrInstance.DuplicateNameMode.WARN_AND_SKIP,
     options
 )
 ```
@@ -173,32 +186,31 @@ SMgrInstance.load_scene_with_transition(
 
 ```gdscript
 # Go back to previous scene
-if not SMgrInstance.load_previous_scene():
+if not SceneManager.load_previous_scene():
     print("No previous scene in history")
 
 # Jump back by N scenes
-SMgrInstance.back_to_previous_by_offset(2)
+SceneManager.back_to_previous_by_offset(2)
 
 # Reload current scene
-SMgrInstance.reload_current_scene()
+SceneManager.reload_current_scene()
 
 # Get history info
-var history: Array[Scenes.Id] = SMgrInstance.get_history_list()
-var count: int = SMgrInstance.get_history_count()
+var history: Array[Scenes.Id] = SceneManager.get_history_list()
+var count: int = SceneManager.get_history_count()
 ```
 
 ### Utility Functions
 
 ```gdscript
 # Exit game with fade
-SMgrInstance.exit_game(fade_time)
+SceneManager.exit_game(fade_time)
 
-# Get current scene data
-var scene_data = SMgrInstance.get_scene_data()
-var path = scene_data.get_scene_path_from_enum(Scenes.Id.LEVEL_1)
+# Get root node of the current main scene
+var current_node = SceneManager.get_current_scene_node()
 
 # Connect to transition completion
-SMgrInstance.scene_transition_completed.connect(func(scene_id: Scenes.Id):
+SceneManager.scene_transition_completed.connect(func(scene_id: Scenes.Id):
     print("Scene loaded: ", scene_id)
 )
 ```
@@ -208,20 +220,31 @@ SMgrInstance.scene_transition_completed.connect(func(scene_id: Scenes.Id):
 Customize scene loading behavior with `SceneLoadOptions`:
 
 ```gdscript
-var options = SceneLoadOptions.new()
-options.node_name = "World"           # Parent node for the scene
-options.play_out_time = 1.0           # Fade out duration in seconds
-options.play_in_time = 1.0            # Fade in duration in seconds
-options.clickable = false             # Block input during transition
-
-# Pre-instantiation callback (called on wrapper node)
-options.pre_wrap_cb = func(layer: SMgrSceneLayer):
-    print("Wrapper node created")
-
-# Pre-node callback (called on scene node)
-options.pre_node_cb = func(node: Node):
-    print("Scene node created")
+@export var node_name: String = "World"  # Parent node for the scene
+@export var play_out_time: float = 0.5   # Fade out duration in seconds
+@export var play_in_time: float = 0.5    # Fade in duration in seconds
+@export var transition_id: Scenes.Id = Scenes.Id.NONE # Custom transition ID
+@export var transition_layer: int = -1   # Transition layer
+@export var params: Variant = null       # Parameters to pass to the new scene
+@export var clickable: bool = false      # Block input during transition
 ```
+
+### Scene Loading Modes
+
+The `SceneManager` supports multiple loading patterns to handle different architectural needs in Godot.
+
+<p align="center">
+<img src="images/scene-manager1.png"/>
+</p>
+
+*   **Exclusive (SINGLE)**: Removes all existing layers and replaces them with a new one. Ideal for major level transitions.
+    <p align="center"><img src="images/scene-manager2.png"/></p>
+
+*   **Additive**: Adds a new layer without removing others. Perfect for HUDs, menus, or localized sub-scenes.
+    <p align="center"><img src="images/scene-manager3.png"/></p>
+
+*   **Single Node**: Removes all scenes under a specific node name and replaces them, while leaving other nodes (like a persistent UI layer) untouched.
+    <p align="center"><img src="images/scene-manager4.png"/> <img src="images/scene-manager5.png"/> <img src="images/scene-manager6.png"/></p>
 
 # Demo
 
@@ -239,7 +262,7 @@ The demo project showcases the primary workflows of the Scene Manager:
 ### Simple Scene Switch
 ```gdscript
 func _on_level_button_pressed():
-    SMgrInstance.switch_to_scene(Scenes.Id.LEVEL_1)
+    SceneManager.switch_to_scene(Scenes.Id.LEVEL_1, true)
 ```
 
 ### Async Loading with Progress Display
@@ -249,13 +272,14 @@ func start_level_with_loading_screen():
     options.play_out_time = 0.8
     options.play_in_time = 0.8
     
-    SMgrInstance.load_percent_changed.connect(_on_load_progress)
-    SMgrInstance.load_finished.connect(_on_load_finished)
+    SceneManager.load_percent_changed.connect(_on_load_progress)
+    SceneManager.load_finished.connect(_on_load_finished)
     
-    SMgrInstance.load_scene_with_transition(
+    SceneManager.load_scene_with_transition(
         Scenes.Id.LEVEL_1,
         Scenes.Id.LOADING_SCREEN,
         true,
+        SMgrInstance.DuplicateNameMode.WARN_AND_SKIP,
         options
     )
 
@@ -263,7 +287,7 @@ func _on_load_progress(percent: int):
     progress_label.text = "%d%%" % percent
 
 func _on_load_finished():
-    SMgrInstance.instantiate_async_result()
+    SceneManager.instantiate_async_result()
 ```
 
 ### Additive UI Loading
@@ -274,22 +298,22 @@ func show_pause_menu():
     ui_options.play_out_time = 0.3
     ui_options.play_in_time = 0.3
     
-    SMgrInstance.add_scene(Scenes.Id.PAUSE_MENU, 
+    SceneManager.add_scene(Scenes.Id.PAUSE_MENU, 
         SMgrInstance.DuplicateNameMode.REMOVE_OLD, 
         ui_options)
 
 func hide_pause_menu():
-    SMgrInstance.unload_scene_by_name("UI")
+    SceneManager.unload_scene_by_name("UI")
 ```
 
 ### History Navigation
 ```gdscript
 func _on_back_button_pressed():
-    if not SMgrInstance.load_previous_scene():
+    if not SceneManager.load_previous_scene():
         print("No previous scene to go back to")
 
 func _on_restart_pressed():
-    SMgrInstance.reload_current_scene()
+    SceneManager.reload_current_scene()
 ```
 
 ## Project Settings

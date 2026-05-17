@@ -79,9 +79,21 @@ Godot 4向けの包括的なシーンライフサイクル管理アドオンで�
    - 非同期ローディング設定を設定
 5. 変更後、**`保存`** をクリックして設定を保存します。
 
-> **注意**: Scene Managerプラグインを有効化すると、`SMgrInstance`（シーンマネージャ）がグローバルオートロードとして利用可能になります。`SMgrInstance.switch_to_scene()` などの静的メソッドでアクセスするか、`SMgrInstance.scene_transition_completed.connect(...)` などのシグナルに接続してください。
+> **注意**: Scene Managerプラグインを有効化すると、`SceneManager` がグローバルオートロードとして利用可能になります。`SceneManager.switch_to_scene()` などの静的メソッドでアクセスするか、`SceneManager.scene_transition_completed.connect(...)` などのシグナルに接続してください。
 
 > **注意**: アドオンは `Scenes.Id` 列挙型ファイルを自動生成します。デフォルトではこれは `res://scenes.gd` に保存されます。このファイルを手動で編集しないでください — エディタUIによって上書きされます。
+
+### シーン列挙型とリソース (Scene Enum & Resource)
+
+ツールビューでシーンを追加すると、`Scenes.Id` 列挙型が自動生成されます。また、`SceneResource` クラスを使用することで、インスペクタ上でオートコンプリート付きのシーン選択プロパティをエクスポートできます。
+
+```gdscript
+@export var scene: SceneResource
+```
+
+<p align="center">
+<img src="images/inspector.png"/>
+</p>
 
 ## ツールビュー
 
@@ -115,24 +127,24 @@ Godot 4向けの包括的なシーンライフサイクル管理アドオンで�
 
 ## SceneManager API
 
-アドオンを有効化した後、`SMgrInstance` オートロードを介してシーンマネージャにグローバルにアクセスできます。以下は最も一般的に使用される関数です。
+アドオンを有効化した後、`SceneManager` オートロードを介してシーンマネージャにグローバルにアクセスできます。以下は最も一般的に使用される関数です。
 
 ### シーンのローディング
 
 **新しいシーンに切り替える（排他的ローディング）：**
 ```gdscript
 # Scenes.Id 列挙型を使用した簡単な切り替え
-SMgrInstance.switch_to_scene(Scenes.Id.LEVEL_1)
+SceneManager.switch_to_scene(Scenes.Id.LEVEL_1, true)
 
 # カスタムオプション付き
 var options = SceneLoadOptions.new()
 options.play_out_time = 0.5
 options.play_in_time = 0.5
 options.clickable = false  # トランジション中に入力を許可
-SMgrInstance.switch_to_scene(Scenes.Id.LEVEL_1, true, options)
+SceneManager.switch_to_scene(Scenes.Id.LEVEL_1, true, options)
 
 # または scene_loaded_cb コールバックを直接渡して、フェード完了前にノードにアクセス
-SMgrInstance.switch_to_scene(Scenes.Id.LEVEL_1, true, SceneLoadOptions.new(),
+SceneManager.switch_to_scene(Scenes.Id.LEVEL_1, true, SceneLoadOptions.new(),
     func(node: Node):
         print("シーンが早期ロードされました: ", node.name)
 )
@@ -142,7 +154,7 @@ SMgrInstance.switch_to_scene(Scenes.Id.LEVEL_1, true, SceneLoadOptions.new(),
 ```gdscript
 var options = SceneLoadOptions.new()
 options.node_name = "UI"  # 親ノード名
-SMgrInstance.add_scene(Scenes.Id.HUD, SMgrInstance.DuplicateNameMode.REMOVE_OLD, options)
+SceneManager.add_scene(Scenes.Id.HUD, SMgrInstance.DuplicateNameMode.REMOVE_OLD, options)
 ```
 
 **進捗付き非同期ローディング：**
@@ -152,19 +164,20 @@ options.play_out_time = 1.0
 options.play_in_time = 1.0
 
 # シグナルに接続
-SMgrInstance.load_percent_changed.connect(func(percent: int):
+SceneManager.load_percent_changed.connect(func(percent: int):
     progress_bar.value = percent
 )
 
-SMgrInstance.load_finished.connect(func():
-    SMgrInstance.instantiate_async_result()
+SceneManager.load_finished.connect(func():
+    SceneManager.instantiate_async_result()
 )
 
 # 非同期ローディングを開始（トランジションシーン付き）
-SMgrInstance.load_scene_with_transition(
+SceneManager.load_scene_with_transition(
     Scenes.Id.LEVEL_2,
     Scenes.Id.LOADING_SCREEN,
     true,
+    SMgrInstance.DuplicateNameMode.WARN_AND_SKIP,
     options
 )
 ```
@@ -173,32 +186,31 @@ SMgrInstance.load_scene_with_transition(
 
 ```gdscript
 # 前のシーンに戻る
-if not SMgrInstance.load_previous_scene():
+if not SceneManager.load_previous_scene():
     print("履歴に前のシーンがありません")
 
 # N個のシーンを戻る
-SMgrInstance.back_to_previous_by_offset(2)
+SceneManager.back_to_previous_by_offset(2)
 
 # 現在のシーンをリロード
-SMgrInstance.reload_current_scene()
+SceneManager.reload_current_scene()
 
 # 履歴情報を取得
-var history: Array[Scenes.Id] = SMgrInstance.get_history_list()
-var count: int = SMgrInstance.get_history_count()
+var history: Array[Scenes.Id] = SceneManager.get_history_list()
+var count: int = SceneManager.get_history_count()
 ```
 
 ### ユーティリティ関数
 
 ```gdscript
 # フェード付きでゲームを終了
-SMgrInstance.exit_game(fade_time)
+SceneManager.exit_game(fade_time)
 
-# 現在のシーンデータを取得
-var scene_data = SMgrInstance.get_scene_data()
-var path = scene_data.get_scene_path_from_enum(Scenes.Id.LEVEL_1)
+# 現在のシーンノードを取得
+var current_node = SceneManager.get_current_scene_node()
 
 # トランジション完了に接続
-SMgrInstance.scene_transition_completed.connect(func(scene_id: Scenes.Id):
+SceneManager.scene_transition_completed.connect(func(scene_id: Scenes.Id):
     print("シーンがロードされました: ", scene_id)
 )
 ```
@@ -208,20 +220,31 @@ SMgrInstance.scene_transition_completed.connect(func(scene_id: Scenes.Id):
 `SceneLoadOptions` でシーンローディング動作をカスタマイズします：
 
 ```gdscript
-var options = SceneLoadOptions.new()
-options.node_name = "World"           # シーンの親ノード
-options.play_out_time = 1.0           # フェードアウト時間（秒）
-options.play_in_time = 1.0            # フェードイン時間（秒）
-options.clickable = false             # トランジション中に入力をブロック
-
-# 事前ラッピングコールバック（ラッパーノードで呼び出し）
-options.pre_wrap_cb = func(layer: SMgrSceneLayer):
-    print("ラッパーノードが作成されました")
-
-# 事前ノードコールバック（シーンノードで呼び出し）
-options.pre_node_cb = func(node: Node):
-    print("シーンノードが作成されました")
+@export var node_name: String = "World"  # シーンの親ノード名
+@export var play_out_time: float = 0.5   # フェードアウト時間（秒）
+@export var play_in_time: float = 0.5    # フェード入り時間（秒）
+@export var transition_id: Scenes.Id = Scenes.Id.NONE # カスタムトランジションID
+@export var transition_layer: int = -1   # トランジションレイヤー
+@export var params: Variant = null       # シーンに渡すパラメータ
+@export var clickable: bool = false      # トランジション中に入力をブロックするか
 ```
+
+### シーンローディングモード (Scene Loading Modes)
+
+`SceneManager` は、Godotにおける様々な設計上のニーズに対応するため、複数のローディングパターンをサポートしています。
+
+<p align="center">
+<img src="images/scene-manager1.png"/>
+</p>
+
+*   **排他的 (SINGLE)**: 既存のすべてのレイヤーを削除し、新しいレイヤーに置き換えます。主要なレベル遷移に最適です。
+    <p align="center"><img src="images/scene-manager2.png"/></p>
+
+*   **加算的 (ADDITIVE)**: 他のレイヤーを削除せずに新しいレイヤーを追加します。HUD、メニュー、または局所的なサブシーンに最適です。
+    <p align="center"><img src="images/scene-manager3.png"/></p>
+
+*   **シングルノード (SINGLE_NODE)**: 特定のノード名の下にあるすべてのシーンを削除して置き換えますが、他のノード（永続的なUIレイヤーなど）はそのまま残します。
+    <p align="center"><img src="images/scene-manager4.png"/> <img src="images/scene-manager5.png"/> <img src="images/scene-manager6.png"/></p>
 
 # デモ
 
@@ -239,7 +262,7 @@ options.pre_node_cb = func(node: Node):
 ### シンプルなシーン切り替え
 ```gdscript
 func _on_level_button_pressed():
-    SMgrInstance.switch_to_scene(Scenes.Id.LEVEL_1)
+    SceneManager.switch_to_scene(Scenes.Id.LEVEL_1, true)
 ```
 
 ### 進捗表示付き非同期ローディング
@@ -249,13 +272,14 @@ func start_level_with_loading_screen():
     options.play_out_time = 0.8
     options.play_in_time = 0.8
     
-    SMgrInstance.load_percent_changed.connect(_on_load_progress)
-    SMgrInstance.load_finished.connect(_on_load_finished)
+    SceneManager.load_percent_changed.connect(_on_load_progress)
+    SceneManager.load_finished.connect(_on_load_finished)
     
-    SMgrInstance.load_scene_with_transition(
+    SceneManager.load_scene_with_transition(
         Scenes.Id.LEVEL_1,
         Scenes.Id.LOADING_SCREEN,
         true,
+        SMgrInstance.DuplicateNameMode.WARN_AND_SKIP,
         options
     )
 
@@ -263,7 +287,7 @@ func _on_load_progress(percent: int):
     progress_label.text = "%d%%" % percent
 
 func _on_load_finished():
-    SMgrInstance.instantiate_async_result()
+    SceneManager.instantiate_async_result()
 ```
 
 ### 加算的UIローディング
@@ -274,22 +298,22 @@ func show_pause_menu():
     ui_options.play_out_time = 0.3
     ui_options.play_in_time = 0.3
     
-    SMgrInstance.add_scene(Scenes.Id.PAUSE_MENU, 
+    SceneManager.add_scene(Scenes.Id.PAUSE_MENU, 
         SMgrInstance.DuplicateNameMode.REMOVE_OLD, 
         ui_options)
 
 func hide_pause_menu():
-    SMgrInstance.unload_scene_by_name("UI")
+    SceneManager.unload_scene_by_name("UI")
 ```
 
 ### 履歴ナビゲーション
 ```gdscript
 func _on_back_button_pressed():
-    if not SMgrInstance.load_previous_scene():
+    if not SceneManager.load_previous_scene():
         print("戻るシーンがありません")
 
 func _on_restart_pressed():
-    SMgrInstance.reload_current_scene()
+    SceneManager.reload_current_scene()
 ```
 
 ## プロジェクト設定
