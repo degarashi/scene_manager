@@ -2,9 +2,11 @@
 class_name SMgrProjectSettings
 extends SMgrResource
 
+# ------------- [Signal] -------------
 signal on_auto_save_changed(enable: bool)
 signal on_enable_log_changed(enable: bool)
 
+# ------------- [Constants] -------------
 const DEFAULT_DATA_DIR = "res://scene_manager_data"
 const DEFAULT_SCENES_FILENAME = "scenes.gd"
 const DEFAULT_PATH_TO_SCENES := DEFAULT_DATA_DIR + "/" + DEFAULT_SCENES_FILENAME
@@ -13,9 +15,9 @@ const DEFAULT_PLAY_OUT_TIME: float = 1
 const DEFAULT_PLAY_IN_TIME: float = 1
 const DEFAULT_TRANSITION_LAYER: int = 100
 const _AF = preload("uid://dlgh4u64a7qxk")
-static var _log := DLoggerClass.new("Scene Manager")
 
 
+# ------------- [Defines] -------------
 # Setting Paths
 class Property:
 	const SCENE_PATH = "scene_manager/scenes/scenes_path"
@@ -38,6 +40,10 @@ class Key:
 	const RESTART = "restart"
 
 
+# ------------- [Static Variable] -------------
+static var _log := DLoggerClass.new("Scene Manager")
+
+# ------------- [Public Variable] -------------
 # Runtime Properties linked to ProjectSettings
 var scene_path: String:
 	get:
@@ -104,10 +110,12 @@ var enable_log: bool:
 			_last_enable_log = value
 			on_enable_log_changed.emit(value)
 
+# ------------- [Private Variable] -------------
 var _last_auto_save: bool = false
 var _last_enable_log: bool = false
 
 
+# ------------- [Private Method] -------------
 func _ensure_data_dir_exists(dir_path: String) -> void:
 	if not DirAccess.dir_exists_absolute(dir_path):
 		DirAccess.make_dir_recursive_absolute(dir_path)
@@ -135,6 +143,7 @@ func _on_project_settings_changed() -> void:
 		on_enable_log_changed.emit(current_log)
 
 
+# ------------- [Public Method] -------------
 func setup_project_settings() -> void:
 	# Connect signals (monitor direct changes from the editor)
 	_AF.connect_if_not_connected(ProjectSettings.settings_changed, _on_project_settings_changed)
