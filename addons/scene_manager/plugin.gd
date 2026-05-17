@@ -42,15 +42,8 @@ func _enter_tree() -> void:
 
 # Plugin uninstallation
 func _exit_tree() -> void:
-	# TODO: We can use this function but it removes the saved value of it
-	# along side with the gui setting, if you want to actually just
-	# restart the plugin, you have to set the value for scenes path again
-	#
-	# So... not a good idea to use this:
-	#
-	# ProjectSettings.clear(SCENE_SETTINGS_PROPERTY_NAME)
-	#
-	# We just don't remove the settings for now
+	# We intentionally do not clear SCENE_SETTINGS_PROPERTY_NAME from ProjectSettings
+	# to preserve the user's configuration when the plugin is merely toggled or restarted.
 	remove_custom_type("Auto Complete Assistant")
 	if _main_panel:
 		remove_control_from_docks(_main_panel)
