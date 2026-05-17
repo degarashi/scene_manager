@@ -3,6 +3,7 @@ extends Object
 # ------------- [Constants] -------------
 static var _log := DLoggerClass.new("Scene Manager")
 
+
 # ------------- [Public Method] -------------
 ## Connects the signal to the callable only if the connection does not already exist
 static func connect_if_not_connected(sig: Signal, callable: Callable) -> void:
@@ -52,8 +53,7 @@ static func has_ancestor(node: Node, target_name: String) -> bool:
 ## @return Array containing elements converted to strings
 static func convert_to_array_string(src: Array) -> Array[String]:
 	var ret: Array[String] = []
-	for item in src:
-		ret.append(str(item))
+	ret.assign(src.map(func(item): return str(item)))
 	return ret
 
 
