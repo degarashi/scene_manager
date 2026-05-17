@@ -69,7 +69,7 @@ var _transition_service: SMgrTransitionService
 
 # ------------- [Callbacks] -------------
 func _ready() -> void:
-	_init_resourece_loader()
+	_init_resource_loader()
 	_init_trash_node()
 
 	# SMgrData is a Resource, so read it with the loader
@@ -84,7 +84,7 @@ func _ready() -> void:
 
 
 # ------------- [Private Methods] -------------
-func _init_resourece_loader() -> void:
+func _init_resource_loader() -> void:
 	_loader_mgr = _RESOURCE_LOADER.new()
 	_loader_mgr.name = "ResourceLoader"
 	_loader_mgr.progress_changed.connect(_on_loader_progress_changed)
