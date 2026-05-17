@@ -195,6 +195,24 @@ func get_history_count() -> int:
 	return _history_stack.size()
 
 
+## Returns the root node of the currently active main scene.
+func get_current_scene_node() -> Node:
+	var layer := _get_layer_by_id(_current_scene_enum)
+	return layer.get_main_node() if layer else null
+
+
+func _get_layer_by_id(scene_id: Scenes.Id) -> SMgrSceneLayer:
+	var recv: Array[SMgrSceneLayer] = []
+	_ebus.get_scene_by_id.emit(recv, scene_id)
+	return recv[0] if not recv.is_empty() else null
+
+
+func _get_layer_by_name(node_name: String) -> SMgrSceneLayer:
+	var recv: Array[SMgrSceneLayer] = []
+	_ebus.get_scene_by_name.emit(recv, node_name)
+	return recv[0] if not recv.is_empty() else null
+
+
 ## Unloads a SceneLayer matching the specified node name.
 func unload_scene_by_name(node_name: String) -> void:
 	if node_name.is_empty():
@@ -228,11 +246,10 @@ func switch_to_scene(
 	)
 
 	if is_reloading:
-		var recv: Array[SMgrSceneLayer]
-		_ebus.get_scene_by_id.emit(recv, scene_id)
-		if not recv.is_empty():
+		var layer := _get_layer_by_id(scene_id)
+		if layer:
 			# Force the new instance to use the same node name as the current one.
-			options.node_name = recv[0].name
+			options.node_name = layer.name
 
 	# --- Transition Start ---
 	var player := _transition_service.setup_transition_player(options)
@@ -297,10 +314,8 @@ func add_scene(
 		summary.layer_name if not summary.layer_name.is_empty() else options.node_name
 	)
 
-	var recv: Array[SMgrSceneLayer]
-	_ebus.get_scene_by_name.emit(recv, target_name)
-
-	if not recv.is_empty():
+	var existing_layer := _get_layer_by_name(target_name)
+	if existing_layer:
 		match mode:
 			DuplicateNameMode.REMOVE_OLD:
 				unload_scene_by_name(target_name)
@@ -314,12 +329,11 @@ func add_scene(
 
 			DuplicateNameMode.APPEND:
 				# Instead of creating a new layer, append the instance to the existing layer
-				var target_layer := recv[0]
 				var new_node := _create_scene_instance_blocking(scene_id)
 				if new_node:
-					target_layer.add_node(new_node)
+					existing_layer.add_node(new_node)
 					# Apply pre-callback to the existing layer and new node
-					options.call_pre_cb(target_layer, new_node)
+					options.call_pre_cb(existing_layer, new_node)
 
 					if options.scene_loaded_cb.is_valid():
 						options.scene_loaded_cb.call(new_node)
