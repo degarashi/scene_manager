@@ -65,7 +65,16 @@ func prepare(
 	_ebus.process_scene_layer.connect(_process_scene_layer)
 
 
+## Returns the main node (the first child) of this layer.
+func get_main_node() -> Node:
+	if get_child_count() > 0:
+		return get_child(0)
+	return null
+
+
 ## Set up scene nodes for content
+
+
 func add_node(p_node: Node) -> void:
 	if p_node.get_parent():
 		p_node.reparent(self)
