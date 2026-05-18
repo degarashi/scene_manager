@@ -40,11 +40,13 @@ enum DuplicateNameMode {
 static var _log := DLoggerClass.new("Scene Manager")
 
 # ------------- [Exports] -------------
+@export_group("General Settings")
 @export var _loading_node_name: String = "===Transition==="
 @export var _initial_play_in_time: float = 1.0
 @export var _actual_scene_container_path: NodePath = "/root"
 @export var _wrap_initial_scene := true
 @export var _transitioner_source: PackedScene = preload("uid://2iy8wfgenjka")
+@export_group("EBus")
 @export var _ebus: SMgrEbusRuntime
 
 # ------------- [Private Variable] -------------
