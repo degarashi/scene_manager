@@ -75,6 +75,11 @@ var _transition_service: SMgrTransitionService
 
 # ------------- [Callbacks] -------------
 func _ready() -> void:
+	if _ebus:
+		if not _ebus._instance_check.get_connections().is_empty():
+			_log.error("Multiple SceneManager instances detected. This may cause unexpected behavior.")
+		_ebus._instance_check.connect(_instance_dummy)
+
 	_init_resource_loader()
 	_init_trash_node()
 
@@ -100,6 +105,10 @@ func _init_resource_loader() -> void:
 func _init_trash_node() -> void:
 	_trash_can = SMgrTrashCan.new()
 	add_child(_trash_can)
+
+
+func _instance_dummy() -> void:
+	pass
 
 
 func _on_loader_progress_changed(_path: String, percent: int) -> void:
