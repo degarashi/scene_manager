@@ -72,12 +72,17 @@ var _layer_mgr: SMgrLayerManager
 ## Transition management service
 var _transition_service: SMgrTransitionService
 
+## True if a scene transition is currently in progress.
+var _is_transitioning := false
+
 
 # ------------- [Callbacks] -------------
 func _ready() -> void:
 	if _ebus:
 		if not _ebus._instance_check.get_connections().is_empty():
-			_log.error("Multiple SceneManager instances detected. This may cause unexpected behavior.")
+			_log.error(
+				"Multiple SceneManager instances detected. This may cause unexpected behavior."
+			)
 		_ebus._instance_check.connect(_instance_dummy)
 
 	_init_resource_loader()
@@ -130,11 +135,13 @@ func _get_actual_scene_container() -> Node:
 
 
 func _on_initial_setup() -> void:
+	_is_transitioning = true
 	var initial_node: Node = null
 	if _wrap_initial_scene:
 		var scene_node := get_tree().current_scene
 		if scene_node == null:
 			_log.warn("Scene Manager: current_scene is null during initial setup. Skipping wrap.")
+			_is_transitioning = false
 			return
 
 		initial_node = scene_node
@@ -167,6 +174,7 @@ func _on_initial_setup() -> void:
 
 	player.set_clickable(true)
 	scene_transition_completed.emit(_current_scene_enum)
+	_is_transitioning = false
 
 
 func _remove_node_safely(target_node: Node) -> void:
@@ -249,6 +257,15 @@ func switch_to_scene(
 		_log.warn("switch_to_scene called with NONE.")
 		return null
 
+	if _is_transitioning:
+		_log.warn(
+			"switch_to_scene: Transition already in progress. Ignoring request for {0}.",
+			[Scenes.Id.find_key(scene_id)]
+		)
+		return null
+
+	_is_transitioning = true
+
 	if scene_loaded_cb.is_valid():
 		options.scene_loaded_cb = scene_loaded_cb
 
@@ -287,6 +304,7 @@ func switch_to_scene(
 		player.set_clickable(true)
 		if player != _transition_service.get_main_player():
 			player.queue_free()
+		_is_transitioning = false
 		return null
 
 	var category_diff := _scene_db.compare_scene_categories(_current_scene_enum, scene_id)
@@ -309,6 +327,7 @@ func switch_to_scene(
 
 	_log.debug("Scene transition completed: {0}", [Scenes.Id.find_key(scene_id)])
 	scene_transition_completed.emit(scene_id)
+	_is_transitioning = false
 	return new_scene_node
 
 
@@ -408,10 +427,16 @@ func reload_current_scene(options := SceneLoadOptions.new()) -> bool:
 ## Quits the game after a fade-out effect.
 ## @param fade_time Duration of the fade-out (seconds).
 func exit_game(fade_time: float = 1.0) -> void:
+	if _is_transitioning:
+		_log.warn("exit_game: Transition already in progress. Ignoring request.")
+		return
+
+	_is_transitioning = true
 	var player := _transition_service.get_main_player()
 	player.set_clickable(false)
 	await player.play_out(fade_time)
 	on_game_end.emit()
+	_is_transitioning = false
 	get_tree().quit(0)
 
 
@@ -509,11 +534,24 @@ func activate_prepared_scene() -> Node:
 		_log.warn("activate_prepared_scene called but no scene is reserved.")
 		return null
 
+	if _is_transitioning:
+		_log.warn(
+			"activate_prepared_scene: Transition already in progress. Ignoring request for {0}.",
+			[Scenes.Id.find_key(_reserved.scene_id)]
+		)
+		return null
+
+	_is_transitioning = true
+
 	_log.info("Activating prepared scene: {0}", [Scenes.Id.find_key(_reserved.scene_id)])
 
 	var recv: Array[SMgrSceneLayer]
 	_ebus.get_scene_by_id.emit(recv, _reserved.scene_id)
-	assert(not recv.is_empty(), "Scene Manager: Reserved scene entry missing.")
+	if recv.is_empty():
+		_log.error("Scene Manager: Reserved scene entry missing.")
+		_is_transitioning = false
+		return null
+
 	var layer := recv[0]
 
 	var player := _transition_service.setup_transition_player(_reserved.options)
@@ -561,6 +599,7 @@ func activate_prepared_scene() -> Node:
 	_log.debug("Scene transition completed: {0}", [Scenes.Id.find_key(_current_scene_enum)])
 	scene_transition_completed.emit(_current_scene_enum)
 
+	_is_transitioning = false
 	return layer.get_child(0)
 
 
