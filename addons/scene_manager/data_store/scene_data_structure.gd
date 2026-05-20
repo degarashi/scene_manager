@@ -26,7 +26,6 @@ const _DEBOUNCE_TIME = 0.3
 		_validate_connections()
 		_on_any_data_changed()
 
-
 # ------------- [Private Variable] -------------
 var _is_sorting: bool = false
 
@@ -92,6 +91,34 @@ func set_category_data(id: int, category_data: SMgrCategoryData) -> void:
 func remove_category_data(id: int) -> void:
 	if _categories.erase(id):
 		_on_any_data_changed()
+
+
+## Renames a category by re-keying the dictionary and updating all scenes.
+## @param old_id The current ID (hash) of the category
+## @param new_name The new name for the category
+func rename_category(old_id: int, new_name: String) -> void:
+	var cat := get_category_from_id(old_id)
+	if not cat:
+		return
+
+	var new_id := new_name.hash()
+	if _categories.has(new_id):
+		# Duplication check should be done before calling this, but as a safety measure:
+		return
+
+	# Re-key in _categories dictionary
+	_categories.erase(old_id)
+	cat.name = new_name
+	_categories[new_id] = cat
+
+	# Update all scenes that referenced the old ID
+	for sc in get_scenes_all():
+		var idx := sc.categories.find(old_id)
+		if idx != -1:
+			sc.categories[idx] = new_id
+			sc.emit_changed()
+
+	_on_any_data_changed()
 
 
 ## Sorts internal dictionaries to maintain a clean serialization order.
@@ -367,7 +394,9 @@ func _toggle_ebus_connections(ebus: SMgrEbusEditor, connect: bool) -> void:
 		[ebus.add_scene_to_category, _ebus_add_scene_to_category],
 		[ebus.remove_scene_from_category, _ebus_remove_scene_from_category],
 		[ebus.scene_name_duplication_check, _ebus_duplicate_name_check],
-		[ebus.change_scene_name, _ebus_change_scene_name]
+		[ebus.change_scene_name, _ebus_change_scene_name],
+		[ebus.rename_category, _ebus_rename_category],
+		[ebus.category_name_duplication_check, _ebus_category_duplicate_name_check]
 	]
 
 	for conn in connections:
@@ -435,3 +464,16 @@ func _ebus_change_scene_name(scene_id: int, scene_name: String) -> void:
 	if sc:
 		sc.name = scene_name
 		sc.emit_changed()
+
+
+func _ebus_rename_category(category_id: int, new_name: String) -> void:
+	rename_category(category_id, new_name)
+
+
+func _ebus_category_duplicate_name_check(recv: Array[bool], category_name: String) -> void:
+	var is_duplicate := false
+	for cat in _categories.values():
+		if cat.name.to_lower() == category_name.to_lower():
+			is_duplicate = true
+			break
+	recv.append(is_duplicate)

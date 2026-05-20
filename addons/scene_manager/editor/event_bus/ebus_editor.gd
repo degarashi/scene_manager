@@ -6,6 +6,7 @@ extends SMgrEventBusBase
 signal change_scene_name(scene_id: int, scene_name: String)
 signal add_scene_to_category(scene_id: int, category_id: int)
 signal remove_scene_from_category(scene_id: int, category_id: int)
+signal rename_category(category_id: int, new_name: String)
 
 # --- Notify ---
 signal on_dirty_flag_changed(dirty: bool)
@@ -16,6 +17,7 @@ signal on_data_changed
 # --- Getter ---
 # for duplication check
 signal scene_name_duplication_check(recv: Array[bool], scene_name: String)
+signal category_name_duplication_check(recv: Array[bool], category_name: String)
 signal get_dirty_flag(recv: Array[bool])
 
 # You can freely obtain and refer to the scene, but change the data through the interface
