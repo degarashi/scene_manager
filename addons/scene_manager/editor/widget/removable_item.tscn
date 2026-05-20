@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://ch4kd34yt31v6" path="res://addons/scene_manager/editor/widget/removable_item.gd" id="1_4r8to"]
 [ext_resource type="Texture2D" uid="uid://36xdho566h28" path="res://addons/scene_manager/icons/ImportFail.svg" id="2_drn60"]
-[ext_resource type="Texture2D" uid="uid://f43o6i6g335y" path="res://addons/scene_manager/icons/Folder.svg" id="3_jump_icon"]
+[ext_resource type="Texture2D" uid="uid://55gw5qa2ari2" path="res://addons/scene_manager/icons/Folder.svg" id="3_jump_icon"]
 
 [node name="item" type="HBoxContainer" unique_id=1168268338]
 offset_top = 24.0

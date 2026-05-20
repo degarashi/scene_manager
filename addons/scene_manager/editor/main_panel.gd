@@ -16,7 +16,7 @@ const _ICON_COLLAPSE_BUTTON = preload("uid://bd6ob6pgam1gt")
 @export var _ebus_ins: SMgrEbusInspector
 var _ps := preload("uid://dn6eh4s0h8jhi")
 var _manager_data: SMgrDataEditor
-var _log: SMgrLogBase
+var _log: DLoggerClass
 var _search_debouncer: Debouncer
 ## For file monitoring
 var _last_modified_time: int = 0
@@ -435,8 +435,12 @@ func _reload_data() -> void:
 
 func _init_logger(enable: bool) -> void:
 	# Re-create the logger instance
-	_log = SMgrLogBase.create(enable)
-	_log.debug("Logger updated. Enable: %s" % enable)
+	_log = DLoggerClass.new(
+		"Scene Manager",
+		DLoggerConstants.LogLevel.DEBUG if enable else DLoggerConstants.LogLevel.ERROR,
+		enable
+	)
+	_log.debug("Logger updated. Enable: {0}", [enable])
 	if _manager_data:
 		_manager_data.set_logger(_log)
 

@@ -23,7 +23,7 @@ extends Node
 
 # ------------- [Private Variable] -------------
 var _data: SMgrData
-var _log: SMgrLogBase
+var _log: DLoggerClass
 
 var _dirty_flag: bool = false:
 	set(value):
@@ -35,7 +35,7 @@ var _dirty_flag: bool = false:
 
 
 # ------------- [Callbacks] -------------
-func _init(p_data: SMgrData, ebus: SMgrEbusEditor, p_log: SMgrLogBase) -> void:
+func _init(p_data: SMgrData, ebus: SMgrEbusEditor, p_log: DLoggerClass) -> void:
 	assert(Engine.is_editor_hint(), "Editor-Only class")
 	assert(p_data != null, "SMgrData instance is required")
 
@@ -209,7 +209,7 @@ static func get_scene_path(id: Id) -> String:
 
 
 ## Updates the logger instance dynamically
-func set_logger(p_log: SMgrLogBase) -> void:
+func set_logger(p_log: DLoggerClass) -> void:
 	_log = p_log
 
 
