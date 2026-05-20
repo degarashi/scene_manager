@@ -21,18 +21,16 @@ func get_item_string() -> String:
 	return %entry_lineedit.text
 
 
+func set_count(count: int) -> void:
+	%count_label.text = "(%d)" % count
+
+
 func _on_remove_button_up() -> void:
 	on_remove.emit(_opt_val)
 
 
 func _on_jump_button_up() -> void:
 	_jump_to_path()
-
-
-func _on_entry_lineedit_gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-			_jump_to_path()
 
 
 func _jump_to_path() -> void:

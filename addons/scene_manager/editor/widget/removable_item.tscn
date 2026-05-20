@@ -27,9 +27,15 @@ icon = ExtResource("3_jump_icon")
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-mouse_default_cursor_shape = 2
 editable = false
+
+[node name="count_label" type="Label" parent="." unique_id=987654321]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.65, 0.65, 1)
+theme_override_font_sizes/font_size = 14
+text = "(0)"
+vertical_alignment = 1
 
 [connection signal="button_up" from="remove_button" to="." method="_on_remove_button_up"]
 [connection signal="button_up" from="jump_button" to="." method="_on_jump_button_up"]
-[connection signal="gui_input" from="entry_lineedit" to="." method="_on_entry_lineedit_gui_input"]

@@ -298,9 +298,10 @@ func _remove_include_path(item: SMgrRemovableItem) -> void:
 	_manager_data.remove_include_path(item_ent)
 
 
-func _add_include_item(path: String) -> void:
+func _add_include_item(path: String, count: int) -> void:
 	var item: SMgrRemovableItem = _INCLUDE_ITEM_SCENE.instantiate()
 	item.prepare(path, item)
+	item.set_count(count)
 	_AF.connect_if_not_connected(item.on_remove, _remove_include_path)
 	_include_path_list.add_child(item)
 
@@ -309,8 +310,15 @@ func _reload_ui_includes() -> void:
 	for child in _include_path_list.get_children():
 		_remove_node_safely(child)
 
-	for path in _manager_data.get_data().get_include_list():
-		_add_include_item(path)
+	var data := _manager_data.get_data()
+	var all_scenes := data.get_scenes_all()
+
+	for path in data.get_include_list():
+		var count := 0
+		for sc in all_scenes:
+			if sc.path.begins_with(path):
+				count += 1
+		_add_include_item(path, count)
 
 
 func _on_category_remove(category_id: int) -> void:
