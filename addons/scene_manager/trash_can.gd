@@ -12,6 +12,15 @@ func _init() -> void:
 
 
 # ------------- [Public Method] -------------
+## Immediately frees all pending nodes in the trash can.
+## Call this before adding a new scene instance to prevent
+## duplicate nodes from coexisting for a single frame.
+func flush() -> void:
+	for child in get_children():
+		if is_instance_valid(child):
+			child.free()
+
+
 ## Moves the node to the trash can, frees its name, and then calls queue_free.
 func collect(target_node: Node) -> void:
 	if not is_instance_valid(target_node):

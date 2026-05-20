@@ -292,6 +292,9 @@ func switch_to_scene(
 
 	# Remove existing layers before setting up the new scene
 	_ebus.process_scene_layer.emit(_remove_node_safely)
+	# Immediately free trashed nodes so the old and new instances
+	# never coexist in the tree (even for a single frame).
+	_trash_can.flush()
 
 	# Update history stack (only for new scene transitions)
 	if not is_reloading and add_to_back and _current_scene_enum != Scenes.Id.NONE:
@@ -574,6 +577,7 @@ func activate_prepared_scene() -> Node:
 				if sc.scene_id != _reserved.scene_id:
 					_remove_node_safely(sc)
 		)
+		_trash_can.flush()
 
 		# Now that the old scene is gone, revert the layer name to its intended original name
 		layer.name = _AF.from_tmp_name(layer.name)
