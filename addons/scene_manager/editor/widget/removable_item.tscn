@@ -1,7 +1,8 @@
-[gd_scene format=3 uid="uid://ciaqe7l3hugns"]
+[gd_scene load_steps=4 format=3 uid="uid://ciaqe7l3hugns"]
 
 [ext_resource type="Script" uid="uid://ch4kd34yt31v6" path="res://addons/scene_manager/editor/widget/removable_item.gd" id="1_4r8to"]
 [ext_resource type="Texture2D" uid="uid://36xdho566h28" path="res://addons/scene_manager/icons/ImportFail.svg" id="2_drn60"]
+[ext_resource type="Texture2D" uid="uid://f43o6i6g335y" path="res://addons/scene_manager/icons/Folder.svg" id="3_jump_icon"]
 
 [node name="item" type="HBoxContainer" unique_id=1168268338]
 offset_top = 24.0
@@ -12,12 +13,23 @@ script = ExtResource("1_4r8to")
 [node name="remove_button" type="Button" parent="." unique_id=699595209]
 custom_minimum_size = Vector2(28, 28)
 layout_mode = 2
+tooltip_text = "Remove include path"
 icon = ExtResource("2_drn60")
+
+[node name="jump_button" type="Button" parent="." unique_id=123456789]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+tooltip_text = "Reveal in FileSystem"
+icon = ExtResource("3_jump_icon")
 
 [node name="entry_lineedit" type="LineEdit" parent="." unique_id=225258748]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+mouse_default_cursor_shape = 2
 editable = false
 
 [connection signal="button_up" from="remove_button" to="." method="_on_remove_button_up"]
+[connection signal="button_up" from="jump_button" to="." method="_on_jump_button_up"]
+[connection signal="gui_input" from="entry_lineedit" to="." method="_on_entry_lineedit_gui_input"]

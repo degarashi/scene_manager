@@ -23,3 +23,22 @@ func get_item_string() -> String:
 
 func _on_remove_button_up() -> void:
 	on_remove.emit(_opt_val)
+
+
+func _on_jump_button_up() -> void:
+	_jump_to_path()
+
+
+func _on_entry_lineedit_gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+			_jump_to_path()
+
+
+func _jump_to_path() -> void:
+	var path := get_item_string()
+	if path == "":
+		return
+
+	if Engine.is_editor_hint():
+		EditorInterface.get_file_system_dock().navigate_to_path(path)
