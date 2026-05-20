@@ -34,8 +34,12 @@ Auto-complete node incorporated and modified from https://github.com/Lenrow/line
 * **Scene History & Navigation**
   - Ring buffer-based scene history (go back to previous scenes)
   - Offset-based history navigation
-  - Configurable history buffer size
   - Reset Scene Manager to clear history and assume current scene as first
+
+* **Interface Support**
+  - `ISceneInitializer` - Pass parameters to new scenes during initialization
+  - `IFadeInNotify` - Receive notification when fade-in transition finishes
+  - `IFadeOutNotify` - Receive notification when fade-out transition starts/ends
 
 * **Visual Transitions**
   - Built-in fade in/fade out to black
@@ -169,7 +173,10 @@ SceneManager.load_percent_changed.connect(func(percent: int):
 )
 
 SceneManager.load_finished.connect(func():
+    # Instantiate the loaded scene (hidden)
     SceneManager.instantiate_async_result()
+    # When ready, activate the scene to perform the transition
+    SceneManager.activate_prepared_scene()
 )
 
 # Start async load (with transition scene)
@@ -178,7 +185,7 @@ SceneManager.load_scene_with_transition(
     Scenes.Id.LOADING_SCREEN,
     true,
     SMgrInstance.DuplicateNameMode.WARN_AND_SKIP,
-    options
+    SceneLoadOptions.new()
 )
 ```
 
@@ -209,6 +216,16 @@ SceneManager.exit_game(fade_time)
 # Get root node of the current main scene
 var current_node = SceneManager.get_current_scene_node()
 
+# Unload a specific scene by its node name
+SceneManager.unload_scene_by_name("UI")
+
+# Get reserved scene info during async load
+var reserved_id = SceneManager.get_reserved_scene()
+var reserved_options = SceneManager.get_reserved_load_option()
+
+# Access raw scene database
+var db = SceneManager.get_scene_data()
+
 # Connect to transition completion
 SceneManager.scene_transition_completed.connect(func(scene_id: Scenes.Id):
     print("Scene loaded: ", scene_id)
@@ -227,6 +244,11 @@ Customize scene loading behavior with `SceneLoadOptions`:
 @export var transition_layer: int = -1   # Transition layer
 @export var params: Variant = null       # Parameters to pass to the new scene
 @export var clickable: bool = false      # Block input during transition
+
+# Callbacks
+var pre_wrap_cb: Callable                # Called before layer is added to tree
+var pre_node_cb: Callable                # Called before scene node is added to layer
+var scene_loaded_cb: Callable            # Called after scene is instantiated
 ```
 
 ### Scene Loading Modes
@@ -287,7 +309,10 @@ func _on_load_progress(percent: int):
     progress_label.text = "%d%%" % percent
 
 func _on_load_finished():
+    # Instantiate the loaded scene (placed behind the scenes for now)
     SceneManager.instantiate_async_result()
+    # Finalize the transition
+    SceneManager.activate_prepared_scene()
 ```
 
 ### Additive UI Loading
@@ -320,6 +345,8 @@ func _on_restart_pressed():
 
 The Scene Manager includes project-level settings to customize behavior:
 
-- **Scene Manager Path** - Where to save the auto-generated `scenes.gd` file (default: `res://`)
-- **Default Fade Time** - Default fade duration for transitions (default: 1.0 seconds)
-- **History Buffer Size** - How many scenes to keep in history (default: 10)
+- **Scene Manager Path** - Path to the auto-generated `scenes.gd` file (default: `res://scene_manager_data/scenes.gd`)
+- **Default Play Out Time** - Default fade out duration (default: 1.0s)
+- **Default Play In Time** - Default fade in duration (default: 1.0s)
+- **Transition Layer** - Z-index for the transition layer (default: 100)
+- **Enable Log** - Whether to enable debug logging

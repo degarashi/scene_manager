@@ -34,8 +34,12 @@ Godot 4向けの包括的なシーンライフサイクル管理アドオンで�
 * **シーン履歴とナビゲーション**
   - リングバッファベースのシーン履歴（前のシーンに戻る）
   - オフセットベースの履歴ナビゲーション
-  - 構成可能な履歴バッファサイズ
   - シーンマネージャをリセットして履歴をクリアし、現在のシーンを最初として想定
+
+* **インターフェースサポート**
+  - `ISceneInitializer` - 初期化中に新しいシーンにパラメータを渡す
+  - `IFadeInNotify` - フェードイン・トランジション終了時に通知を受け取る
+  - `IFadeOutNotify` - フェードアウト・トランジション開始/終了時に通知を受け取る
 
 * **ビジュアルトランジション**
   - 組み込みのフェードイン/フェードアウト（黒）
@@ -169,7 +173,10 @@ SceneManager.load_percent_changed.connect(func(percent: int):
 )
 
 SceneManager.load_finished.connect(func():
+    # ロードされたシーンをインスタンス化（非表示）
     SceneManager.instantiate_async_result()
+    # 準備ができたら、シーンをアクティブにしてトランジションを実行
+    SceneManager.activate_prepared_scene()
 )
 
 # 非同期ローディングを開始（トランジションシーン付き）
@@ -178,7 +185,7 @@ SceneManager.load_scene_with_transition(
     Scenes.Id.LOADING_SCREEN,
     true,
     SMgrInstance.DuplicateNameMode.WARN_AND_SKIP,
-    options
+    SceneLoadOptions.new()
 )
 ```
 
@@ -206,8 +213,18 @@ var count: int = SceneManager.get_history_count()
 # フェード付きでゲームを終了
 SceneManager.exit_game(fade_time)
 
-# 現在のシーンノードを取得
+# 現在のメインシーンのルートノードを取得
 var current_node = SceneManager.get_current_scene_node()
+
+# ノード名で特定のシーンをアンロード
+SceneManager.unload_scene_by_name("UI")
+
+# 非同期ロード中に予約されたシーン情報を取得
+var reserved_id = SceneManager.get_reserved_scene()
+var reserved_options = SceneManager.get_reserved_load_option()
+
+# 生のシーンデータベースにアクセス
+var db = SceneManager.get_scene_data()
 
 # トランジション完了に接続
 SceneManager.scene_transition_completed.connect(func(scene_id: Scenes.Id):
@@ -227,6 +244,11 @@ SceneManager.scene_transition_completed.connect(func(scene_id: Scenes.Id):
 @export var transition_layer: int = -1   # トランジションレイヤー
 @export var params: Variant = null       # シーンに渡すパラメータ
 @export var clickable: bool = false      # トランジション中に入力をブロックするか
+
+# コールバック
+var pre_wrap_cb: Callable                # レイヤーがツリーに追加される前に呼び出される
+var pre_node_cb: Callable                # シーンノードがレイヤーに追加される前に呼び出される
+var scene_loaded_cb: Callable            # シーンがインスタンス化された後に呼び出される
 ```
 
 ### シーンローディングモード (Scene Loading Modes)
@@ -287,7 +309,10 @@ func _on_load_progress(percent: int):
     progress_label.text = "%d%%" % percent
 
 func _on_load_finished():
+    # ロードされたシーンをインスタンス化（当面は背後に配置）
     SceneManager.instantiate_async_result()
+    # トランジションを完了
+    SceneManager.activate_prepared_scene()
 ```
 
 ### 加算的UIローディング
@@ -320,6 +345,8 @@ func _on_restart_pressed():
 
 シーンマネージャには動作をカスタマイズするためのプロジェクトレベルの設定が含まれています：
 
-- **Scene Manager Path** - 自動生成される `scenes.gd` ファイルの保存先（デフォルト：`res://`）
-- **Default Fade Time** - トランジションのデフォルトフェード時間（デフォルト：1.0秒）
-- **History Buffer Size** - 履歴に保持するシーン数（デフォルト：10）
+- **Scene Manager Path** - 自動生成される `scenes.gd` ファイルのパス（デフォルト：`res://scene_manager_data/scenes.gd`）
+- **Default Play Out Time** - デフォルトのフェードアウト時間（デフォルト：1.0秒）
+- **Default Play In Time** - デフォルトのフェードイン時間（デフォルト：1.0秒）
+- **Transition Layer** - トランジションレイヤーのZインデックス（デフォルト：100）
+- **Enable Log** - デバッグログを有効にするかどうか
