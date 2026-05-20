@@ -40,6 +40,11 @@ func _update_sub_section(target_sec: SMgrSection, signal_obj: Signal) -> void:
 	if recv.is_empty():
 		return
 
+	if not _search_filter.is_empty():
+		recv = recv.filter(
+			func(sc: SMgrDataScene): return _search_filter.to_lower() in sc.name.to_lower()
+		)
+
 	recv.sort_custom(
 		func(a: SMgrDataScene, b: SMgrDataScene) -> bool:
 			return a.name.naturalnocasecmp_to(b.name) < 0

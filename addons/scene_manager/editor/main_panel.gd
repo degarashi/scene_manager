@@ -17,6 +17,7 @@ const _ICON_COLLAPSE_BUTTON = preload("uid://bd6ob6pgam1gt")
 var _ps := preload("uid://dn6eh4s0h8jhi")
 var _manager_data: SMgrDataEditor
 var _log: SMgrLogBase
+var _search_debouncer: Debouncer
 ## For file monitoring
 var _last_modified_time: int = 0
 var _connect_ebus: bool = false
@@ -44,6 +45,7 @@ var _connect_ebus: bool = false
 @onready var _preview_image: TextureRect = %PreviewImage
 @onready var _sub_viewport: SubViewport = %SubViewport
 @onready var _play_transition_button: Button = %PlayTransitionButton
+@onready var _search_bar: LineEdit = %search_bar
 @onready var _notification_dialog: AcceptDialog = %NotificationDialog
 
 # --- Drop Data ---
@@ -83,6 +85,12 @@ func _ready() -> void:
 	if Engine.is_editor_hint():
 		var fs := EditorInterface.get_resource_filesystem()
 		fs.filesystem_changed.connect(_on_filesystem_changed)
+
+	_search_bar.text_changed.connect(_on_search_text_changed)
+
+	_search_debouncer = Debouncer.new(0.15)
+	_search_debouncer.timeout.connect(_do_search)
+	add_child(_search_debouncer)
 
 	_update_last_modified_time()
 
@@ -356,6 +364,7 @@ func _reload_ui_scenes() -> void:
 			cat_gui = scene.instantiate()
 			_category_tab_cont.add_child(cat_gui)
 			cat_gui.activate(id)
+			cat_gui.set_search_filter(_search_bar.text)
 			_AF.connect_if_not_connected(cat_gui.on_remove, _on_category_remove)
 			# The widget handles its own internal updates, so no explicit refresh command is needed here.
 
@@ -512,3 +521,15 @@ func _on_refresh_uid_button_button_up() -> void:
 
 	_reload_data()
 	_refresh_ui()
+
+
+func _on_search_text_changed(_new_text: String) -> void:
+	_search_debouncer.call_debounced()
+
+
+func _do_search() -> void:
+	var filter := _search_bar.text
+	for child in _category_tab_cont.get_children():
+		var cat_gui := child as SMgrCategoryGUIBase
+		if cat_gui:
+			cat_gui.set_search_filter(filter)

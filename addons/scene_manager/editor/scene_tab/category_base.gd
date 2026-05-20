@@ -13,10 +13,17 @@ var _category_id: int
 @onready var _subsection_cont: VBoxContainer = %container
 @onready var _remove_list_button: Button = %remove_list
 @onready var _unsaved_label: Label = %unsaved_label
+var _search_filter: String = ""
 
 
 func _activate() -> void:
 	pass
+
+
+func set_search_filter(filter: String) -> void:
+	if _search_filter != filter:
+		_search_filter = filter
+		_refresh_ui()
 
 
 func activate(category_id: int) -> void:
