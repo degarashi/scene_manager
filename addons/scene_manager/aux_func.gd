@@ -1,7 +1,12 @@
 extends Object
 
 # ------------- [Static Variable] -------------
-static var _log := DLoggerClass.new("Scene Manager")
+static var _log: DLoggerClass
+
+static func _get_log() -> DLoggerClass:
+	if not _log:
+		_log = DLoggerClass.new("Scene Manager")
+	return _log
 
 
 # ------------- [Public Method] -------------
@@ -61,12 +66,12 @@ static func convert_to_array_string(src: Array) -> Array[String]:
 ## @param path Target resource file path
 static func change_resource_uid(path: String) -> void:
 	if not FileAccess.file_exists(path):
-		_log.error("File does not exist: {0}", [path])
+		_get_log().error("File does not exist: {0}", [path])
 		return
 
 	var res := ResourceLoader.load(path)
 	if not res:
-		_log.error("Failed to load resource: {0}", [path])
+		_get_log().error("Failed to load resource: {0}", [path])
 		return
 
 	# Change UID
@@ -79,7 +84,7 @@ static func change_resource_uid(path: String) -> void:
 	# Save to temp
 	var save_error := ResourceSaver.save(res, tmp_path)
 	if save_error != OK:
-		_log.error("Save failed. Code: {0}. Path: {1}", [save_error, tmp_path])
+		_get_log().error("Save failed. Code: {0}. Path: {1}", [save_error, tmp_path])
 		return
 
 	var dir := DirAccess.open("res://")
@@ -110,6 +115,6 @@ static func change_resource_uid(path: String) -> void:
 				dir.remove(rel_tmp_uid_path)
 
 		if rename_error != OK:
-			_log.error("Rename failed: {0}", [rename_error])
+			_get_log().error("Rename failed: {0}", [rename_error])
 	else:
-		_log.error("DirAccess failed.")
+		_get_log().error("DirAccess failed.")
