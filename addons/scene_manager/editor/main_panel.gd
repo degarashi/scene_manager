@@ -472,10 +472,13 @@ func _validate_include_path() -> void:
 			or FileAccess.file_exists(new_text) and new_text.begins_with("res://")
 		):
 			_add_include_button.disabled = false
+			_address_edit.remove_theme_color_override("font_color")
 		else:
 			_add_include_button.disabled = true
+			_address_edit.add_theme_color_override("font_color", Color.RED)
 	else:
 		_add_include_button.disabled = true
+		_address_edit.remove_theme_color_override("font_color")
 
 
 func _on_add_category_button_up() -> void:
