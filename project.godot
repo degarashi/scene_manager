@@ -12,7 +12,7 @@ config_version=5
 
 config/name="Scene Manager"
 run/main_scene="uid://blee3apqqctiw"
-config/features=PackedStringArray("4.6")
+config/features=PackedStringArray("4.7")
 boot_splash/show_image=false
 boot_splash/stretch_mode=0
 boot_splash/use_filter=false
