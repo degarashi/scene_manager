@@ -24,6 +24,7 @@ extends Node
 # ------------- [Private Variable] -------------
 var _data: SMgrData
 var _log: DLoggerClass
+var _file_watcher: DFileWatcher
 
 var _dirty_flag: bool = false:
 	set(value):
@@ -53,8 +54,8 @@ func _init(p_data: SMgrData, ebus: SMgrEbusEditor, p_log: DLoggerClass) -> void:
 	_connect_ebus(ebus)
 
 
-## Callback triggered when the filesystem changes (file added, removed, moved, etc.)
-func _on_filesystem_changed() -> void:
+## Callback triggered when the watched files change
+func _on_files_changed(_files: PackedStringArray) -> void:
 	sync_with_filesystem()
 
 
@@ -66,13 +67,65 @@ func _on_data_changed() -> void:
 
 # ------------- [Private Method] -------------
 func _setup_filesystem_monitoring() -> void:
-	var fs := EditorInterface.get_resource_filesystem()
-	_AF.connect_if_not_connected(fs.filesystem_changed, _on_filesystem_changed)
+	_file_watcher = DFileWatcher.new(null, _get_watch_files)
+	_file_watcher.files_changed.connect(_on_files_changed)
 
 
 func _cleanup_filesystem_monitoring() -> void:
+	if _file_watcher:
+		_file_watcher.destroy()
+		_file_watcher = null
+
+
+func _get_watch_files() -> PackedStringArray:
+	var files := PackedStringArray()
+	var includes := _data.get_include_list()
+	if includes.is_empty():
+		return files
+
 	var fs := EditorInterface.get_resource_filesystem()
-	_AF.disconnect_if_connected(fs.filesystem_changed, _on_filesystem_changed)
+	if not fs:
+		return files
+	var root := fs.get_filesystem()
+	if not root:
+		return files
+
+	_collect_tscn_files_in_includes(root, includes, files)
+	return files
+
+
+func _collect_tscn_files_in_includes(dir: EditorFileSystemDirectory, includes: Array[String], files: PackedStringArray) -> void:
+	var dir_path := dir.get_path()
+	var dir_under_include := false
+	var include_under_dir := false
+	for inc in includes:
+		if dir_path.begins_with(inc):
+			dir_under_include = true
+			break
+		if inc.begins_with(dir_path):
+			include_under_dir = true
+
+	if not dir_under_include and not include_under_dir:
+		return
+
+	# Collect files
+	for i in range(dir.get_file_count()):
+		var file_path := dir.get_file_path(i)
+		if file_path.ends_with(".tscn"):
+			if dir_under_include:
+				files.append(file_path)
+			else:
+				# Check if the specific file is an include path (since include paths can be specific files)
+				for inc in includes:
+					if file_path == inc:
+						files.append(file_path)
+						break
+
+	# Recurse
+	for i in range(dir.get_subdir_count()):
+		var subdir := dir.get_subdir(i)
+		if subdir:
+			_collect_tscn_files_in_includes(subdir, includes, files)
 
 
 ## Registers a scene file based on its UID

@@ -19,7 +19,7 @@ var _manager_data: SMgrDataEditor
 var _log: DLoggerClass
 var _search_debouncer: Debouncer
 ## For file monitoring
-var _last_modified_time: int = 0
+var _scene_file_watcher: DFileWatcher
 var _connect_ebus: bool = false
 
 @onready var _save_delay_timer: Timer = %SaveDelayTimer
@@ -83,16 +83,14 @@ func _ready() -> void:
 
 	# subscribe to editor file system changes
 	if Engine.is_editor_hint():
-		var fs := EditorInterface.get_resource_filesystem()
-		fs.filesystem_changed.connect(_on_filesystem_changed)
+		_scene_file_watcher = DFileWatcher.new(get_tree(), func() -> PackedStringArray: return PackedStringArray([_ps.scene_path]))
+		_scene_file_watcher.files_changed.connect(_on_scene_file_changed)
 
 	_search_bar.text_changed.connect(_on_search_text_changed)
 
 	_search_debouncer = Debouncer.new(0.15)
 	_search_debouncer.timeout.connect(_do_search)
 	add_child(_search_debouncer)
-
-	_update_last_modified_time()
 
 
 func _remove_node_safely(node: Node) -> void:
@@ -103,19 +101,14 @@ func _remove_node_safely(node: Node) -> void:
 func _exit_tree() -> void:
 	_disconnect_ebus()
 	_cleanup_manager_data()
+	if _scene_file_watcher:
+		_scene_file_watcher.destroy()
+		_scene_file_watcher = null
 
 
-func _on_filesystem_changed() -> void:
-	var current_time := FileAccess.get_modified_time(_ps.scene_path)
-	if current_time > _last_modified_time:
-		_last_modified_time = current_time
-		_reload_data()
-		_refresh_ui()
-
-
-func _update_last_modified_time() -> void:
-	if FileAccess.file_exists(_ps.scene_path):
-		_last_modified_time = FileAccess.get_modified_time(_ps.scene_path)
+func _on_scene_file_changed(_files: PackedStringArray) -> void:
+	_reload_data()
+	_refresh_ui()
 
 
 func _on_dirty_flag_changed(dirty: bool) -> void:
@@ -185,9 +178,7 @@ func _on_drop_confirm_canceled() -> void:
 
 
 func _on_save_button_button_up() -> void:
-	_manager_data.save_data(_ps.scene_path, _ps.scene_data_path)
-	# Update the time immediately after saving as it is a self-initiated change
-	_update_last_modified_time()
+	_do_save()
 
 
 func _trigger_save() -> void:
@@ -201,8 +192,12 @@ func _do_save_when_auto() -> void:
 
 
 func _do_save() -> void:
+	if _scene_file_watcher:
+		_scene_file_watcher.set_syncing(true)
 	_manager_data.save_data(_ps.scene_path, _ps.scene_data_path)
-	_update_last_modified_time()
+	if _scene_file_watcher:
+		_scene_file_watcher.update_watched_state()
+		_scene_file_watcher.set_syncing(false)
 
 
 func _on_category_tab_container_tab_changed(tab: int) -> void:
@@ -426,7 +421,8 @@ func _reload_data() -> void:
 	_manager_data = SMgrDataEditor.new(raw_data, _ebus_editor, _log)
 
 	_manager_data.sync_with_filesystem()
-	_update_last_modified_time()
+	if _scene_file_watcher:
+		_scene_file_watcher.update_watched_state()
 	_AF.connect_if_not_connected(_manager_data.data_changed_debounced, _refresh_ui)
 	_AF.connect_if_not_connected(_manager_data.on_dirty_flag_changed, _on_dirty_flag_changed)
 	_AF.connect_if_not_connected(_manager_data.data_changed_debounced, _on_data_changed)
