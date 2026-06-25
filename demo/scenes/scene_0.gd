@@ -58,5 +58,13 @@ func _on_load_additional_button_button_up() -> void:
 		Scenes.Id.ADDITIONAL_0, SMgrInstance.DuplicateNameMode.WARN_AND_SKIP, opts
 	)
 
+
+func _on_slide_transition_button_button_up() -> void:
+	var opts := SceneLoadOptions.new()
+	opts.transition_id = Scenes.Id.SLIDE_TRANSITIONER
+	opts.play_out_time = 0.6
+	opts.play_in_time = 0.6
+	SceneManager.switch_to_scene(Scenes.Id.SCENE_1, true, opts)
+
 # --- INTERFACE IMPLEMENTER (AUTO-GENERATED) ---
 # --- END INTERFACE IMPLEMENTER ---

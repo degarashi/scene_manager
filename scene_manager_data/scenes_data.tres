@@ -52,9 +52,15 @@ name = "scene_base"
 path = "res://demo/scenes/scene_base.tscn"
 uid = 286306938834776095
 
+[sub_resource type="Resource" id="Resource_x8k9m"]
+script = ExtResource("2_7yiq2")
+name = "slide_transitioner"
+path = "res://demo/transitions/slide_transitioner.tscn"
+uid = 9123456789012345678
+
 [resource]
 script = ExtResource("1_qt8cn")
-_include_list = Array[String](["res://demo/scenes", "res://demo/additional_scene"])
+_include_list = Array[String](["res://demo/scenes", "res://demo/additional_scene", "res://demo/transitions"])
 _scenes = Dictionary[int, ExtResource("2_7yiq2")]({
 286306938834776095: SubResource("Resource_smaxp"),
 3167048368848614594: SubResource("Resource_g44c2"),
@@ -63,5 +69,6 @@ _scenes = Dictionary[int, ExtResource("2_7yiq2")]({
 5390443888696816947: SubResource("Resource_gxggk"),
 5495634729037908381: SubResource("Resource_7yiq2"),
 7784575442615425582: SubResource("Resource_xfgj7"),
-8019339775020489802: SubResource("Resource_qubph")
+8019339775020489802: SubResource("Resource_qubph"),
+9123456789012345678: SubResource("Resource_x8k9m")
 })
