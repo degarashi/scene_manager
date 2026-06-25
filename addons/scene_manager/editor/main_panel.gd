@@ -57,7 +57,6 @@ var _selected_scene_id: int = ResourceUID.INVALID_ID
 
 
 func _ebus_get_scene_enums_as_string(recv: Array[String]) -> void:
-	assert(recv.is_empty())
 	var scene_all := _manager_data.get_data().get_scenes_all()
 	for scene in scene_all:
 		recv.append(SceneManagerUtils.sanitize_as_enum_string(scene.name))

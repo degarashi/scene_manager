@@ -95,7 +95,9 @@ func _ready() -> void:
 
 	# SMgrData is a Resource, so read it with the loader
 	_scene_db = load(_PS.scene_data_path)
-	assert(_scene_db != null, "Scene Manager: Failed to load scene database resource.")
+	if _scene_db == null:
+		_log.error("Scene Manager: Failed to load scene database resource.")
+		return
 
 	_layer_mgr = SMgrLayerManager.new(_scene_db, _ebus, _log)
 	_transition_service = SMgrTransitionService.new(_scene_db, _log, _transitioner_source)
@@ -183,7 +185,8 @@ func _on_initial_setup() -> void:
 
 
 func _remove_node_safely(target_node: Node) -> void:
-	assert(target_node != null, "Scene Manager: target_node to remove is null.")
+	if not is_instance_valid(target_node):
+		return
 	_trash_can.collect(target_node)
 
 
@@ -494,8 +497,12 @@ func load_scene_with_transition(
 	opt_play_in := SceneLoadOptions.new(),
 	opt_activate := opt_play_in
 ) -> void:
-	assert(next_scene != Scenes.Id.NONE, "Scene Manager: next_scene cannot be NONE.")
-	assert(transition_scene != Scenes.Id.NONE, "Scene Manager: transition_scene cannot be NONE.")
+	if next_scene == Scenes.Id.NONE:
+		_log.error("Scene Manager: next_scene cannot be NONE.")
+		return
+	if transition_scene == Scenes.Id.NONE:
+		_log.error("Scene Manager: transition_scene cannot be NONE.")
+		return
 	if not _ebus:
 		_log.error("load_scene_with_transition: _ebus is not set.")
 		return

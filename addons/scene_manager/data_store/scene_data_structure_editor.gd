@@ -39,7 +39,9 @@ var _dirty_flag: bool = false:
 # ------------- [Callbacks] -------------
 func _init(p_data: SMgrData, ebus: SMgrEbusEditor, p_log: DLoggerClass) -> void:
 	assert(Engine.is_editor_hint(), "Editor-Only class")
-	assert(p_data != null, "SMgrData instance is required")
+	if p_data == null:
+		push_error("SMgrDataEditor: SMgrData instance is required.")
+		return
 
 	_data = p_data
 	_log = p_log
