@@ -97,12 +97,13 @@ func _update_task(task: _LoadTask) -> bool:
 
 	match status:
 		ResourceLoader.THREAD_LOAD_LOADED:
-			_finalize_task(task)
+			var res := ResourceLoader.load_threaded_get(task.path)
+			_finalize_task(task, res)
 			return true
 
 		ResourceLoader.THREAD_LOAD_FAILED, ResourceLoader.THREAD_LOAD_INVALID_RESOURCE:
 			_log.warn("ResourceLoaderMgr: Load failed or invalid resource: {0}", [task.path])
-			_finalize_task(task, null)  # Still finalize to notify batches of "completion" (even if null)
+			_finalize_task(task, null)
 			return true
 
 		ResourceLoader.THREAD_LOAD_IN_PROGRESS:
@@ -111,11 +112,7 @@ func _update_task(task: _LoadTask) -> bool:
 	return false
 
 
-func _finalize_task(task: _LoadTask, res: Resource = null) -> void:
-	if res == null and task.status == ResourceLoader.THREAD_LOAD_LOADED:
-		res = ResourceLoader.load_threaded_get(task.path)
-
-	# Emit individual completion signal
+func _finalize_task(task: _LoadTask, res: Resource) -> void:
 	load_completed.emit(task.path, res)
 
 	# Execute individual callbacks
