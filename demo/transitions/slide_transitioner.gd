@@ -1,3 +1,4 @@
+@tool
 class_name SlideTransitioner
 extends ScreenTransitioner
 
@@ -6,9 +7,7 @@ extends ScreenTransitioner
 
 
 func set_clickable(clickable: bool) -> void:
-	_slide.mouse_filter = (
-		Control.MOUSE_FILTER_IGNORE if clickable else Control.MOUSE_FILTER_STOP
-	)
+	_slide.mouse_filter = (Control.MOUSE_FILTER_IGNORE if clickable else Control.MOUSE_FILTER_STOP)
 
 
 func set_layer(layer: int) -> void:
@@ -20,12 +19,14 @@ func play_out(speed: float) -> void:
 		return
 	_is_playing = true
 
-	var viewport_size := get_viewport_rect().size
+	var viewport_size := get_viewport().get_visible_rect().size
 	_slide.size = viewport_size
 	_slide.position = Vector2(viewport_size.x, 0)
 
 	var tween := create_tween()
-	tween.tween_property(_slide, "position:x", 0.0, speed).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
+	tween.tween_property(_slide, "position:x", 0.0, speed).set_ease(Tween.EASE_OUT).set_trans(
+		Tween.TRANS_CUBIC
+	)
 	await tween.finished
 	_is_playing = false
 
@@ -35,11 +36,16 @@ func play_in(speed: float) -> void:
 		return
 	_is_playing = true
 
-	var viewport_size := get_viewport_rect().size
+	var viewport_size := get_viewport().get_visible_rect().size
 	_slide.size = viewport_size
 	_slide.position = Vector2(0, 0)
 
 	var tween := create_tween()
-	tween.tween_property(_slide, "position:x", -viewport_size.x, speed).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_CUBIC)
+	(
+		tween
+		. tween_property(_slide, "position:x", -viewport_size.x, speed)
+		. set_ease(Tween.EASE_IN)
+		. set_trans(Tween.TRANS_CUBIC)
+	)
 	await tween.finished
 	_is_playing = false
