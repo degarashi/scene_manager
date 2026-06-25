@@ -1,14 +1,13 @@
 class_name SMgrTrashCan
-extends Control
+extends Node
 ## Management class for safely deleting unnecessary scene nodes.
 
 
 # ------------- [Callbacks] -------------
 func _init() -> void:
 	name = "SMgrTrashCan"
-	# Stop processing and hide to minimize load
+	# Stop processing to minimize load
 	process_mode = Node.PROCESS_MODE_DISABLED
-	visible = false
 
 
 # ------------- [Public Method] -------------
