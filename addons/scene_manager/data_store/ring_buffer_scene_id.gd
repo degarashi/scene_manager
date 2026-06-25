@@ -4,7 +4,7 @@ const _RING_BUFFER = preload("./ring_buffer.gd")
 var _buffer := _RING_BUFFER.new()
 
 
-func _init(capacity: Scenes.Id = _RING_BUFFER.DEFAULT_RING_SIZE) -> void:
+func _init(capacity: int = _RING_BUFFER.DEFAULT_RING_SIZE) -> void:
 	_buffer.set_capacity(capacity)
 
 
@@ -17,11 +17,11 @@ func pop() -> Scenes.Id:
 	return v if v != null else Scenes.Id.NONE
 
 
-func size() -> Scenes.Id:
+func size() -> int:
 	return _buffer.size()
 
 
-func capacity() -> Scenes.Id:
+func capacity() -> int:
 	return _buffer.capacity()
 
 
