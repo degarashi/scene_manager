@@ -2,8 +2,6 @@
 class_name SMgrCategoryData
 extends DebouncedResource
 
-const _DEBOUNCE_TIME = 0.3
-
 @export var name: String:
 	set(value):
 		if name != value:
@@ -43,7 +41,7 @@ const _DEBOUNCE_TIME = 0.3
 
 func _init(p_name: String = "") -> void:
 	# Initialize the debouncer inherited from DebouncedResource
-	_init_debouncer(_DEBOUNCE_TIME)
+	_init_debouncer(DEFAULT_DEBOUNCE_TIME)
 
 	# The property name's setter triggers emit_changed(),
 	# which in turn triggers the debouncer.

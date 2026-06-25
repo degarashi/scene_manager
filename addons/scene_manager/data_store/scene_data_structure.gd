@@ -2,8 +2,6 @@
 class_name SMgrData
 extends DebouncedResource
 
-const _DEBOUNCE_TIME = 0.3
-
 # ------------- [Exports] -------------
 ## List of directory paths to include
 @export var _include_list: Array[String]:
@@ -33,7 +31,7 @@ var _is_sorting: bool = false
 ## Initialize debouncer (connect signals)
 func _init() -> void:
 	# Initialize the debouncer inherited from DebouncedResource
-	_init_debouncer(_DEBOUNCE_TIME)
+	_init_debouncer(DEFAULT_DEBOUNCE_TIME)
 
 
 ## Common processing when any data changes are detected

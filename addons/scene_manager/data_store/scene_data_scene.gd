@@ -2,7 +2,6 @@
 class_name SMgrDataScene
 extends DebouncedResource
 
-const _DEBOUNCE_TIME = 0.3
 static var _log := DLoggerClass.new("Scene Manager")
 
 # ------------- [Exports] -------------
@@ -35,7 +34,7 @@ static var _log := DLoggerClass.new("Scene Manager")
 
 func _init() -> void:
 	# Initialize the debouncer inherited from DebouncedResource
-	_init_debouncer(_DEBOUNCE_TIME)
+	_init_debouncer(DEFAULT_DEBOUNCE_TIME)
 
 
 # ------------- [Static Helper Methods] -------------
