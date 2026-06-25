@@ -4,6 +4,10 @@ extends Node
 ## Helper class for the scene manager
 
 
+# ------------- [Private Static Variable] -------------
+static var _sanitize_regex: RegEx
+
+
 # ------------- [Public Method] -------------
 ## Returns the string form of the Scenes.Id enum.
 ##
@@ -37,9 +41,10 @@ static func sanitize_scene_name(scene_name: String) -> String:
 	if scene_name.is_empty():
 		return scene_name
 
-	var regex := RegEx.new()
-	regex.compile("[^a-zA-Z0-9_ -]")
-	scene_name = regex.sub(scene_name, "", true)
+	if not _sanitize_regex:
+		_sanitize_regex = RegEx.new()
+		_sanitize_regex.compile("[^a-zA-Z0-9_ -]")
+	scene_name = _sanitize_regex.sub(scene_name, "", true)
 
 	scene_name = scene_name.replace(" ", "_")
 	return scene_name
