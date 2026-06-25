@@ -37,7 +37,7 @@ func _enter_tree() -> void:
 		preload("uid://cpepbcd57iype")
 	)
 
-	_delay.call_deferred()
+	_setup_editor_panels.call_deferred()
 
 
 # Plugin uninstallation
@@ -71,14 +71,12 @@ func _disable_plugin() -> void:
 
 
 # ------------- [Private Method] -------------
-func _delay() -> void:
-	# --- main panel ---
+func _setup_editor_panels() -> void:
 	_main_panel = MAIN_PANEL_SCENE.instantiate()
 	_main_panel.name = MAIN_PANEL_NAME
 	_main_panel.prepare(true)
 	add_control_to_dock(EditorPlugin.DOCK_SLOT_RIGHT_UL, _main_panel)
 
-	# [scene_inspector_plugin.gd]
 	_inspector = preload("uid://duwd2dwcofsrt").new()
 	add_inspector_plugin(_inspector)
 
