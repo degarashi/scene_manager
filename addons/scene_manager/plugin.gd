@@ -37,7 +37,7 @@ func _enter_tree() -> void:
 		preload("uid://cpepbcd57iype")
 	)
 
-	get_tree().create_timer(1.0).timeout.connect(_delay)
+	_delay.call_deferred()
 
 
 # Plugin uninstallation
