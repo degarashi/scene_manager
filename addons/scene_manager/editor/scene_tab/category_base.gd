@@ -46,6 +46,28 @@ func activate(category_id: int) -> void:
 	_refresh_ui()
 
 
+func _populate_section(section: SMgrSection, scenes: Array[SMgrDataScene]) -> void:
+	section.clear_list()
+
+	if scenes.is_empty():
+		return
+
+	if not _search_filter.is_empty():
+		scenes = scenes.filter(
+			func(sc: SMgrDataScene): return _search_filter.to_lower() in sc.name.to_lower()
+		)
+
+	scenes.sort_custom(
+		func(a: SMgrDataScene, b: SMgrDataScene) -> bool:
+			return a.name.naturalnocasecmp_to(b.name) < 0
+	)
+
+	for sc: SMgrDataScene in scenes:
+		var item: SMgrSceneItem = _SCENE_ITEM.instantiate()
+		section.add_item(item)
+		item.activate(sc.uid)
+
+
 func _refresh_ui() -> void:
 	pass
 

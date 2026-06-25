@@ -13,26 +13,6 @@ func _ready() -> void:
 
 
 func _refresh_ui() -> void:
-	_subs.clear_list()
-
-	# get data by a signal
 	var recv: Array[SMgrDataScene]
 	_ebus_editor.get_scenes.emit(recv, _category_id)
-
-	if recv.is_empty():
-		return
-
-	if not _search_filter.is_empty():
-		recv = recv.filter(
-			func(sc: SMgrDataScene): return _search_filter.to_lower() in sc.name.to_lower()
-		)
-
-	recv.sort_custom(
-		func(a: SMgrDataScene, b: SMgrDataScene) -> bool:
-			return a.name.naturalnocasecmp_to(b.name) < 0
-	)
-
-	for sc: SMgrDataScene in recv:
-		var item: SMgrSceneItem = _SCENE_ITEM.instantiate()
-		_subs.add_item(item)
-		item.activate(sc.uid)
+	_populate_section(_subs, recv)

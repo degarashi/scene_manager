@@ -29,33 +29,8 @@ func _ready() -> void:
 	_uncategorized_sec = _create_sub_section(_Name.UNCATEGORIZED)
 
 
-func _update_sub_section(target_sec: SMgrSection, signal_obj: Signal) -> void:
-	assert(target_sec)
-	target_sec.clear_list()
-
-	# get data by a signal
-	var recv: Array[SMgrDataScene]
-	signal_obj.emit(recv)
-
-	if recv.is_empty():
-		return
-
-	if not _search_filter.is_empty():
-		recv = recv.filter(
-			func(sc: SMgrDataScene): return _search_filter.to_lower() in sc.name.to_lower()
-		)
-
-	recv.sort_custom(
-		func(a: SMgrDataScene, b: SMgrDataScene) -> bool:
-			return a.name.naturalnocasecmp_to(b.name) < 0
-	)
-
-	for sc in recv:
-		var item: SMgrSceneItem = _SCENE_ITEM.instantiate()
-		target_sec.add_item(item)
-		item.activate(sc.uid)
-
-
 func _refresh_ui() -> void:
-	_update_sub_section(_categorized_sec, _ebus_editor.get_scenes_categorized)
-	_update_sub_section(_uncategorized_sec, _ebus_editor.get_scenes_uncategorized)
+	for tup in [[_categorized_sec, _ebus_editor.get_scenes_categorized], [_uncategorized_sec, _ebus_editor.get_scenes_uncategorized]]:
+		var recv: Array[SMgrDataScene]
+		tup[1].emit(recv)
+		_populate_section(tup[0], recv)
