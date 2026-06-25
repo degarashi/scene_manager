@@ -204,29 +204,27 @@ func _scan_and_collect_uids(dir_path: String, collected_uids: Array[int]) -> voi
 
 
 func _export_scene_enum_string() -> String:
-	var ret: String = ""
-	ret += "enum Id {\n"
-	ret += "\tNONE = {0},\n".format([ResourceUID.INVALID_ID])
+	var lines := PackedStringArray()
+	lines.append("enum Id {")
+	lines.append("\tNONE = {0},".format([ResourceUID.INVALID_ID]))
 
 	var scenes := _data.get_scenes_all()
-	# Sort alphabetically based on scene-name (Natural No Case Compare)
 	scenes.sort_custom(
 		func(a: SMgrDataScene, b: SMgrDataScene) -> bool:
 			return a.name.naturalnocasecmp_to(b.name) < 0
 	)
 
 	for sc in scenes:
-		ret += "\t{0} = {1},\n".format([sc.name.to_upper(), sc.uid])
-	ret += "}\n"
-	return ret
+		lines.append("\t{0} = {1},".format([sc.name.to_upper(), sc.uid]))
+	lines.append("}")
+	return "\n".join(lines)
 
 
 func _export_category_enum_string() -> String:
-	var ret: String = ""
-	ret += "enum CategoryId {\n"
+	var lines := PackedStringArray()
+	lines.append("enum CategoryId {")
 	var categories := _data.get_categories_list()
 
-	# Sort alphabetically based on category name (Natural No Case Compare)
 	categories.sort_custom(
 		func(a: SMgrCategoryData, b: SMgrCategoryData) -> bool:
 			return a.name.naturalnocasecmp_to(b.name) < 0
@@ -234,9 +232,9 @@ func _export_category_enum_string() -> String:
 
 	for c_data in categories:
 		var c_uid := c_data.name.hash()
-		ret += "\t{0} = {1},\n".format([c_data.name.to_upper(), c_uid])
-	ret += "}\n"
-	return ret
+		lines.append("\t{0} = {1},".format([c_data.name.to_upper(), c_uid]))
+	lines.append("}")
+	return "\n".join(lines)
 
 
 func _export_utility_functions() -> String:
