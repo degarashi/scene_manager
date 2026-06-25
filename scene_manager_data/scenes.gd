@@ -16,12 +16,10 @@ enum Id {
 	SCENE_1 = 7784575442615425582,
 	SCENE_2 = 5390443888696816947,
 	SCENE_BASE = 286306938834776095,
-	SLIDE_TRANSITIONER = 9123456789012345678,
+	SLIDE_TRANSITIONER = 566727545444289298,
 }
 enum CategoryId {
 }
-
-
 ## Returns the PackedScene associated with the given Scene ID.
 static func get_scene(id: Id) -> PackedScene:
 	if id == Id.NONE:

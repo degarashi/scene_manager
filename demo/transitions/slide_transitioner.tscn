@@ -1,6 +1,6 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://icr6jmyef3ji"]
 
-[ext_resource type="Script" path="res://demo/transitions/slide_transitioner.gd" id="1_6lw0a"]
+[ext_resource type="Script" uid="uid://setsn7nuof7u" path="res://demo/transitions/slide_transitioner.gd" id="1_6lw0a"]
 
 [node name="SlideTransition" type="Node" unique_id=2001985412]
 process_mode = 3

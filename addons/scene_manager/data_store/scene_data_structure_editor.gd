@@ -136,7 +136,11 @@ func _collect_tscn_files_in_includes(dir: EditorFileSystemDirectory, includes: A
 ## @return Registered UID (even if it already existed)
 func register_scene_file(full_path: String) -> int:
 	var uid := ResourceLoader.get_resource_uid(full_path)
-	if uid == ResourceUID.INVALID_ID or _data.get_scene_from_uid(uid) != null:
+	if uid == ResourceUID.INVALID_ID:
+		_log.warn("  Skipping scene file (no UID assigned): " + full_path)
+		return uid
+
+	if _data.get_scene_from_uid(uid) != null:
 		return uid
 
 	var base_name: String = full_path.get_file().get_basename()
@@ -218,7 +222,7 @@ func _export_scene_enum_string() -> String:
 
 	for sc in scenes:
 		lines.append("\t{0} = {1},".format([sc.name.to_upper(), sc.uid]))
-	lines.append("}")
+	lines.append("}\n")
 	return "\n".join(lines)
 
 
