@@ -2,7 +2,7 @@
 
 const DEFAULT_RING_SIZE: int = 5
 
-var _ring_buffer: Array = Array()
+var _ring_buffer: Array[Variant] = []
 var _head_index: int = 0  # Keeps track of the head of the buffer ahead of the most recent item
 var _tail_index: int = 0  # Keeps track of the tail with the oldest item
 var _size: int = 0  # Amount of items in the ring buffer
@@ -18,7 +18,7 @@ func _init() -> void:
 func set_capacity(size: int) -> void:
 	# Copy the items from the head to the tail for the new size.
 	# If the size is smaller, this will remove the oldest items from the array.
-	var temp = Array()
+	var temp: Array[Variant] = []
 	_capacity = size
 	_size = 0
 	_head_index = 0
@@ -58,7 +58,7 @@ func clear() -> void:
 
 
 ## Adds an item to the ring buffer.
-func push(item) -> void:
+func push(item: Variant) -> void:
 	# If the buffer is full, the head index will hit the tail, so keep the tail with the head
 	if _size == _capacity:
 		_tail_index = (_tail_index + 1) % _capacity
@@ -78,7 +78,7 @@ func pop() -> Variant:
 	if _head_index < 0:
 		_head_index += _capacity
 
-	var item = _ring_buffer[_head_index]
+	var item: Variant = _ring_buffer[_head_index]
 	_ring_buffer[_head_index] = null
 	_size -= 1
 
@@ -86,8 +86,8 @@ func pop() -> Variant:
 
 
 ## Returns all valid items in the buffer as an Array (from oldest to newest).
-func get_all_items() -> Array:
-	var items := []
+func get_all_items() -> Array[Variant]:
+	var items: Array[Variant] = []
 	for i in range(_size):
 		var index := (_tail_index + i) % _capacity
 		items.append(_ring_buffer[index])
