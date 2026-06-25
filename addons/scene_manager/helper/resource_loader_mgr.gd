@@ -19,14 +19,14 @@ class _LoadTask:
 	var progress: Array[float] = [0.0]
 	var status := ResourceLoader.THREAD_LOAD_INVALID_RESOURCE
 	var last_percent: int = 0
-	## Callback on completion: func(res: Resource)
-	var on_complete: Callable
+	## Callbacks on completion: func(res: Resource)
+	var on_complete_list: Array[Callable]
 
 	func _init(p_path: String, p_callback: Callable) -> void:
 		assert(not p_path.is_empty(), "_LoadTask: Path cannot be empty.")
 		assert(p_callback.is_valid(), "_LoadTask: Callback must be a valid callable.")
 		path = p_path
-		on_complete = p_callback
+		on_complete_list = [p_callback]
 
 	## Updates the loading status and progress.
 	func update_status() -> ResourceLoader.ThreadLoadStatus:
@@ -118,9 +118,10 @@ func _finalize_task(task: _LoadTask, res: Resource = null) -> void:
 	# Emit individual completion signal
 	load_completed.emit(task.path, res)
 
-	# Execute individual callback
-	if task.on_complete.is_valid():
-		task.on_complete.call(res)
+	# Execute individual callbacks
+	for cb in task.on_complete_list:
+		if cb.is_valid():
+			cb.call(res)
 
 	# Check if this task belongs to any batches
 	if _path_to_batches.has(task.path):
@@ -151,7 +152,8 @@ func request(path: String, callback: Callable, use_sub_threads: bool = true) -> 
 		return
 
 	if _tasks.has(path):
-		# If already loading, we might want to wrap the callback but for now just return
+		if callback.is_valid():
+			_tasks[path].on_complete_list.append(callback)
 		return
 
 	var err := ResourceLoader.load_threaded_request(path, "", use_sub_threads)
