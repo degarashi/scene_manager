@@ -217,13 +217,5 @@ func _on_scene_name_edit_focus_entered() -> void:
 	_previous_name = _scene_name_edit.text
 
 
-func _on_tree_entered() -> void:
-	pass
-
-
-func _on_tree_exited() -> void:
-	pass
-
-
 func _ready() -> void:
 	_refresh_ui_from_uid()

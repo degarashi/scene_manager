@@ -52,8 +52,6 @@ hide_on_item_selection = false
 hide_on_checkable_item_selection = false
 
 [connection signal="gui_input" from="." to="." method="_on_gui_input"]
-[connection signal="tree_entered" from="." to="." method="_on_tree_entered"]
-[connection signal="tree_exited" from="." to="." method="_on_tree_exited"]
 [connection signal="button_up" from="popup_button" to="." method="_on_popup_button_button_up"]
 [connection signal="focus_entered" from="scene_name_edit" to="." method="_on_scene_name_edit_focus_entered"]
 [connection signal="focus_exited" from="scene_name_edit" to="." method="_submit_scene_name"]
