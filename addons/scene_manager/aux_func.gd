@@ -23,15 +23,14 @@ static func disconnect_if_connected(sig: Signal, callable: Callable) -> void:
 
 
 static func to_tmp_name(node_name: String) -> String:
-	return node_name + "_" + str(ResourceUID.create_id())
+	return node_name + "_tmp_" + str(Time.get_ticks_msec()) + "_" + str(randi())
 
 
 static func from_tmp_name(tmp_name: String) -> String:
-	var parts := tmp_name.split("_")
-	if parts.size() > 1:
-		parts.remove_at(parts.size() - 1)
-		return "_".join(parts)
-	return tmp_name
+	var idx := tmp_name.rfind("_tmp_")
+	if idx == -1:
+		return tmp_name
+	return tmp_name.left(idx)
 
 
 ## Check if the specified node has a parent node named "MainScreen"
