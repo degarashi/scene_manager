@@ -73,6 +73,8 @@ func _update_state(current_files: PackedStringArray) -> void:
 
 func _get_default_watch_files() -> PackedStringArray:
 	var files := PackedStringArray()
+	if not Engine.is_editor_hint():
+		return files
 	var fs := EditorInterface.get_resource_filesystem()
 	if fs:
 		var root := fs.get_filesystem()
@@ -128,16 +130,19 @@ func _init(
 	var current_files := _get_current_files()
 	_update_state(current_files)
 
-	var fs := EditorInterface.get_resource_filesystem()
-	if fs:
-		fs.filesystem_changed.connect(_on_filesystem_changed)
-		if fs.has_signal("sources_changed"):
-			fs.sources_changed.connect(_on_filesystem_changed)
+	if Engine.is_editor_hint():
+		var fs := EditorInterface.get_resource_filesystem()
+		if fs:
+			fs.filesystem_changed.connect(_on_filesystem_changed)
+			if fs.has_signal("sources_changed"):
+				fs.sources_changed.connect(_on_filesystem_changed)
 
 
 ## Destructor. Disconnects connected signals
 func destroy() -> void:
 	_is_exiting = true
+	if not Engine.is_editor_hint():
+		return
 	var fs := EditorInterface.get_resource_filesystem()
 	if fs:
 		if fs.filesystem_changed.is_connected(_on_filesystem_changed):
@@ -156,6 +161,8 @@ func update_watched_state() -> void:
 ## Called when the editor gains focus. Forces a filesystem scan and checks for changes
 func handle_focus_in() -> void:
 	if _is_syncing or _is_exiting:
+		return
+	if not Engine.is_editor_hint():
 		return
 	var fs := EditorInterface.get_resource_filesystem()
 	if fs:
