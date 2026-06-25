@@ -91,7 +91,12 @@ func _init(
 
 ## Create a deep copy of the SceneLoadOptions instance.
 func copy() -> SceneLoadOptions:
-	return self.duplicate() as SceneLoadOptions
+	var c := self.duplicate() as SceneLoadOptions
+	if c:
+		c.pre_wrap_cb = pre_wrap_cb
+		c.pre_node_cb = pre_node_cb
+		c.scene_loaded_cb = scene_loaded_cb
+	return c
 
 
 func _to_string() -> String:
