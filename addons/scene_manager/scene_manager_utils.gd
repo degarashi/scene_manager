@@ -39,9 +39,7 @@ static func sanitize_scene_name(scene_name: String) -> String:
 
 	var regex := RegEx.new()
 	regex.compile("[^a-zA-Z0-9_ -]")
-	var result := regex.search(scene_name)
-	if result:
-		scene_name = scene_name.replace(result.get_string(), "")
+	scene_name = regex.sub(scene_name, "", true)
 
 	scene_name = scene_name.replace(" ", "_")
 	return scene_name
