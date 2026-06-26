@@ -206,7 +206,7 @@ func _on_scene_name_submitted(_new_name: String) -> void:
 
 func _submit_scene_name() -> void:
 	var new_name := _scene_name_edit.text
-	new_name = SceneManagerUtils.sanitize_scene_name(new_name)
+	new_name = SMgrUtil.sanitize_scene_name(new_name)
 	if _previous_name == new_name:
 		return
 

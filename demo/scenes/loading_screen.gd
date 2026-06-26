@@ -1,5 +1,7 @@
 extends Control
 
+const _AF = preload("uid://dlgh4u64a7qxk")
+
 ## UI References
 @onready var _move_to_next_scene_button: Button = %MoveToNextSceneButton
 @onready var _progress_bar: ProgressBar = %ProgressBar
@@ -28,7 +30,7 @@ func _update_next_scene_label() -> void:
 	# Display the name of the next scene in the label
 	# (Uses SceneManagerUtils or Scenes class enum conversion)
 	if scene_id != Scenes.Id.NONE:
-		var scene_name := SceneManagerUtils.get_enum_string_from_enum(scene_id)
+		var scene_name := _AF.get_enum_string_from_enum(scene_id)
 		_next_scene_label.text = scene_name
 	else:
 		_next_scene_label.text = "(None)"
