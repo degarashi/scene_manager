@@ -257,9 +257,14 @@ func refresh_nodes(text: String) -> void:
 			node.visible = true
 			visible_nodes.append(node)
 	else:
+		var query_lower := text.to_lower()
+		var first_char := query_lower[0]
 		for node in all_nodes:
-			var result := AutoCompleteHelpers.fuzzy_match(text, node.raw_text, case_sensitive)
-			if result.matched:
+			if node.raw_text_lower.find(first_char) == -1:
+				node.visible = false
+				continue
+			var result = AutoCompleteHelpers.fuzzy_match(text, node.raw_text, case_sensitive)
+			if result:
 				node.fuzzy_score = result.score
 				node.set_text(node.raw_text, result.indices)
 				node.visible = true

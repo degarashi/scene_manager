@@ -9,10 +9,12 @@ signal option_chosen(option_text: String)
 
 var fuzzy_score: float = 0.0
 var raw_text: String = ""
+var raw_text_lower: String = ""
 
 
 func set_text(p_text: String, highlight_indices: Array[int] = []) -> void:
 	raw_text = p_text
+	raw_text_lower = p_text.to_lower()
 	if highlight_indices.is_empty():
 		complete_text.text = p_text
 		return

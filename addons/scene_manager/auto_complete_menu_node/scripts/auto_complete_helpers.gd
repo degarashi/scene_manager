@@ -84,11 +84,10 @@ static func print_collection(
 
 
 ## Performs fuzzy matching between a query and a target string.
-## Returns a dictionary with:
-## - "matched": bool
+## Returns null if no match, or a dictionary with:
 ## - "score": float (higher is better)
 ## - "indices": Array[int] (indices of matched characters for highlighting)
-static func fuzzy_match(query: String, target: String, case_sensitive: bool = false) -> Dictionary:
+static func fuzzy_match(query: String, target: String, case_sensitive: bool = false):
 	if query.is_empty():
 		return {"matched": true, "score": 1.0, "indices": []}
 
@@ -143,11 +142,8 @@ static func fuzzy_match(query: String, target: String, case_sensitive: bool = fa
 
 		t_idx += 1
 
-	var matched := q_idx == q.length()
-	# Normalize score by query length to avoid bias towards long queries
-	if matched:
-		score /= q.length()
-	else:
-		score = 0.0
+	if q_idx != q.length():
+		return null
 
-	return {"matched": matched, "score": score, "indices": indices}
+	score /= q.length()
+	return {"matched": true, "score": score, "indices": indices}
