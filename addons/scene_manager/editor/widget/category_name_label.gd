@@ -71,7 +71,7 @@ func _submit_rename(new_name: String) -> void:
 	# Duplication check
 	var recv: Array[bool]
 	_ebus_editor.category_name_duplication_check.emit(recv, sanitized)
-	if recv[0]:
+	if recv.is_empty() or recv[0]:
 		# Reset to previous
 		_refresh_ui()
 		return

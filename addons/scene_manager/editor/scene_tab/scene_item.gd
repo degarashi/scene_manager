@@ -114,6 +114,8 @@ func _on_popup_button_button_up() -> void:
 	# Get which categories the current path belongs to
 	var recv: Array[SMgrDataScene]
 	_ebus_editor.get_scene_info.emit(recv, _scene_uid)
+	if recv.is_empty():
+		return
 	var current_categories := recv[0].categories
 
 	var all_categories_id: Array[int]
@@ -121,6 +123,8 @@ func _on_popup_button_button_up() -> void:
 	for category_id in all_categories_id:
 		var recv2: Array[SMgrCategoryData]
 		_ebus_editor.get_category_by_id.emit(recv2, category_id)
+		if recv2.is_empty():
+			continue
 		var cat := recv2[0]
 
 		_popup_menu.add_check_item(cat.name)
@@ -156,6 +160,8 @@ func _on_popup_menu_popup_hide() -> void:
 		var category_id: int = _popup_menu.get_item_metadata(i)
 		var recv: Array[SMgrCategoryData]
 		_ebus_editor.get_category_by_id.emit(recv, category_id)
+		if recv.is_empty():
+			continue
 		var cat := recv[0]
 
 		var is_now_checked := _popup_menu.is_item_checked(i)
