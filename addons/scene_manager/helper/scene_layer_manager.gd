@@ -69,7 +69,7 @@ func recalculate_pause_threshold() -> void:
 	var max_p_wrap := [_C.MIN_LAYER_PRIORITY]
 	_ebus.process_scene_layer.emit(
 		func(sc: SMgrSceneLayer) -> void:
-			if not sc.is_queued_for_deletion() and sc.pause_lower:
+			if is_instance_valid(sc) and sc.pause_lower:
 				max_p_wrap[0] = max(max_p_wrap[0], sc.l_priority)
 	)
 
