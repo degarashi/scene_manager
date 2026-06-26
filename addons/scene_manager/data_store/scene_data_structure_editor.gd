@@ -168,7 +168,7 @@ func register_scene_file(full_path: String) -> int:
 
 ## Recursively scans a directory and registers .tscn files
 ## @param dir_path Path to scan
-func _scan_dir_recursive(dir_path: String) -> void:
+func _scan_dir_recursive(dir_path: String, collected_uids: Array[int]) -> void:
 	var dir: DirAccess = DirAccess.open(dir_path)
 	if not dir:
 		return
@@ -181,31 +181,13 @@ func _scan_dir_recursive(dir_path: String) -> void:
 
 		if dir.current_is_dir():
 			if file_name != "." and file_name != "..":
-				_scan_dir_recursive(full_path)
-		elif file_name.ends_with(".tscn"):
-			register_scene_file(full_path)
-
-		file_name = dir.get_next()
-
-
-## For scanning: Recursively collects UIDs
-func _scan_and_collect_uids(dir_path: String, collected_uids: Array[int]) -> void:
-	var dir: DirAccess = DirAccess.open(dir_path)
-	if not dir:
-		return
-
-	dir.list_dir_begin()
-	var file_name: String = dir.get_next()
-	while file_name != "":
-		var full_path: String = dir_path.path_join(file_name)
-		if dir.current_is_dir():
-			if file_name != "." and file_name != "..":
-				_scan_and_collect_uids(full_path, collected_uids)
+				_scan_dir_recursive(full_path, collected_uids)
 		elif file_name.ends_with(".tscn"):
 			var uid := register_scene_file(full_path)
 			if uid != ResourceUID.INVALID_ID:
 				_log.debug("Found scene: %s (UID: %d)" % [file_name, uid])
 				collected_uids.append(uid)
+
 		file_name = dir.get_next()
 
 
@@ -440,7 +422,7 @@ func add_include_path(inc_path: String) -> bool:
 	_data._include_list = list  # Triggers setter
 
 	if is_dir:
-		_scan_dir_recursive(inc_path)
+		_scan_dir_recursive(inc_path, [])
 	else:
 		register_scene_file(inc_path)
 
@@ -461,7 +443,7 @@ func sync_with_filesystem() -> void:
 	for path in _data.get_include_list():
 		if DirAccess.dir_exists_absolute(path):
 			_log.debug("  Scanning directory: " + path)
-			_scan_and_collect_uids(path, found_uids)
+			_scan_dir_recursive(path, found_uids)
 		elif FileAccess.file_exists(path) and path.ends_with(".tscn"):
 			_log.debug("  Checking scene file: " + path)
 			var uid := register_scene_file(path)
