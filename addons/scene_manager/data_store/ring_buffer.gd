@@ -16,26 +16,16 @@ func _init() -> void:
 
 ## Sets how much the ring buffer can hold.
 func set_capacity(size: int) -> void:
-	# Copy the items from the head to the tail for the new size.
-	# If the size is smaller, this will remove the oldest items from the array.
-	var temp: Array[Variant] = []
+	var old_items := get_all_items()
+	_ring_buffer = []
+	_ring_buffer.resize(size)
 	_capacity = size
-	_size = 0
 	_head_index = 0
-
-	# If there's no capacity, don't loop through the items as the buffer will have nothing
-	if size > 0:
-		temp.resize(size)
-		for i in range(mini(size, _ring_buffer.size())):
-			temp[i] = _ring_buffer[(_tail_index + 1) % _capacity]
-			if temp[i] == null:
-				break
-
-			_head_index = i
-			_size += 1
-
-	_ring_buffer = temp
 	_tail_index = 0
+	_size = 0
+
+	for item in old_items:
+		push(item)
 
 
 ## Returns how much the ring buffer can hold.
@@ -59,7 +49,9 @@ func clear() -> void:
 
 ## Adds an item to the ring buffer.
 func push(item: Variant) -> void:
-	# If the buffer is full, the head index will hit the tail, so keep the tail with the head
+	if _capacity == 0:
+		return
+
 	if _size == _capacity:
 		_tail_index = (_tail_index + 1) % _capacity
 
