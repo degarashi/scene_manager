@@ -2,6 +2,25 @@ class_name SMgrTransitionService
 extends Node
 ## Service to handle scene transitions and custom transitioners.
 
+class NoOpTransitioner extends ScreenTransitioner:
+	## No-operation transitioner used when no transitioner source is provided.
+	func set_clickable(_clickable: bool) -> void:
+		pass
+	func set_layer(_layer: int) -> void:
+		pass
+	func play_out(speed: float) -> void:
+		if speed <= 0:
+			return
+		_is_playing = true
+		await get_tree().process_frame
+		_is_playing = false
+	func play_in(speed: float) -> void:
+		if speed <= 0:
+			return
+		_is_playing = true
+		await get_tree().process_frame
+		_is_playing = false
+
 const _PS := preload("uid://dn6eh4s0h8jhi")
 
 var _scene_db: SMgrData
@@ -21,7 +40,10 @@ func _ready() -> void:
 
 
 func _init_effector() -> void:
-	_transition_player = _transitioner_source.instantiate()
+	if _transitioner_source:
+		_transition_player = _transitioner_source.instantiate()
+	else:
+		_transition_player = NoOpTransitioner.new()
 	add_child(_transition_player)
 	_transition_player.set_layer(_PS.transition_layer)
 
