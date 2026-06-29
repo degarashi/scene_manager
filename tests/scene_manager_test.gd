@@ -52,6 +52,65 @@ func test_add_scene_additive() -> void:
 	assert_object(scene_1_node).is_not_null()
 
 
+func test_remove_scene() -> void:
+	var opts := SceneLoadOptions.new()
+	opts.play_in_time = 0.0
+	opts.play_out_time = 0.0
+
+	# Switch to SCENE_0 first
+	await SceneManager.switch_to_scene(Scenes.Id.SCENE_0, false, opts)
+
+	# Add SCENE_1 additively
+	var add_opts := SceneLoadOptions.new()
+	add_opts.node_name = "RemoveTarget"
+	add_opts.play_in_time = 0.0
+	add_opts.play_out_time = 0.0
+
+	var result := await SceneManager.add_scene(
+		Scenes.Id.SCENE_1, SMgrInstance.DuplicateNameMode.REMOVE_OLD, add_opts
+	)
+	assert_object(result).is_not_null()
+
+	# Verify the scene is present
+	var root := get_tree().root
+	var layer := root.find_child("RemoveTarget", true, false)
+	assert_object(layer).is_not_null()
+
+	# Remove the additive scene
+	var removed := SceneManager.remove_scene(Scenes.Id.SCENE_1)
+	assert_bool(removed).is_true()
+
+	# Verify it's gone after one frame (trash can flushes on process)
+	await get_tree().process_frame
+	layer = root.find_child("RemoveTarget", true, false)
+	assert_object(layer).is_null()
+
+
+func test_remove_scene_nonexistent() -> void:
+	var result := SceneManager.remove_scene(Scenes.Id.SCENE_2)
+	assert_bool(result).is_false()
+
+
+func test_remove_scene_with_none() -> void:
+	var result := SceneManager.remove_scene(Scenes.Id.NONE)
+	assert_bool(result).is_false()
+
+
+func test_remove_current_scene_resets_state() -> void:
+	var opts := SceneLoadOptions.new()
+	opts.play_in_time = 0.0
+	opts.play_out_time = 0.0
+
+	await SceneManager.switch_to_scene(Scenes.Id.SCENE_0, false, opts)
+
+	# Remove the current scene
+	SceneManager.remove_scene(Scenes.Id.SCENE_0)
+	await get_tree().process_frame
+
+	# get_current_scene_node() should return null
+	assert_object(SceneManager.get_current_scene_node()).is_null()
+
+
 func test_history_navigation() -> void:
 	var opts := SceneLoadOptions.new()
 	opts.play_in_time = 0.0
