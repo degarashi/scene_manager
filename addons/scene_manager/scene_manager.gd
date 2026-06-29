@@ -405,6 +405,29 @@ func add_scene(
 	return _perform_scene_setup(scene_id, options)
 
 
+## Removes a specific scene by its ID. (Additive counterpart of add_scene)
+func remove_scene(scene_id: Scenes.Id) -> bool:
+	if scene_id == Scenes.Id.NONE:
+		_log.warn("remove_scene called with NONE.")
+		return false
+	if not _ebus:
+		_log.error("remove_scene: _ebus is not set.")
+		return false
+
+	_log.info("Removing scene: {0}", [Scenes.Id.find_key(scene_id)])
+
+	var layer := _get_layer_by_id(scene_id)
+	if not layer:
+		_log.warn("Scene '{0}' is not currently loaded.", [Scenes.Id.find_key(scene_id)])
+		return false
+
+	_remove_node_safely(layer)
+	if scene_id == _current_scene_enum:
+		_current_scene_enum = Scenes.Id.NONE
+
+	return true
+
+
 func load_previous_scene(options := SceneLoadOptions.new()) -> bool:
 	if _history_stack.size() == 0:
 		_log.warn("Attempted to load previous scene, but history is empty.")
