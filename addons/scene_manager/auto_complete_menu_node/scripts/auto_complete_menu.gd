@@ -123,8 +123,8 @@ func reposition_nodes(ordered_nodes: Array[AutoCompleteOption]) -> void:
 	option_holder.set_custom_minimum_size(Vector2(0, holder_size))
 	var current_position := Vector2(0, holder_size) if grow_upwards else Vector2(0, 0)
 	for node: Control in ordered_nodes:
-		node.set_deferred("position", current_position)
-		node.set_deferred("position.y", node.position.y - node.size.y if grow_upwards else 0.0)
+		var pos := Vector2(current_position.x, current_position.y - node.size.y if grow_upwards else current_position.y)
+		node.position = pos
 		node.set_deferred("size.x", option_holder.size.x)
 		current_position.y += grow_indicator * (node.size.y + node_margin_y)
 
