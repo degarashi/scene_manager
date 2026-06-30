@@ -189,7 +189,7 @@ func _on_scene_name_changed(new_name: String) -> void:
 func _check_name_duplication(name_str: String) -> bool:
 	var recv: Array[bool]
 	_ebus_editor.scene_name_duplication_check.emit(recv, name_str)
-	return recv[0]
+	return false if recv.is_empty() else recv[0]
 
 
 func _custom_set_theme(theme: StyleBox) -> void:
