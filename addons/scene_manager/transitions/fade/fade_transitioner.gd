@@ -37,6 +37,11 @@ func _play_fade(speed: float, backwards: bool) -> void:
 
 	_is_playing = true
 
+	if not _animation_player.has_animation(_AnimKey.FADE):
+		push_error("FadeTransitioner: Animation 'fade' not found.")
+		_is_playing = false
+		return
+
 	# Adjust playback speed using 1.0 / speed.
 	_animation_player.play(
 		_AnimKey.FADE, -1, (1.0 / speed) * (-1.0 if backwards else 1.0), backwards
