@@ -27,6 +27,7 @@ var _scene_db: SMgrData
 var _log: DLoggerClass
 var _transitioner_source: PackedScene
 var _transition_player: ScreenTransitioner
+var _custom_player: ScreenTransitioner
 
 
 func _init(p_scene_db: SMgrData, p_log: DLoggerClass, p_source: PackedScene) -> void:
@@ -79,6 +80,9 @@ func _get_custom_transitioner(options: SceneLoadOptions) -> ScreenTransitioner:
 		_log.error("Failed to load custom transition scene at: {0}", [path])
 		return null
 
+	if is_instance_valid(_custom_player):
+		_custom_player.queue_free()
+
 	var instance := scene.instantiate()
 	if not instance is ScreenTransitioner:
 		_log.error("Custom transition scene does not inherit from ScreenTransitioner.")
@@ -86,4 +90,5 @@ func _get_custom_transitioner(options: SceneLoadOptions) -> ScreenTransitioner:
 		return null
 
 	add_child(instance)
+	_custom_player = instance
 	return instance as ScreenTransitioner
