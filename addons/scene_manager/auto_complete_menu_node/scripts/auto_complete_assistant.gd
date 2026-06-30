@@ -63,7 +63,9 @@ func _insert_terms(menu: AutoCompleteMenu) -> void:
 		var content := file.get_as_text()
 		file.close()
 		var json_object = JSON.parse_string(content)
-		if typeof(json_object) == TYPE_ARRAY:
+		if json_object == null:
+			push_error("AutoCompleteAssistant: Failed to parse JSON from '%s'." % terms_file_path)
+		elif typeof(json_object) == TYPE_ARRAY:
 			new_terms += json_object
 		elif typeof(json_object) == TYPE_DICTIONARY:
 			new_terms += json_object[terms_dict_key]
