@@ -645,7 +645,7 @@ func activate_prepared_scene() -> Node:
 	category_changed.emit(diff)
 	category_tags_notified.emit(diff.added)
 
-	var node := layer.get_child(0)
+	var node := layer.get_main_node()
 	scene_loaded.emit(_current_scene_enum, node)
 
 	# Show the new scene
@@ -662,7 +662,7 @@ func activate_prepared_scene() -> Node:
 	scene_transition_completed.emit(_current_scene_enum)
 
 	_is_transitioning = false
-	return layer.get_child(0)
+	return layer.get_main_node()
 
 
 # ------------- [Utils] -------------

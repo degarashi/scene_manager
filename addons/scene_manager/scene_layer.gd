@@ -12,6 +12,7 @@ signal layer_disposed(id: Scenes.Id)
 var scene_id: Scenes.Id = Scenes.Id.NONE
 var pause_lower: bool = false
 var l_priority: int = 1
+var _main_node: Node
 
 
 # ------------- [Callbacks] -------------
@@ -65,11 +66,9 @@ func prepare(
 	_ebus.process_scene_layer.connect(_process_scene_layer)
 
 
-## Returns the main node (the first child) of this layer.
+## Returns the main node of this layer.
 func get_main_node() -> Node:
-	if get_child_count() > 0:
-		return get_child(0)
-	return null
+	return _main_node
 
 
 ## Set up scene nodes for content
@@ -80,3 +79,4 @@ func add_node(p_node: Node) -> void:
 		p_node.reparent(self)
 	else:
 		add_child(p_node)
+	_main_node = p_node
