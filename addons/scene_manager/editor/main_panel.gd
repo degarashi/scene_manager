@@ -240,14 +240,8 @@ func _on_scene_selected(scene_id: int) -> void:
 	var scene := load(info.path) as PackedScene
 	if scene:
 		var state := scene.get_state()
-		var is_transitioner := false
-		for i in state.get_node_count():
-			var node_name := state.get_node_name(i)
-			if i == 0:  # Root node
-				# Check script or inheritance (difficult without instantiating)
-				# For now, let's just enable it if it's a transitioner or we want to try
-				is_transitioner = true
-				break
+		var node_type := state.get_node_type(0)
+		var is_transitioner := ClassDB.is_parent_class(node_type, &"ScreenTransitioner")
 		_play_transition_button.disabled = not is_transitioner
 
 
