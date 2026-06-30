@@ -96,7 +96,18 @@ func copy() -> SceneLoadOptions:
 		c.pre_wrap_cb = pre_wrap_cb
 		c.pre_node_cb = pre_node_cb
 		c.scene_loaded_cb = scene_loaded_cb
+		c.params = _deep_copy_variant(params)
 	return c
+
+
+static func _deep_copy_variant(value: Variant) -> Variant:
+	if value is Dictionary:
+		return value.duplicate(true)
+	if value is Array:
+		return value.duplicate(true)
+	if value is Resource:
+		return value.duplicate(true)
+	return value
 
 
 func _to_string() -> String:
