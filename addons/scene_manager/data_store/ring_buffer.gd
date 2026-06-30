@@ -57,7 +57,7 @@ func push(item: Variant) -> void:
 
 	_ring_buffer[_head_index] = item
 	_head_index = (_head_index + 1) % _capacity
-	_size = mini(_size + 1, _capacity)
+	_size = min(_size + 1, _capacity)
 
 
 ## Removes the most recent item from the ring buffer.
