@@ -104,6 +104,8 @@ func _update_task(task: _LoadTask) -> bool:
 	match status:
 		ResourceLoader.THREAD_LOAD_LOADED:
 			var res := ResourceLoader.load_threaded_get(task.path)
+			if res == null:
+				_log.warn("ResourceLoaderMgr: load_threaded_get returned null: {0}", [task.path])
 			_finalize_task(task, res)
 			return true
 
