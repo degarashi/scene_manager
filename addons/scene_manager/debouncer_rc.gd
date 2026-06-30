@@ -20,6 +20,9 @@ var _one_shot: bool = true
 # The timeout signal is only emitted if the ID remains the same after the async wait.
 var _active_id: int = 0
 
+## Safety limit: prevents infinite loop if _one_shot is false and cancel() is never called.
+const _MAX_ITERATIONS := 10000
+
 
 # ------------- [Callbacks] -------------
 func _init(p_delay: float = 0.5, p_one_shot: bool = true) -> void:
@@ -41,8 +44,10 @@ func call_debounced() -> void:
 		return
 
 	# If _one_shot is false, the loop will continue to emit signals until _active_id changes.
-	while _active_id == current_id:
+	var iteration_count := 0
+	while _active_id == current_id and iteration_count < _MAX_ITERATIONS:
 		await tree.create_timer(_delay).timeout
+		iteration_count += 1
 
 		# Only proceed if no new calls (ID updates) occurred during the wait
 		if _active_id == current_id:
@@ -51,6 +56,9 @@ func call_debounced() -> void:
 				break
 		else:
 			break
+
+	if iteration_count >= _MAX_ITERATIONS:
+		push_error("DebouncerRC: Reached max iterations. Possible runaway debouncer detected.")
 
 
 ## Cancels the currently pending debounce process.
