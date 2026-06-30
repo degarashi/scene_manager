@@ -6,5 +6,5 @@ signal get_scene_by_id(recv: Array[SMgrSceneLayer], scene_id: Scenes.Id)
 signal get_scene_by_name(recv: Array[SMgrSceneLayer], scene_name: String)
 signal process_scene_layer(proc: Callable)
 
-## Internal signal used to detect multiple SceneManager instances.
-signal _instance_check
+## Signal used to detect multiple SceneManager instances.
+signal instance_check

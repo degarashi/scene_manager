@@ -79,11 +79,11 @@ var _is_transitioning := false
 # ------------- [Callbacks] -------------
 func _ready() -> void:
 	if _ebus:
-		if not _ebus._instance_check.get_connections().is_empty():
+		if not _ebus.instance_check.get_connections().is_empty():
 			_log.error(
 				"Multiple SceneManager instances detected. This may cause unexpected behavior."
 			)
-		_ebus._instance_check.connect(_instance_dummy)
+		_ebus.instance_check.connect(_instance_dummy)
 	else:
 		_log.error("_ebus is not set. SceneManager will be disabled.")
 		set_process(false)
