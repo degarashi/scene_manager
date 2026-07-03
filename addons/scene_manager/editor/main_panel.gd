@@ -8,7 +8,7 @@ const _PRIMARY_CATEGORY_SCENE = preload("uid://cf1lsul5kbw85")
 const _SECONDARY_CATEGORY_SCENE = preload("uid://y7ksk521w5au")
 const _C = preload("uid://c3vvdktou45u")
 const _AF = preload("uid://dlgh4u64a7qxk")
-const DFileWatcher := preload("uid://c6ftnvehqfjb4")
+const DFileWatcher := preload("uid://2u0usajy085y")
 const _CHK = preload("uid://bfsxxd1vc4jm7")
 const _ICON_EXPAND_BUTTON = preload("uid://t6iu67x15d3")
 const _ICON_COLLAPSE_BUTTON = preload("uid://bd6ob6pgam1gt")
@@ -20,7 +20,7 @@ var _manager_data: SMgrDataEditor
 var _log: DLoggerClass
 var _search_debouncer: Debouncer
 ## For file monitoring
-var _scene_file_watcher: DFileWatcher
+var _scene_file_watcher: FEWFileWatcher
 var _connect_ebus: bool = false
 
 @onready var _save_delay_timer: Timer = %SaveDelayTimer
