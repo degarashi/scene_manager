@@ -35,6 +35,7 @@ d_logger/enable_console_log=false
 d_logger/min_log_level=0
 d_logger/enable_file_log=false
 d_logger/log_file_path="user://debug.log"
+d_logger/pause_on_error=false
 
 [display]
 
