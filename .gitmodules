@@ -4,3 +4,6 @@
 [submodule "asub/d_interface"]
 	path = asub/d_interface
 	url = ../godot-D_Interface
+[submodule "asub/d_filewatch"]
+	path = asub/d_filewatch
+	url = ../godot-D_FileEnumWatch
