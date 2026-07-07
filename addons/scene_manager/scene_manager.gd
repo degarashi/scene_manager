@@ -21,11 +21,11 @@ signal category_reapplied(tags: Array[Scenes.CategoryId])
 signal category_tags_notified(tags: Array[Scenes.CategoryId])
 
 # ------------- [Constants] -------------
-const _C = preload("uid://c3vvdktou45u")
-const _RING_BUFFER = preload("uid://b6phac21mxnxr")
-const _RESOURCE_LOADER = preload("uid://dabq3s83q0iku")
-const _AF = preload("uid://dlgh4u64a7qxk")
-const _PS := preload("uid://dn6eh4s0h8jhi")
+const _C = preload("uid://c3vvdktou45u")  # scene_manager_constants.gd
+const _RING_BUFFER = preload("uid://b6phac21mxnxr")  # ring_buffer_scene_id.gd
+const _RESOURCE_LOADER = preload("uid://dabq3s83q0iku")  # resource_loader_mgr.gd
+const _AF = preload("uid://dlgh4u64a7qxk")  # aux_func.gd
+const _PS := preload("uid://dn6eh4s0h8jhi")  # project_settings.tres
 
 # ------------- [Defines] -------------
 ## Defines how to handle cases where a SceneLayer name already exists.

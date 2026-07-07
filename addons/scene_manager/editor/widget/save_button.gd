@@ -2,7 +2,7 @@
 extends Button
 
 @export var _ebus_editor: SMgrEbusEditor
-var _ps := preload("uid://dn6eh4s0h8jhi")
+var _ps := preload("uid://dn6eh4s0h8jhi")  # project_settings.tres
 
 
 func _ready() -> void:

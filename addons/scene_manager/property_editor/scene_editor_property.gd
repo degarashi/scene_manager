@@ -1,8 +1,8 @@
 @tool
 extends EditorProperty
 
-const DUPLICATE_LINE_EDIT: StyleBox = preload("uid://21mjw515mptn")
-const OPEN_ICON: Texture2D = preload("uid://bpg21v8550rmv")
+const DUPLICATE_LINE_EDIT: StyleBox = preload("uid://21mjw515mptn")  # line_edit_duplicate.tres
+const OPEN_ICON: Texture2D = preload("uid://bpg21v8550rmv")  # PlayOverlay.svg
 
 # The main control for editing the property.
 var property_control: SceneLineEdit = (

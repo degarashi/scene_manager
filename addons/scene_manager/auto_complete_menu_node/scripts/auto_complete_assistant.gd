@@ -40,7 +40,7 @@ extends Node
 
 # ------------- [Private Variable] -------------
 # [auto_complete_menu.tscn]
-var _complete_menu := preload("uid://cebls7f645328")
+var _complete_menu := preload("uid://cebls7f645328")  # auto_complete_menu.tscn
 var _menus: Array[AutoCompleteMenu]
 
 

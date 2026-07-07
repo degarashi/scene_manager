@@ -2,13 +2,13 @@
 extends EditorPlugin
 
 # ------------- [Constants] -------------
-const MAIN_PANEL_SCENE = preload("uid://crnf0w0s44hxx")
+const MAIN_PANEL_SCENE = preload("uid://crnf0w0s44hxx")  # main_panel.tscn
 const MAIN_PANEL_NAME = "Scene Manager"
 const AUTOLOAD_PREFIX = "autoload/"
-const AF = preload("uid://dlgh4u64a7qxk")
+const AF = preload("uid://dlgh4u64a7qxk")  # aux_func.gd
 
 # ------------- [Private Variable] -------------
-var _ps := preload("uid://dn6eh4s0h8jhi")
+var _ps := preload("uid://dn6eh4s0h8jhi")  # project_settings.tres
 var _main_panel: SMgrMainPanel
 var _inspector: EditorInspectorPlugin
 
@@ -77,7 +77,7 @@ func _setup_editor_panels() -> void:
 	_main_panel.prepare(true)
 	add_control_to_dock(EditorPlugin.DOCK_SLOT_RIGHT_UL, _main_panel)
 
-	_inspector = preload("uid://duwd2dwcofsrt").new()
+	_inspector = preload("uid://duwd2dwcofsrt").new()  # scene_inspector_plugin.gd
 	add_inspector_plugin(_inspector)
 
 

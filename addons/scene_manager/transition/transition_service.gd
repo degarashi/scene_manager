@@ -21,7 +21,7 @@ class NoOpTransitioner extends ScreenTransitioner:
 		await get_tree().process_frame
 		_is_playing = false
 
-const _PS := preload("uid://dn6eh4s0h8jhi")
+const _PS := preload("uid://dn6eh4s0h8jhi")  # project_settings.tres
 
 var _scene_db: SMgrData
 var _log: DLoggerClass

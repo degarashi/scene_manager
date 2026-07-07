@@ -2,8 +2,8 @@
 class_name SMgrSection
 extends Control
 
-const _OPEN_ICON = preload("uid://c7o4wjygnjhjc")
-const _CLOSE_ICON = preload("uid://dhsmjlnpmbcwm")
+const _OPEN_ICON = preload("uid://c7o4wjygnjhjc")  # GuiOptionArrowDown.svg
+const _CLOSE_ICON = preload("uid://dhsmjlnpmbcwm")  # GuiOptionArrowRight.svg
 
 var _is_open: bool = true
 

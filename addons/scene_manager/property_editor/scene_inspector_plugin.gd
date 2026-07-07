@@ -1,7 +1,7 @@
 @tool
 extends EditorInspectorPlugin
 
-const SceneEditorProperty = preload("uid://bxv22ti18tesc")
+const SceneEditorProperty = preload("uid://bxv22ti18tesc")  # scene_editor_property.gd
 
 
 func _can_handle(_object: Object) -> bool:

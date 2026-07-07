@@ -1,7 +1,7 @@
 @tool
 extends VBoxContainer
 
-const _AF = preload("uid://dlgh4u64a7qxk")
+const _AF = preload("uid://dlgh4u64a7qxk")  # aux_func.gd
 @export var _ebus_editor: SMgrEbusEditor
 var _category_id: int
 @onready var _layer_name_edit: LineEdit = %LayerNameEdit

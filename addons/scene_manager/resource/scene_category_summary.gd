@@ -2,7 +2,7 @@ class_name SMgrSceneCategorySummary
 extends RefCounted
 ## Class to aggregate and hold category information associated with a scene.
 
-const _C := preload("uid://c3vvdktou45u")
+const _C := preload("uid://c3vvdktou45u")  # scene_manager_constants.gd
 
 var categories: Array[SMgrCategoryData] = []
 var max_priority: int = _C.DEFAULT_LAYER_PRIORITY

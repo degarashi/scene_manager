@@ -1,9 +1,9 @@
 @tool
 extends Button
 
-const _ICON_CHECKBOX_ON = preload("uid://c1ps4ed6wrx51")
-const _ICON_CHECKBOX_OFF = preload("uid://bu5cjmgtiiwfp")
-var _ps := preload("uid://dn6eh4s0h8jhi")
+const _ICON_CHECKBOX_ON = preload("uid://c1ps4ed6wrx51")  # GuiChecked.svg
+const _ICON_CHECKBOX_OFF = preload("uid://bu5cjmgtiiwfp")  # GuiCheckedDisabled.svg
+var _ps := preload("uid://dn6eh4s0h8jhi")  # project_settings.tres
 
 
 func _ready() -> void:

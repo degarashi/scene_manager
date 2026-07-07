@@ -4,7 +4,7 @@ extends Control
 
 # ------------- [Constant] -------------
 # [auto_complete_option.tscn]
-const OPTION_SCENE := preload("uid://rphyeuffx7cl")
+const OPTION_SCENE := preload("uid://rphyeuffx7cl")  # auto_complete_option.tscn
 
 # ------------- [Public Variable] -------------
 var visible_nodes: Array[AutoCompleteOption]  ## All the term-nodes that are currently visible

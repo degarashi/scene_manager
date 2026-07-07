@@ -2,8 +2,8 @@ class_name SMgrLayerManager
 extends RefCounted
 ## Helper class to manage SceneLayers, their priorities, and naming.
 
-const _C := preload("uid://c3vvdktou45u")
-const _SCENE_LAYER := preload("uid://do8sylacoy3u4")
+const _C := preload("uid://c3vvdktou45u")  # scene_manager_constants.gd
+const _SCENE_LAYER := preload("uid://do8sylacoy3u4")  # scene_layer.tscn
 
 var _scene_db: SMgrData
 var _ebus: SMgrEbusRuntime

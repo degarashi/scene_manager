@@ -1,6 +1,6 @@
 extends Object
 
-const _PS := preload("uid://dn6eh4s0h8jhi")
+const _PS := preload("uid://dn6eh4s0h8jhi")  # project_settings.tres
 
 static var _log: DLoggerClass
 

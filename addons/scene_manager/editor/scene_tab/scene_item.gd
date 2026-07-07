@@ -3,8 +3,8 @@ class_name SMgrSceneItem
 extends HBoxContainer
 
 const _MENU_ID_CATEGORY = 0
-const _THEME_DUPLICATE_LINE_EDIT: StyleBox = preload("uid://21mjw515mptn")
-const _C = preload("uid://c3vvdktou45u")
+const _THEME_DUPLICATE_LINE_EDIT: StyleBox = preload("uid://21mjw515mptn")  # line_edit_duplicate.tres
+const _C = preload("uid://c3vvdktou45u")  # scene_manager_constants.gd
 
 @export var _ebus_editor: SMgrEbusEditor
 var _mouse_is_over_path: bool

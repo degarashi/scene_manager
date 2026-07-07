@@ -14,7 +14,7 @@ const DEFAULT_SCENES_DATA_FILENAME = "scenes_data.tres"
 const DEFAULT_PLAY_OUT_TIME: float = 1
 const DEFAULT_PLAY_IN_TIME: float = 1
 const DEFAULT_TRANSITION_LAYER: int = 100
-const _AF = preload("uid://dlgh4u64a7qxk")
+const _AF = preload("uid://dlgh4u64a7qxk")  # aux_func.gd
 
 
 # ------------- [Defines] -------------

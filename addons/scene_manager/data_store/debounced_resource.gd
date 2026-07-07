@@ -7,7 +7,7 @@ signal data_changed_debounced
 
 # ------------- [Constants] -------------
 const DEFAULT_DEBOUNCE_TIME: float = 0.3
-const _AF = preload("uid://dlgh4u64a7qxk")
+const _AF = preload("uid://dlgh4u64a7qxk")  # aux_func.gd
 
 # ------------- [Private Variable] -------------
 ## Internal debouncer instance

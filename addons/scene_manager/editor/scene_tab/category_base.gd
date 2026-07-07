@@ -4,9 +4,9 @@ extends Control
 
 signal on_remove(category_id: int)
 
-const _SCENE_ITEM = preload("uid://hh0sw1g7upfc")
-const _SUB_SECTION = preload("uid://b4edho3whn67t")
-const _C = preload("uid://c3vvdktou45u")
+const _SCENE_ITEM = preload("uid://hh0sw1g7upfc")  # scene_item.tscn
+const _SUB_SECTION = preload("uid://b4edho3whn67t")  # section.tscn
+const _C = preload("uid://c3vvdktou45u")  # scene_manager_constants.gd
 
 @export var _ebus_editor: SMgrEbusEditor
 var _category_id: int

@@ -2,9 +2,9 @@
 class_name SceneLoadOptions
 extends Resource
 
-const _C = preload("uid://c3vvdktou45u")
+const _C = preload("uid://c3vvdktou45u")  # scene_manager_constants.gd
 const DEFAULT_CLICKABLE_FLAG = false
-static var _ps := preload("uid://dn6eh4s0h8jhi")
+static var _ps := preload("uid://dn6eh4s0h8jhi")  # project_settings.tres
 static var _empty_cb := func(_arg: Node) -> void: pass
 
 @export_group("Hierarchy")

@@ -3,19 +3,19 @@ class_name SMgrMainPanel
 extends MarginContainer
 
 # Scene item, include item prefabs
-const _INCLUDE_ITEM_SCENE = preload("uid://ciaqe7l3hugns")
-const _PRIMARY_CATEGORY_SCENE = preload("uid://cf1lsul5kbw85")
-const _SECONDARY_CATEGORY_SCENE = preload("uid://y7ksk521w5au")
-const _C = preload("uid://c3vvdktou45u")
-const _AF = preload("uid://dlgh4u64a7qxk")
-const DFileWatcher := preload("uid://2u0usajy085y")
-const _CHK = preload("uid://bfsxxd1vc4jm7")
-const _ICON_EXPAND_BUTTON = preload("uid://t6iu67x15d3")
-const _ICON_COLLAPSE_BUTTON = preload("uid://bd6ob6pgam1gt")
+const _INCLUDE_ITEM_SCENE = preload("uid://ciaqe7l3hugns")  # removable_item.tscn
+const _PRIMARY_CATEGORY_SCENE = preload("uid://cf1lsul5kbw85")  # primary_category.tscn
+const _SECONDARY_CATEGORY_SCENE = preload("uid://y7ksk521w5au")  # secondary_category.tscn
+const _C = preload("uid://c3vvdktou45u")  # scene_manager_constants.gd
+const _AF = preload("uid://dlgh4u64a7qxk")  # aux_func.gd
+const DFileWatcher := preload("uid://2u0usajy085y")  # DFileWatch
+const _CHK = preload("uid://bfsxxd1vc4jm7")  # check_ids.gd
+const _ICON_EXPAND_BUTTON = preload("uid://t6iu67x15d3")  # Expand.svg
+const _ICON_COLLAPSE_BUTTON = preload("uid://bd6ob6pgam1gt")  # Collapse.svg
 
 @export var _ebus_editor: SMgrEbusEditor
 @export var _ebus_ins: SMgrEbusInspector
-var _ps := preload("uid://dn6eh4s0h8jhi")
+var _ps := preload("uid://dn6eh4s0h8jhi")  # project_settings.tres
 var _manager_data: SMgrDataEditor
 var _log: DLoggerClass
 var _search_debouncer: Debouncer
