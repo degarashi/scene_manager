@@ -151,7 +151,7 @@ static var _sanitize_regex: RegEx
 
 ## Returns the string form of the Scenes.Id enum.
 static func get_enum_string_from_enum(scene: Scenes.Id) -> String:
-	var index := Scenes.Id.values().find(scene)
+	var index: int = Scenes.Id.values().find(scene)
 	return Scenes.Id.keys()[index]
 
 
