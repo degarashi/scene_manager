@@ -173,6 +173,11 @@ func _on_initial_setup() -> void:
 
 	# Initial fade-in effect
 	var player := _transition_service.get_main_player()
+	if not player:
+		_log.error("_on_initial_setup: Failed to get transition player.")
+		_is_transitioning = false
+		return
+
 	player.set_clickable(false)
 	await player.play_in(_initial_play_in_time)
 
@@ -304,6 +309,11 @@ func switch_to_scene(
 
 	# --- Transition Start ---
 	var player := _transition_service.setup_transition_player(options)
+	if not player:
+		_log.error("switch_to_scene: Failed to setup transition player.")
+		_is_transitioning = false
+		return null
+
 	_notify_fade_out_start()
 	await player.play_out(options.play_out_time)
 
@@ -484,6 +494,11 @@ func exit_game(fade_time: float = 1.0) -> void:
 
 	_is_transitioning = true
 	var player := _transition_service.get_main_player()
+	if not player:
+		_log.error("exit_game: Failed to get transition player.")
+		_is_transitioning = false
+		return
+
 	player.set_clickable(false)
 	await player.play_out(fade_time)
 	on_game_end.emit()
@@ -616,6 +631,10 @@ func activate_prepared_scene() -> Node:
 	var layer := recv[0]
 
 	var player := _transition_service.setup_transition_player(_reserved.options)
+	if not player:
+		_log.error("activate_prepared_scene: Failed to setup transition player.")
+		_is_transitioning = false
+		return null
 
 	if not _reserved.is_additive:
 		_notify_fade_out_start(_reserved.scene_id)

@@ -40,6 +40,16 @@ func _ready() -> void:
 	_init_effector()
 
 
+func _exit_tree() -> void:
+	# Clean up transition players to prevent memory leaks
+	if is_instance_valid(_transition_player):
+		_transition_player.queue_free()
+		_transition_player = null
+	if is_instance_valid(_custom_player):
+		_custom_player.queue_free()
+		_custom_player = null
+
+
 func _init_effector() -> void:
 	if _transitioner_source:
 		_transition_player = _transitioner_source.instantiate()

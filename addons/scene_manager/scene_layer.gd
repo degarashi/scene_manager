@@ -16,6 +16,20 @@ var _main_node: Node
 
 
 # ------------- [Callbacks] -------------
+func _exit_tree() -> void:
+	# Disconnect all signals to prevent memory leaks and dangling references
+	if child_order_changed.is_connected(_on_child_order_changed):
+		child_order_changed.disconnect(_on_child_order_changed)
+	if _ebus and _ebus.pause_threshold_changed.is_connected(_pause_threshold_changed):
+		_ebus.pause_threshold_changed.disconnect(_pause_threshold_changed)
+	if _ebus and _ebus.get_scene_by_id.is_connected(_get_scene_by_id):
+		_ebus.get_scene_by_id.disconnect(_get_scene_by_id)
+	if _ebus and _ebus.get_scene_by_name.is_connected(_get_scene_by_name):
+		_ebus.get_scene_by_name.disconnect(_get_scene_by_name)
+	if _ebus and _ebus.process_scene_layer.is_connected(_process_scene_layer):
+		_ebus.process_scene_layer.disconnect(_process_scene_layer)
+
+
 func _on_child_order_changed() -> void:
 	# If the number of child nodes (content) becomes zero, self-destruct
 	if get_child_count() == 0:
