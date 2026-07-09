@@ -82,13 +82,18 @@ func recalculate_pause_threshold() -> void:
 
 
 func get_unique_layer_name(base_name: String) -> String:
+	# Collect all existing layer names in one pass for O(1) lookups
+	var existing_names: Dictionary[String, bool] = {}
+	_ebus.process_scene_layer.emit(
+		func(sc: SMgrSceneLayer) -> void:
+			if is_instance_valid(sc):
+				existing_names[sc.name] = true
+	)
+
+	# Find a unique name by incrementing suffix
 	var suffix := 2
 	var new_name := base_name + str(suffix)
-	var check_recv: Array[SMgrSceneLayer] = []
-	_ebus.get_scene_by_name.emit(check_recv, new_name)
-	while not check_recv.is_empty():
+	while existing_names.has(new_name):
 		suffix += 1
 		new_name = base_name + str(suffix)
-		check_recv.clear()
-		_ebus.get_scene_by_name.emit(check_recv, new_name)
 	return new_name
