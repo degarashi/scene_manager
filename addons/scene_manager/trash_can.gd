@@ -27,8 +27,11 @@ func collect(target_node: Node) -> void:
 
 	# If it already has a parent, reparent it and change its name to avoid conflicts.
 	# This immediately frees the name from the original parent node's direct children.
+	# If it has no parent yet, simply adopt it.
 	if target_node.get_parent():
 		target_node.reparent(self)
+	else:
+		add_child(target_node)
 
 	target_node.name = "dying_" + String.num_uint64(target_node.get_instance_id())
 	target_node.queue_free()
