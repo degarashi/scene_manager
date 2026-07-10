@@ -29,6 +29,6 @@ layout_mode = 2
 [node name="PreviousSceneButton" type="Button" parent="VBoxContainer" unique_id=1985166169]
 unique_name_in_owner = true
 layout_mode = 2
-text = "<- Previeous Scene"
+text = "<- Previous Scene"
 
 [connection signal="button_up" from="VBoxContainer/PreviousSceneButton" to="." method="_on_previous_scene_button_button_up"]

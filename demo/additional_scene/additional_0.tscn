@@ -1,6 +1,9 @@
 [gd_scene format=3 uid="uid://b1l34my6xocd6"]
 
+[ext_resource type="Script" path="res://demo/additional_scene/additional_0.gd" id="1_script"]
+
 [node name="Additional0" type="Control" unique_id=1188320236]
+script = ExtResource("1_script")
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -38,4 +41,4 @@ offset_right = 1032.0
 offset_bottom = 253.0
 text = "Click HERE to Remove"
 
-[connection signal="button_up" from="RemoveButton" to="." method="queue_free"]
+[connection signal="button_up" from="RemoveButton" to="." method="_on_remove_button_button_up"]

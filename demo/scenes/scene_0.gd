@@ -22,9 +22,10 @@ func on_fade_out_end() -> void:
 
 
 func _on_scene_1_button_button_up() -> void:
-	# Reflect the inspector's values directly
-	opt.params = {"test_data": "Hello from Scene 0", "timestamp": Time.get_unix_time_from_system()}
-	SceneManager.switch_to_scene(Scenes.Id.SCENE_1, true, opt)
+	# Copy to avoid mutating the shared inspector Resource
+	var options := opt.copy()
+	options.params = {"test_data": "Hello from Scene 0", "timestamp": Time.get_unix_time_from_system()}
+	SceneManager.switch_to_scene(Scenes.Id.SCENE_1, true, options)
 
 
 func _on_begin_loading_button_pressed() -> void:
