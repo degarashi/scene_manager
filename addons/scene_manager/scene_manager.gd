@@ -247,6 +247,11 @@ func get_history_count() -> int:
 	return _history_stack.size()
 
 
+## Clears all entries from the navigation history stack.
+func clear_history() -> void:
+	_history_stack.clear()
+
+
 ## Returns the root node of the currently active main scene.
 func get_current_scene_node() -> Node:
 	if not _ebus:
