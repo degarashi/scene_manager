@@ -116,6 +116,9 @@ func test_history_navigation() -> void:
 	opts.play_in_time = 0.0
 	opts.play_out_time = 0.0
 
+	# Reset history to avoid state pollution from previous tests
+	SceneManager.clear_history()
+
 	await SceneManager.switch_to_scene(Scenes.Id.SCENE_0, false, opts)
 
 	var initial_history_count := SceneManager.get_history_count()
