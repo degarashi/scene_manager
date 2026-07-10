@@ -334,8 +334,7 @@ func switch_to_scene(
 	if not new_scene_node:
 		_log.error("Failed to instantiate switch_to_scene: {0}", [Scenes.Id.find_key(scene_id)])
 		player.set_clickable(true)
-		if player != _transition_service.get_main_player():
-			player.queue_free()
+		_cleanup_transition_player(player)
 		_is_transitioning = false
 		return null
 
@@ -354,8 +353,7 @@ func switch_to_scene(
 	_notify_fade_in(new_scene_node)
 	player.set_clickable(true)
 
-	if player != _transition_service.get_main_player():
-		player.queue_free()
+	_cleanup_transition_player(player)
 
 	_log.debug("Scene transition completed: {0}", [Scenes.Id.find_key(scene_id)])
 	scene_transition_completed.emit(scene_id)
@@ -674,8 +672,7 @@ func activate_prepared_scene() -> Node:
 	_reserved.clear()
 	player.set_clickable(true)
 
-	if player != _transition_service.get_main_player():
-		player.queue_free()
+	_cleanup_transition_player(player)
 
 	_log.debug("Scene transition completed: {0}", [Scenes.Id.find_key(_current_scene_enum)])
 	scene_transition_completed.emit(_current_scene_enum)
@@ -685,6 +682,16 @@ func activate_prepared_scene() -> Node:
 
 
 # ------------- [Utils] -------------
+
+
+## Cleans up custom transition player if it's not the main player.
+func _cleanup_transition_player(player: ScreenTransitioner) -> void:
+	if player == null:
+		return
+	if player != _transition_service.get_main_player():
+		player.queue_free()
+
+
 func _get_scene_blocking(scene_id: Scenes.Id) -> PackedScene:
 	if scene_id == Scenes.Id.NONE:
 		_log.warn("_get_scene_blocking called with Scenes.Id.NONE.")
