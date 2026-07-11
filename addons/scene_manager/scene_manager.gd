@@ -709,7 +709,7 @@ func _create_scene_instance_blocking(scene_id: Scenes.Id) -> Node:
 	return pack.instantiate() if pack else null
 
 
-func _notify_fade_out_start(exclude_id: Scenes.Id = Scenes.Id.NONE) -> void:
+func _notify_fade_out(exclude_id: Scenes.Id, start: bool) -> void:
 	_ebus.process_scene_layer.emit(
 		func(layer: SMgrSceneLayer) -> void:
 			if exclude_id != Scenes.Id.NONE and layer.scene_id == exclude_id:
@@ -718,21 +718,21 @@ func _notify_fade_out_start(exclude_id: Scenes.Id = Scenes.Id.NONE) -> void:
 				Interface.proc_interface(
 					child,
 					IFadeOutNotify,
-					func(ifc: IFadeOutNotify) -> void: ifc.on_fade_out_start()
+					func(ifc: IFadeOutNotify) -> void:
+						if start:
+							ifc.on_fade_out_start()
+						else:
+							ifc.on_fade_out_end()
 				)
 	)
+
+
+func _notify_fade_out_start(exclude_id: Scenes.Id = Scenes.Id.NONE) -> void:
+	_notify_fade_out(exclude_id, true)
 
 
 func _notify_fade_out_end(exclude_id: Scenes.Id = Scenes.Id.NONE) -> void:
-	_ebus.process_scene_layer.emit(
-		func(layer: SMgrSceneLayer) -> void:
-			if exclude_id != Scenes.Id.NONE and layer.scene_id == exclude_id:
-				return
-			for child in layer.get_children():
-				Interface.proc_interface(
-					child, IFadeOutNotify, func(ifc: IFadeOutNotify) -> void: ifc.on_fade_out_end()
-				)
-	)
+	_notify_fade_out(exclude_id, false)
 
 
 func _notify_fade_in(node: Node) -> void:
