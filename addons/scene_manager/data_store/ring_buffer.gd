@@ -60,6 +60,14 @@ func push(item: Variant) -> void:
 	_size = min(_size + 1, _capacity)
 
 
+## Returns the most recent item without removing it.
+func peek() -> Variant:
+	if _size == 0:
+		return null
+	var idx := (_head_index - 1 + _capacity) % _capacity
+	return _ring_buffer[idx]
+
+
 ## Removes the most recent item from the ring buffer.
 func pop() -> Variant:
 	if _size == 0:
