@@ -3,6 +3,13 @@ extends GdUnitTestSuite
 ## Tests for _cleanup_transition_player helper in SMgrInstance.
 ## Verifies it frees custom players but preserves the main player.
 
+var sm: SMgrInstance
+
+
+func before() -> void:
+	sm = get_node("/root/SceneManager") as SMgrInstance
+	await get_tree().create_timer(1.5).timeout
+
 
 # ------------- [Inner Classes] -------------
 ## Simple mock implementation of ScreenTransitioner for testing
@@ -17,10 +24,6 @@ class MockTransitioner extends ScreenTransitioner:
 		pass
 
 
-func before() -> void:
-	await get_tree().create_timer(1.5).timeout
-
-
 func test_cleanup_does_not_free_main_player() -> void:
 	var main_player := _get_main_player()
 
@@ -29,7 +32,7 @@ func test_cleanup_does_not_free_main_player() -> void:
 	assert_bool(is_instance_valid(main_player)).is_true()
 
 	# Calling cleanup with the main player must NOT free it
-	SceneManager._cleanup_transition_player(main_player)
+	sm._cleanup_transition_player(main_player)
 
 	# The main player must still be valid
 	assert_bool(is_instance_valid(main_player)).is_true()
@@ -43,7 +46,7 @@ func test_cleanup_frees_custom_player() -> void:
 	assert_bool(is_instance_valid(custom_player)).is_true()
 
 	# Call cleanup — this should queue_free the custom player
-	SceneManager._cleanup_transition_player(custom_player)
+	sm._cleanup_transition_player(custom_player)
 
 	# Wait for queue_free to take effect
 	await get_tree().process_frame
@@ -55,7 +58,7 @@ func test_cleanup_frees_custom_player() -> void:
 
 func test_cleanup_handles_null_gracefully() -> void:
 	# Calling _cleanup_transition_player(null) must not crash
-	SceneManager._cleanup_transition_player(null)
+	sm._cleanup_transition_player(null)
 
 	# Reaching here means no error occurred
 	assert_bool(true).is_true()
@@ -65,7 +68,7 @@ func test_cleanup_handles_null_gracefully() -> void:
 
 
 func _get_main_player() -> ScreenTransitioner:
-	return SceneManager._transition_service.get_main_player()
+	return sm._transition_service.get_main_player()
 
 
 func _create_mock_transitioner() -> ScreenTransitioner:

@@ -4,9 +4,11 @@ const ScenesScript = preload("res://scene_manager_data/scenes.gd")
 
 var _scenes_cls: Node
 var _layers_to_free: Array[Node] = []
+var sm: SMgrInstance
 
 
 func before() -> void:
+	sm = get_node("/root/SceneManager") as SMgrInstance
 	_scenes_cls = ScenesScript.new()
 	add_child(_scenes_cls)
 	_layers_to_free.clear()
@@ -35,7 +37,7 @@ func _track_layer(layer: SMgrSceneLayer) -> void:
 
 
 func test_create_scene_layer_returns_valid_layer() -> void:
-	var layer: SMgrSceneLayer = SceneManager._layer_mgr.create_scene_layer(
+	var layer: SMgrSceneLayer = sm._layer_mgr.create_scene_layer(
 		Scenes.Id.SCENE_0, "TestLayer"
 	)
 	_track_layer(layer)
@@ -44,7 +46,7 @@ func test_create_scene_layer_returns_valid_layer() -> void:
 
 
 func test_create_scene_layer_sets_scene_id() -> void:
-	var layer: SMgrSceneLayer = SceneManager._layer_mgr.create_scene_layer(
+	var layer: SMgrSceneLayer = sm._layer_mgr.create_scene_layer(
 		Scenes.Id.SCENE_0, "TestLayer"
 	)
 	_track_layer(layer)
@@ -52,7 +54,7 @@ func test_create_scene_layer_sets_scene_id() -> void:
 
 
 func test_create_scene_layer_sets_name() -> void:
-	var layer: SMgrSceneLayer = SceneManager._layer_mgr.create_scene_layer(
+	var layer: SMgrSceneLayer = sm._layer_mgr.create_scene_layer(
 		Scenes.Id.SCENE_0, "CustomLayerName"
 	)
 	_track_layer(layer)
@@ -60,7 +62,7 @@ func test_create_scene_layer_sets_name() -> void:
 
 
 func test_create_scene_layer_with_override_name() -> void:
-	var layer: SMgrSceneLayer = SceneManager._layer_mgr.create_scene_layer(
+	var layer: SMgrSceneLayer = sm._layer_mgr.create_scene_layer(
 		Scenes.Id.SCENE_0, "FallbackName", "OverrideName"
 	)
 	_track_layer(layer)
@@ -68,7 +70,7 @@ func test_create_scene_layer_with_override_name() -> void:
 
 
 func test_create_scene_layer_empty_override_uses_node_name() -> void:
-	var layer: SMgrSceneLayer = SceneManager._layer_mgr.create_scene_layer(
+	var layer: SMgrSceneLayer = sm._layer_mgr.create_scene_layer(
 		Scenes.Id.SCENE_0, "NodeName", ""
 	)
 	_track_layer(layer)
@@ -76,7 +78,7 @@ func test_create_scene_layer_empty_override_uses_node_name() -> void:
 
 
 func test_create_scene_layer_priority_consistent() -> void:
-	var layer: SMgrSceneLayer = SceneManager._layer_mgr.create_scene_layer(
+	var layer: SMgrSceneLayer = sm._layer_mgr.create_scene_layer(
 		Scenes.Id.SCENE_0, "PriorityLayer"
 	)
 	_track_layer(layer)
@@ -84,7 +86,7 @@ func test_create_scene_layer_priority_consistent() -> void:
 
 
 func test_create_scene_layer_is_canvas_layer() -> void:
-	var layer: SMgrSceneLayer = SceneManager._layer_mgr.create_scene_layer(
+	var layer: SMgrSceneLayer = sm._layer_mgr.create_scene_layer(
 		Scenes.Id.SCENE_0, "CanvasLayerTest"
 	)
 	_track_layer(layer)
@@ -92,7 +94,7 @@ func test_create_scene_layer_is_canvas_layer() -> void:
 
 
 func test_create_scene_layer_connects_child_order_changed() -> void:
-	var layer: SMgrSceneLayer = SceneManager._layer_mgr.create_scene_layer(
+	var layer: SMgrSceneLayer = sm._layer_mgr.create_scene_layer(
 		Scenes.Id.SCENE_0, "SignalTest"
 	)
 	_track_layer(layer)
@@ -105,37 +107,37 @@ func test_create_scene_layer_connects_child_order_changed() -> void:
 
 
 func test_get_layer_by_id_returns_correct_layer() -> void:
-	var layer: SMgrSceneLayer = SceneManager._layer_mgr.create_scene_layer(
+	var layer: SMgrSceneLayer = sm._layer_mgr.create_scene_layer(
 		Scenes.Id.SCENE_0, "RetrieveById"
 	)
 	_track_layer(layer)
 
 	var recv: Array[SMgrSceneLayer] = []
-	SceneManager._ebus.get_scene_by_id.emit(recv, Scenes.Id.SCENE_0)
+	sm._ebus.get_scene_by_id.emit(recv, Scenes.Id.SCENE_0)
 	assert_int(recv.size()).is_greater(0)
 
 
 func test_get_layer_by_id_returns_empty_for_nonexistent() -> void:
 	var recv: Array[SMgrSceneLayer] = []
-	SceneManager._ebus.get_scene_by_id.emit(recv, Scenes.Id.SCENE_2)
+	sm._ebus.get_scene_by_id.emit(recv, Scenes.Id.SCENE_2)
 	assert_int(recv.size()).is_equal(0)
 
 
 func test_get_layer_by_name_returns_correct_layer() -> void:
-	var layer: SMgrSceneLayer = SceneManager._layer_mgr.create_scene_layer(
+	var layer: SMgrSceneLayer = sm._layer_mgr.create_scene_layer(
 		Scenes.Id.SCENE_0, "NamedLayer"
 	)
 	_track_layer(layer)
 
 	var recv: Array[SMgrSceneLayer] = []
-	SceneManager._ebus.get_scene_by_name.emit(recv, "NamedLayer")
+	sm._ebus.get_scene_by_name.emit(recv, "NamedLayer")
 	assert_int(recv.size()).is_greater(0)
 	assert_object(recv[0]).is_equal(layer)
 
 
 func test_get_layer_by_name_returns_empty_for_nonexistent() -> void:
 	var recv: Array[SMgrSceneLayer] = []
-	SceneManager._ebus.get_scene_by_name.emit(recv, "NonExistentLayer")
+	sm._ebus.get_scene_by_name.emit(recv, "NonExistentLayer")
 	assert_int(recv.size()).is_equal(0)
 
 
@@ -145,25 +147,25 @@ func test_get_layer_by_name_returns_empty_for_nonexistent() -> void:
 func test_layer_count_increments_after_add() -> void:
 	# Use a unique scene ID (SCENE_2) that no other test uses
 	var recv_before: Array[SMgrSceneLayer] = []
-	SceneManager._ebus.get_scene_by_id.emit(recv_before, Scenes.Id.SCENE_2)
+	sm._ebus.get_scene_by_id.emit(recv_before, Scenes.Id.SCENE_2)
 	var count_before := recv_before.size()
 
-	var layer1: SMgrSceneLayer = SceneManager._layer_mgr.create_scene_layer(
+	var layer1: SMgrSceneLayer = sm._layer_mgr.create_scene_layer(
 		Scenes.Id.SCENE_2, "CounterLayer1"
 	)
 	_track_layer(layer1)
 
 	var recv_after1: Array[SMgrSceneLayer] = []
-	SceneManager._ebus.get_scene_by_id.emit(recv_after1, Scenes.Id.SCENE_2)
+	sm._ebus.get_scene_by_id.emit(recv_after1, Scenes.Id.SCENE_2)
 	assert_int(recv_after1.size()).is_equal(count_before + 1)
 
-	var layer2: SMgrSceneLayer = SceneManager._layer_mgr.create_scene_layer(
+	var layer2: SMgrSceneLayer = sm._layer_mgr.create_scene_layer(
 		Scenes.Id.SCENE_2, "CounterLayer2"
 	)
 	_track_layer(layer2)
 
 	var recv_after2: Array[SMgrSceneLayer] = []
-	SceneManager._ebus.get_scene_by_id.emit(recv_after2, Scenes.Id.SCENE_2)
+	sm._ebus.get_scene_by_id.emit(recv_after2, Scenes.Id.SCENE_2)
 	assert_int(recv_after2.size()).is_equal(count_before + 2)
 
 
@@ -171,7 +173,7 @@ func test_layer_count_increments_after_add() -> void:
 
 
 func test_layer_auto_disposes_when_child_removed() -> void:
-	var layer: SMgrSceneLayer = SceneManager._layer_mgr.create_scene_layer(
+	var layer: SMgrSceneLayer = sm._layer_mgr.create_scene_layer(
 		Scenes.Id.SCENE_0, "AutoDisposeTest"
 	)
 	var dummy := Node.new()
@@ -192,7 +194,7 @@ func test_layer_auto_disposes_when_child_removed() -> void:
 
 
 func test_layer_priority_l_priority_matches_layer() -> void:
-	var layer: SMgrSceneLayer = SceneManager._layer_mgr.create_scene_layer(
+	var layer: SMgrSceneLayer = sm._layer_mgr.create_scene_layer(
 		Scenes.Id.SCENE_0, "PriorityLayer"
 	)
 	_track_layer(layer)
@@ -200,7 +202,7 @@ func test_layer_priority_l_priority_matches_layer() -> void:
 
 
 func test_layer_pause_lower_default_false() -> void:
-	var layer: SMgrSceneLayer = SceneManager._layer_mgr.create_scene_layer(
+	var layer: SMgrSceneLayer = sm._layer_mgr.create_scene_layer(
 		Scenes.Id.SCENE_0, "PauseLowerDefault"
 	)
 	_track_layer(layer)
@@ -208,7 +210,7 @@ func test_layer_pause_lower_default_false() -> void:
 
 
 func test_layer_follow_viewport_default_false() -> void:
-	var layer: SMgrSceneLayer = SceneManager._layer_mgr.create_scene_layer(
+	var layer: SMgrSceneLayer = sm._layer_mgr.create_scene_layer(
 		Scenes.Id.SCENE_0, "FollowViewport"
 	)
 	_track_layer(layer)
@@ -220,17 +222,17 @@ func test_layer_follow_viewport_default_false() -> void:
 
 func test_get_unique_layer_name_no_existing() -> void:
 	var prefix := "UniqueTest_%d" % randi()
-	var unique_name := SceneManager._layer_mgr.get_unique_layer_name(prefix)
+	var unique_name := sm._layer_mgr.get_unique_layer_name(prefix)
 	assert_str(unique_name).is_equal(prefix + "2")
 
 
 func test_get_unique_layer_name_with_existing() -> void:
-	var layer: SMgrSceneLayer = SceneManager._layer_mgr.create_scene_layer(
+	var layer: SMgrSceneLayer = sm._layer_mgr.create_scene_layer(
 		Scenes.Id.SCENE_0, "UniqueBase_Existing"
 	)
 	_track_layer(layer)
 
-	var unique_name := SceneManager._layer_mgr.get_unique_layer_name(
+	var unique_name := sm._layer_mgr.get_unique_layer_name(
 		"UniqueBase_Existing"
 	)
 	assert_str(unique_name).is_equal("UniqueBase_Existing2")
@@ -238,22 +240,22 @@ func test_get_unique_layer_name_with_existing() -> void:
 
 func test_get_unique_layer_name_multiple_existing() -> void:
 	var base := "UniqueMulti_"
-	var layer1: SMgrSceneLayer = SceneManager._layer_mgr.create_scene_layer(
+	var layer1: SMgrSceneLayer = sm._layer_mgr.create_scene_layer(
 		Scenes.Id.SCENE_0, base
 	)
 	_track_layer(layer1)
 
-	var layer2: SMgrSceneLayer = SceneManager._layer_mgr.create_scene_layer(
+	var layer2: SMgrSceneLayer = sm._layer_mgr.create_scene_layer(
 		Scenes.Id.SCENE_1, base + "2"
 	)
 	_track_layer(layer2)
 
-	var layer3: SMgrSceneLayer = SceneManager._layer_mgr.create_scene_layer(
+	var layer3: SMgrSceneLayer = sm._layer_mgr.create_scene_layer(
 		Scenes.Id.SCENE_0, base + "3"
 	)
 	_track_layer(layer3)
 
-	var unique_name := SceneManager._layer_mgr.get_unique_layer_name(base)
+	var unique_name := sm._layer_mgr.get_unique_layer_name(base)
 	assert_str(unique_name).is_equal(base + "4")
 
 
@@ -261,7 +263,7 @@ func test_get_unique_layer_name_multiple_existing() -> void:
 
 
 func test_category_summary_returns_valid_object() -> void:
-	var summary := SceneManager._layer_mgr.get_category_summary(
+	var summary := sm._layer_mgr.get_category_summary(
 		Scenes.Id.SCENE_0
 	)
 	assert_object(summary).is_not_null()
@@ -272,18 +274,18 @@ func test_category_summary_returns_valid_object() -> void:
 
 
 func test_multiple_layers_different_scene_ids() -> void:
-	var layer0: SMgrSceneLayer = SceneManager._layer_mgr.create_scene_layer(
+	var layer0: SMgrSceneLayer = sm._layer_mgr.create_scene_layer(
 		Scenes.Id.SCENE_0, "Scene0Layer"
 	)
 	_track_layer(layer0)
 
-	var layer1: SMgrSceneLayer = SceneManager._layer_mgr.create_scene_layer(
+	var layer1: SMgrSceneLayer = sm._layer_mgr.create_scene_layer(
 		Scenes.Id.SCENE_1, "Scene1Layer"
 	)
 	_track_layer(layer1)
 
 	var recv0: Array[SMgrSceneLayer] = []
-	SceneManager._ebus.get_scene_by_id.emit(recv0, Scenes.Id.SCENE_0)
+	sm._ebus.get_scene_by_id.emit(recv0, Scenes.Id.SCENE_0)
 	var found0 := false
 	for l in recv0:
 		if l.name == "Scene0Layer":
@@ -292,7 +294,7 @@ func test_multiple_layers_different_scene_ids() -> void:
 	assert_bool(found0).is_true()
 
 	var recv1: Array[SMgrSceneLayer] = []
-	SceneManager._ebus.get_scene_by_id.emit(recv1, Scenes.Id.SCENE_1)
+	sm._ebus.get_scene_by_id.emit(recv1, Scenes.Id.SCENE_1)
 	var found1 := false
 	for l in recv1:
 		if l.name == "Scene1Layer":
@@ -302,7 +304,7 @@ func test_multiple_layers_different_scene_ids() -> void:
 
 
 func test_layer_add_node_sets_main_node() -> void:
-	var layer: SMgrSceneLayer = SceneManager._layer_mgr.create_scene_layer(
+	var layer: SMgrSceneLayer = sm._layer_mgr.create_scene_layer(
 		Scenes.Id.SCENE_0, "MainNodeTest"
 	)
 	_track_layer(layer)
@@ -315,7 +317,7 @@ func test_layer_add_node_sets_main_node() -> void:
 
 
 func test_pause_threshold_recalculated_on_create() -> void:
-	var layer: SMgrSceneLayer = SceneManager._layer_mgr.create_scene_layer(
+	var layer: SMgrSceneLayer = sm._layer_mgr.create_scene_layer(
 		Scenes.Id.SCENE_0, "PauseThreshold"
 	)
 	_track_layer(layer)

@@ -143,6 +143,28 @@ func test_call_pre_cb_with_empty_callables() -> void:
 	dummy_scene.queue_free()
 
 
+func test_copy_deep_copies_nested_params() -> void:
+	# Verify nested Dictionary and Array inside params are deep-copied
+	var opts := SceneLoadOptions.new()
+	opts.params = {
+		"nested_dict": {"inner": 1},
+		"nested_array": [1, [2, 3]],
+		"plain": "value"
+	}
+
+	var copied := opts.copy()
+
+	# Modify nested structures in copy
+	copied.params["nested_dict"]["inner"] = 99
+	copied.params["nested_array"][1][0] = 99
+	copied.params["plain"] = "changed"
+
+	# Original should be unaffected
+	assert_int(opts.params["nested_dict"]["inner"]).is_equal(1)
+	assert_int(opts.params["nested_array"][1][0]).is_equal(2)
+	assert_str(opts.params["plain"]).is_equal("value")
+
+
 func test_to_string_format() -> void:
 	var opts := SceneLoadOptions.new(
 		"TestScene", false, 0.5, 0.5
