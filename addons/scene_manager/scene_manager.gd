@@ -37,7 +37,14 @@ enum DuplicateNameMode {
 }
 
 # ------------- [Static Variable] -------------
-static var _log := DLoggerClass.new("Scene Manager")
+static var _log: DLoggerClass
+
+
+static func _get_log() -> DLoggerClass:
+	if not _log:
+		_log = DLoggerClass.new("Scene Manager")
+	return _log
+
 
 # ------------- [Exports] -------------
 @export_group("General Settings")
@@ -80,12 +87,12 @@ var _is_transitioning := false
 func _ready() -> void:
 	if _ebus:
 		if not _ebus.instance_check.get_connections().is_empty():
-			_log.error(
+			_get_log().error(
 				"Multiple SceneManager instances detected. This may cause unexpected behavior."
 			)
 		_ebus.instance_check.connect(_instance_dummy)
 	else:
-		_log.error("_ebus is not set. SceneManager will be disabled.")
+		_get_log().error("_ebus is not set. SceneManager will be disabled.")
 		set_process(false)
 		set_process_mode(PROCESS_MODE_DISABLED)
 		return
@@ -96,7 +103,7 @@ func _ready() -> void:
 	# SMgrData is a Resource, so read it with the loader
 	_scene_db = load(_PS.scene_data_path)
 	if _scene_db == null:
-		_log.error("Scene Manager: Failed to load scene database resource.")
+		_get_log().error("Scene Manager: Failed to load scene database resource.")
 		return
 
 	_layer_mgr = SMgrLayerManager.new(_scene_db, _ebus, _log)
@@ -134,7 +141,7 @@ func _get_actual_scene_container() -> Node:
 	var target_node := get_node_or_null(_actual_scene_container_path)
 	if target_node:
 		return target_node
-	_log.warn(
+	_get_log().warn(
 		"_actual_scene_container_path '%s' is invalid. Falling back to root node.",
 		[_actual_scene_container_path]
 	)
@@ -147,7 +154,7 @@ func _on_initial_setup() -> void:
 	if _wrap_initial_scene:
 		var scene_node := get_tree().current_scene
 		if scene_node == null:
-			_log.warn("Scene Manager: current_scene is null during initial setup. Skipping wrap.")
+			_get_log().warn("Scene Manager: current_scene is null during initial setup. Skipping wrap.")
 			_is_transitioning = false
 			return
 
@@ -157,7 +164,7 @@ func _on_initial_setup() -> void:
 		var current_path := scene_node.scene_file_path
 		_current_scene_enum = _scene_db.get_scene_enum_by_path(current_path)
 
-		_log.info(
+		_get_log().info(
 			"Initial setup: wrapping current scene '{0}' (ID: {1})",
 			[current_path, Scenes.Id.find_key(_current_scene_enum)]
 		)
@@ -169,12 +176,12 @@ func _on_initial_setup() -> void:
 		_get_actual_scene_container().add_child(layer)
 		layer.add_node(scene_node)
 		if _current_scene_enum == Scenes.Id.NONE:
-			_log.warn("Initial scene not found in DB (Scenes.Id.NONE).")
+			_get_log().warn("Initial scene not found in DB (Scenes.Id.NONE).")
 
 	# Initial fade-in effect
 	var player := _transition_service.get_main_player()
 	if not player:
-		_log.error("_on_initial_setup: Failed to get transition player.")
+		_get_log().error("_on_initial_setup: Failed to get transition player.")
 		_is_transitioning = false
 		return
 
@@ -203,7 +210,7 @@ func _remove_name_node(sc: SMgrSceneLayer, p_name: String) -> void:
 func _perform_scene_setup(scene_id: Scenes.Id, options: SceneLoadOptions) -> Node:
 	var new_scene_node := _create_scene_instance_blocking(scene_id)
 	if not new_scene_node:
-		_log.error("Failed to instantiate scene: {0}", [Scenes.Id.find_key(scene_id)])
+		_get_log().error("Failed to instantiate scene: {0}", [Scenes.Id.find_key(scene_id)])
 		return null
 
 	_notify_scene_init(new_scene_node, options.params)
@@ -263,7 +270,7 @@ func get_current_scene_node() -> Node:
 ## Unloads a SceneLayer matching the specified node name.
 func unload_scene_by_name(node_name: String) -> void:
 	if node_name.is_empty():
-		_log.warn("unload_scene_by_name called with empty name.")
+		_get_log().warn("unload_scene_by_name called with empty name.")
 		return
 	if not _ebus:
 		return
@@ -280,14 +287,14 @@ func switch_to_scene(
 	scene_loaded_cb: Callable = Callable()
 ) -> Node:
 	if scene_id == Scenes.Id.NONE:
-		_log.warn("switch_to_scene called with NONE.")
+		_get_log().warn("switch_to_scene called with NONE.")
 		return null
 	if not _ebus:
-		_log.error("switch_to_scene: _ebus is not set.")
+		_get_log().error("switch_to_scene: _ebus is not set.")
 		return null
 
 	if _is_transitioning:
-		_log.warn(
+		_get_log().warn(
 			"switch_to_scene: Transition already in progress. Ignoring request for {0}.",
 			[Scenes.Id.find_key(scene_id)]
 		)
@@ -302,7 +309,7 @@ func switch_to_scene(
 	# We preserve the existing layer name and re-notify categories to maintain consistency.
 	var is_reloading := scene_id == _current_scene_enum
 
-	_log.info(
+	_get_log().info(
 		"Switching to scene: {0} (is_reloading: {1})", [Scenes.Id.find_key(scene_id), is_reloading]
 	)
 
@@ -315,7 +322,7 @@ func switch_to_scene(
 	# --- Transition Start ---
 	var player := _transition_service.setup_transition_player(options)
 	if not player:
-		_log.error("switch_to_scene: Failed to setup transition player.")
+		_get_log().error("switch_to_scene: Failed to setup transition player.")
 		_is_transitioning = false
 		return null
 
@@ -337,7 +344,7 @@ func switch_to_scene(
 	# Instantiate and setup the scene (this internally emits 'scene_loaded')
 	var new_scene_node := _perform_scene_setup(scene_id, options)
 	if not new_scene_node:
-		_log.error("Failed to instantiate switch_to_scene: {0}", [Scenes.Id.find_key(scene_id)])
+		_get_log().error("Failed to instantiate switch_to_scene: {0}", [Scenes.Id.find_key(scene_id)])
 		player.set_clickable(true)
 		_cleanup_transition_player(player)
 		_is_transitioning = false
@@ -360,7 +367,7 @@ func switch_to_scene(
 
 	_cleanup_transition_player(player)
 
-	_log.debug("Scene transition completed: {0}", [Scenes.Id.find_key(scene_id)])
+	_get_log().debug("Scene transition completed: {0}", [Scenes.Id.find_key(scene_id)])
 	scene_transition_completed.emit(scene_id)
 	_is_transitioning = false
 	return new_scene_node
@@ -373,13 +380,13 @@ func add_scene(
 	options := SceneLoadOptions.new()
 ) -> Node:
 	if scene_id == Scenes.Id.NONE:
-		_log.warn("add_scene called with NONE.")
+		_get_log().warn("add_scene called with NONE.")
 		return null
 	if not _ebus:
-		_log.error("add_scene: _ebus is not set.")
+		_get_log().error("add_scene: _ebus is not set.")
 		return null
 
-	_log.info("Adding scene: {0}", [Scenes.Id.find_key(scene_id)])
+	_get_log().info("Adding scene: {0}", [Scenes.Id.find_key(scene_id)])
 
 	var summary := _layer_mgr.get_category_summary(scene_id)
 	var target_name := (
@@ -393,7 +400,7 @@ func add_scene(
 				unload_scene_by_name(target_name)
 
 			DuplicateNameMode.WARN_AND_SKIP:
-				_log.warn("Scene with name '{0}' is already loaded. Skipping.", [target_name])
+				_get_log().warn("Scene with name '{0}' is already loaded. Skipping.", [target_name])
 				return null
 
 			DuplicateNameMode.RENAME_NEW:
@@ -421,17 +428,17 @@ func add_scene(
 ## Removes a specific scene by its ID. (Additive counterpart of add_scene)
 func remove_scene(scene_id: Scenes.Id) -> bool:
 	if scene_id == Scenes.Id.NONE:
-		_log.warn("remove_scene called with NONE.")
+		_get_log().warn("remove_scene called with NONE.")
 		return false
 	if not _ebus:
-		_log.error("remove_scene: _ebus is not set.")
+		_get_log().error("remove_scene: _ebus is not set.")
 		return false
 
-	_log.info("Removing scene: {0}", [Scenes.Id.find_key(scene_id)])
+	_get_log().info("Removing scene: {0}", [Scenes.Id.find_key(scene_id)])
 
 	var layer := _get_layer_by_id(scene_id)
 	if not layer:
-		_log.warn("Scene '{0}' is not currently loaded.", [Scenes.Id.find_key(scene_id)])
+		_get_log().warn("Scene '{0}' is not currently loaded.", [Scenes.Id.find_key(scene_id)])
 		return false
 
 	_remove_node_safely(layer)
@@ -443,7 +450,7 @@ func remove_scene(scene_id: Scenes.Id) -> bool:
 
 func load_previous_scene(options := SceneLoadOptions.new()) -> bool:
 	if _history_stack.size() == 0:
-		_log.warn("Attempted to load previous scene, but history is empty.")
+		_get_log().warn("Attempted to load previous scene, but history is empty.")
 		return false
 
 	back_to_previous_by_offset(1, options)
@@ -454,7 +461,7 @@ func load_previous_scene(options := SceneLoadOptions.new()) -> bool:
 ## from the current scene and transition to that scene.
 func back_to_previous_by_offset(offset: int, options := SceneLoadOptions.new()) -> void:
 	if offset <= 0:
-		_log.warn("Offset must be greater than 0.")
+		_get_log().warn("Offset must be greater than 0.")
 		return
 
 	var target_scene := Scenes.Id.NONE
@@ -466,7 +473,7 @@ func back_to_previous_by_offset(offset: int, options := SceneLoadOptions.new()) 
 			break
 
 	if target_scene == Scenes.Id.NONE:
-		_log.warn("Failed to go back, history is empty or offset out of bounds.")
+		_get_log().warn("Failed to go back, history is empty or offset out of bounds.")
 		return
 
 	switch_to_scene(target_scene, false, options)
@@ -477,7 +484,7 @@ func back_to_previous_by_offset(offset: int, options := SceneLoadOptions.new()) 
 func reload_current_scene(options := SceneLoadOptions.new()) -> bool:
 	# Use the same parent node the scene currently has to keep it consistent.
 	if _current_scene_enum == Scenes.Id.NONE:
-		_log.warn("Attempted to reload current scene, but current scene is NONE.")
+		_get_log().warn("Attempted to reload current scene, but current scene is NONE.")
 		return false
 
 	# The reload logic is handled within switch_to_scene(), so simply calling it is sufficient.
@@ -489,16 +496,16 @@ func reload_current_scene(options := SceneLoadOptions.new()) -> bool:
 ## @param fade_time Duration of the fade-out (seconds).
 func exit_game(fade_time: float = 1.0) -> void:
 	if _is_transitioning:
-		_log.warn("exit_game: Transition already in progress. Ignoring request.")
+		_get_log().warn("exit_game: Transition already in progress. Ignoring request.")
 		return
 	if not _ebus:
-		_log.error("exit_game: _ebus is not set.")
+		_get_log().error("exit_game: _ebus is not set.")
 		return
 
 	_is_transitioning = true
 	var player := _transition_service.get_main_player()
 	if not player:
-		_log.error("exit_game: Failed to get transition player.")
+		_get_log().error("exit_game: Failed to get transition player.")
 		_is_transitioning = false
 		return
 
@@ -512,7 +519,7 @@ func exit_game(fade_time: float = 1.0) -> void:
 # ------------- [Async Loading] -------------
 func start_async_load(scene_id: Scenes.Id, use_sub_threads: bool = true) -> void:
 	if scene_id == Scenes.Id.NONE:
-		_log.warn("Start_async_load called with Scenes.Id.NONE.")
+		_get_log().warn("Start_async_load called with Scenes.Id.NONE.")
 		return
 
 	var path := _scene_db.get_scene_path_from_enum(scene_id)
@@ -525,7 +532,7 @@ func start_async_load(scene_id: Scenes.Id, use_sub_threads: bool = true) -> void
 				load_finished.emit()
 			else:
 				load_failed.emit()
-				_log.error("Async load failed for {0}", [path]),
+				_get_log().error("Async load failed for {0}", [path]),
 		use_sub_threads
 	)
 
@@ -539,16 +546,16 @@ func load_scene_with_transition(
 	opt_activate := opt_play_in
 ) -> void:
 	if next_scene == Scenes.Id.NONE:
-		_log.error("Scene Manager: next_scene cannot be NONE.")
+		_get_log().error("Scene Manager: next_scene cannot be NONE.")
 		return
 	if transition_scene == Scenes.Id.NONE:
-		_log.error("Scene Manager: transition_scene cannot be NONE.")
+		_get_log().error("Scene Manager: transition_scene cannot be NONE.")
 		return
 	if not _ebus:
-		_log.error("load_scene_with_transition: _ebus is not set.")
+		_get_log().error("load_scene_with_transition: _ebus is not set.")
 		return
 
-	_log.info(
+	_get_log().info(
 		"Loading scene with transition: {0} -> {1}",
 		[Scenes.Id.find_key(transition_scene), Scenes.Id.find_key(next_scene)]
 	)
@@ -567,7 +574,7 @@ func load_scene_with_transition(
 func instantiate_async_result() -> void:
 	var path := _scene_db.get_scene_path_from_enum(_reserved.scene_id)
 	if path == "" or _reserved.scene_id == Scenes.Id.NONE:
-		_log.warn("instantiate_async_result: No reserved scene to instantiate.")
+		_get_log().warn("instantiate_async_result: No reserved scene to instantiate.")
 		return
 
 	# Add current scene to history before switching
@@ -607,14 +614,14 @@ func instantiate_async_result() -> void:
 ## This is the final step of the 'load_scene_with_transition' flow.
 func activate_prepared_scene() -> Node:
 	if _reserved.scene_id == Scenes.Id.NONE:
-		_log.warn("activate_prepared_scene called but no scene is reserved.")
+		_get_log().warn("activate_prepared_scene called but no scene is reserved.")
 		return null
 	if not _ebus:
-		_log.error("activate_prepared_scene: _ebus is not set.")
+		_get_log().error("activate_prepared_scene: _ebus is not set.")
 		return null
 
 	if _is_transitioning:
-		_log.warn(
+		_get_log().warn(
 			"activate_prepared_scene: Transition already in progress. Ignoring request for {0}.",
 			[Scenes.Id.find_key(_reserved.scene_id)]
 		)
@@ -622,12 +629,12 @@ func activate_prepared_scene() -> Node:
 
 	_is_transitioning = true
 
-	_log.info("Activating prepared scene: {0}", [Scenes.Id.find_key(_reserved.scene_id)])
+	_get_log().info("Activating prepared scene: {0}", [Scenes.Id.find_key(_reserved.scene_id)])
 
 	var recv: Array[SMgrSceneLayer]
 	_ebus.get_scene_by_id.emit(recv, _reserved.scene_id)
 	if recv.is_empty():
-		_log.error("Scene Manager: Reserved scene entry missing.")
+		_get_log().error("Scene Manager: Reserved scene entry missing.")
 		_is_transitioning = false
 		return null
 
@@ -635,7 +642,7 @@ func activate_prepared_scene() -> Node:
 
 	var player := _transition_service.setup_transition_player(_reserved.options)
 	if not player:
-		_log.error("activate_prepared_scene: Failed to setup transition player.")
+		_get_log().error("activate_prepared_scene: Failed to setup transition player.")
 		_is_transitioning = false
 		return null
 
@@ -679,7 +686,7 @@ func activate_prepared_scene() -> Node:
 
 	_cleanup_transition_player(player)
 
-	_log.debug("Scene transition completed: {0}", [Scenes.Id.find_key(_current_scene_enum)])
+	_get_log().debug("Scene transition completed: {0}", [Scenes.Id.find_key(_current_scene_enum)])
 	scene_transition_completed.emit(_current_scene_enum)
 
 	_is_transitioning = false
@@ -699,7 +706,7 @@ func _cleanup_transition_player(player: ScreenTransitioner) -> void:
 
 func _get_scene_blocking(scene_id: Scenes.Id) -> PackedScene:
 	if scene_id == Scenes.Id.NONE:
-		_log.warn("_get_scene_blocking called with Scenes.Id.NONE.")
+		_get_log().warn("_get_scene_blocking called with Scenes.Id.NONE.")
 		return null
 	return load(_scene_db.get_scene_path_from_enum(scene_id))
 

@@ -10,7 +10,13 @@ signal load_completed(path: String, resource: Resource)
 signal batch_completed(resources: Dictionary)
 
 # ------------- [Constants] -------------
-static var _log := DLoggerClass.new("Scene Manager")
+static var _log: DLoggerClass
+
+
+static func _get_log() -> DLoggerClass:
+	if not _log:
+		_log = DLoggerClass.new("Scene Manager")
+	return _log
 
 
 # ------------- [Defines] -------------
@@ -105,12 +111,12 @@ func _update_task(task: _LoadTask) -> bool:
 		ResourceLoader.THREAD_LOAD_LOADED:
 			var res := ResourceLoader.load_threaded_get(task.path)
 			if res == null:
-				_log.warn("ResourceLoaderMgr: load_threaded_get returned null: {0}", [task.path])
+				_get_log().warn("ResourceLoaderMgr: load_threaded_get returned null: {0}", [task.path])
 			_finalize_task(task, res)
 			return true
 
 		ResourceLoader.THREAD_LOAD_FAILED, ResourceLoader.THREAD_LOAD_INVALID_RESOURCE:
-			_log.warn("ResourceLoaderMgr: Load failed or invalid resource: {0}", [task.path])
+			_get_log().warn("ResourceLoaderMgr: Load failed or invalid resource: {0}", [task.path])
 			_finalize_task(task, null)
 			return true
 
@@ -168,7 +174,7 @@ func request(path: String, callback: Callable, use_sub_threads: bool = true) -> 
 		_tasks[path] = _LoadTask.new(path, callback)
 		set_process(true)
 	else:
-		_log.warn("ResourceLoaderMgr: Request failed for path: {0} (Error: {1})", [path, err])
+		_get_log().warn("ResourceLoaderMgr: Request failed for path: {0} (Error: {1})", [path, err])
 
 
 ## Request multiple resources to be loaded
@@ -201,6 +207,8 @@ func is_loading(path: String) -> bool:
 
 
 ## Cancels all active loading tasks.
+## Note: Godot 4.x does not support cancelling threaded loads directly.
+## We clear our tracking; in-flight loads will complete but results are discarded.
 func cancel_all() -> void:
 	_tasks.clear()
 	_path_to_batches.clear()
