@@ -90,21 +90,36 @@ func _init(
 
 
 ## Create a deep copy of the SceneLoadOptions instance.
+## Duplicate only shallow-copies @export properties, so Callables and
+## nested Dictionary/Array/Resource values inside `params` must be
+## deep-copied explicitly.
 func copy() -> SceneLoadOptions:
 	var c := self.duplicate() as SceneLoadOptions
 	if c:
+		# duplicate() copies Callable references — that's fine because
+		# Callables are immutable value types in GDScript.
 		c.pre_wrap_cb = pre_wrap_cb
 		c.pre_node_cb = pre_node_cb
 		c.scene_loaded_cb = scene_loaded_cb
+		# params may contain mutable objects (Dict, Array, Resource).
 		c.params = _deep_copy_variant(params)
 	return c
 
 
+## Recursively deep-copies Dictionary, Array, and Resource values.
+## Primitive types (int, float, String, bool) and Callables are returned as-is.
 static func _deep_copy_variant(value: Variant) -> Variant:
 	if value is Dictionary:
-		return value.duplicate(true)
+		var copy := {}
+		for key in value:
+			copy[key] = _deep_copy_variant(value[key])
+		return copy
 	if value is Array:
-		return value.duplicate(true)
+		var copy: Array = []
+		copy.resize(value.size())
+		for i in value.size():
+			copy[i] = _deep_copy_variant(value[i])
+		return copy
 	if value is Resource:
 		return value.duplicate(true)
 	return value
