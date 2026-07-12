@@ -193,3 +193,41 @@ func test_multiple_resizes() -> void:
 
 	assert_int(_buffer.size()).is_equal(1)
 	assert_str(_buffer.pop()).is_equal("c")
+
+
+# ------------- [peek] -------------
+
+
+func test_peek_empty_returns_null() -> void:
+	assert_object(_buffer.peek()).is_null()
+
+
+func test_peek_single_item() -> void:
+	_buffer.push("a")
+	assert_str(_buffer.peek()).is_equal("a")
+	# peek should not remove the item
+	assert_int(_buffer.size()).is_equal(1)
+
+
+func test_peek_returns_most_recent() -> void:
+	_buffer.push("a")
+	_buffer.push("b")
+	_buffer.push("c")
+	assert_str(_buffer.peek()).is_equal("c")
+
+
+func test_peek_after_pop() -> void:
+	_buffer.push("a")
+	_buffer.push("b")
+	_buffer.pop()  # remove "b"
+	assert_str(_buffer.peek()).is_equal("a")
+
+
+func test_peek_does_not_modify_state() -> void:
+	_buffer.push("x")
+	_buffer.push("y")
+	var before_size := _buffer.size()
+	_buffer.peek()
+	_buffer.peek()
+	assert_int(_buffer.size()).is_equal(before_size)
+	assert_str(_buffer.peek()).is_equal("y")

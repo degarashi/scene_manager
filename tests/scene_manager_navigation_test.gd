@@ -483,6 +483,79 @@ func test_back_to_previous_by_offset() -> void:
 	)
 
 
+func test_back_to_previous_by_offset_zero_is_noop() -> void:
+	# back_to_previous_by_offset with offset=0 should warn and
+	# not change the current scene.
+	var opts := SceneLoadOptions.new()
+	opts.play_in_time = 0.0
+	opts.play_out_time = 0.0
+
+	await _smgr.switch_to_scene(Scenes.Id.SCENE_0, false, opts)
+	await _smgr.switch_to_scene(Scenes.Id.SCENE_1, true, opts)
+	_smgr.clear_history()
+
+	var current_before := _smgr.get_current_scene_node()
+	var path_before := current_before.scene_file_path
+
+	_smgr.back_to_previous_by_offset(0, opts)
+
+	var current_after := _smgr.get_current_scene_node()
+	assert_str(current_after.scene_file_path).is_equal(path_before)
+
+
+func test_back_to_previous_by_offset_negative_is_noop() -> void:
+	# back_to_previous_by_offset with negative offset should warn
+	# and not change the current scene.
+	var opts := SceneLoadOptions.new()
+	opts.play_in_time = 0.0
+	opts.play_out_time = 0.0
+
+	await _smgr.switch_to_scene(Scenes.Id.SCENE_0, false, opts)
+	await _smgr.switch_to_scene(Scenes.Id.SCENE_1, true, opts)
+	_smgr.clear_history()
+
+	var current_before := _smgr.get_current_scene_node()
+	var path_before := current_before.scene_file_path
+
+	_smgr.back_to_previous_by_offset(-1, opts)
+
+	var current_after := _smgr.get_current_scene_node()
+	assert_str(current_after.scene_file_path).is_equal(path_before)
+
+
+func test_clear_history_empties_stack() -> void:
+	# clear_history should remove all entries from the history.
+	var opts := SceneLoadOptions.new()
+	opts.play_in_time = 0.0
+	opts.play_out_time = 0.0
+
+	await _smgr.switch_to_scene(Scenes.Id.SCENE_0, false, opts)
+	await _smgr.switch_to_scene(Scenes.Id.SCENE_1, true, opts)
+	await _smgr.switch_to_scene(Scenes.Id.SCENE_2, true, opts)
+
+	_smgr.clear_history()
+	assert_int(_smgr.get_history_count()).is_equal(0)
+	assert_array(_smgr.get_history_list()).is_empty()
+
+
+func test_clear_history_does_not_affect_current_scene() -> void:
+	# clear_history should not change the currently active scene.
+	var opts := SceneLoadOptions.new()
+	opts.play_in_time = 0.0
+	opts.play_out_time = 0.0
+
+	await _smgr.switch_to_scene(Scenes.Id.SCENE_0, false, opts)
+	await _smgr.switch_to_scene(Scenes.Id.SCENE_1, true, opts)
+
+	_smgr.clear_history()
+
+	var current_node := _smgr.get_current_scene_node()
+	assert_object(current_node).is_not_null()
+	assert_str(current_node.scene_file_path).is_equal(
+		Scenes.get_scene_path(Scenes.Id.SCENE_1)
+	)
+
+
 func test_reload_current_scene_returns_true() -> void:
 	# reload_current_scene should return true when a scene is
 	# active.
@@ -493,6 +566,21 @@ func test_reload_current_scene_returns_true() -> void:
 	await _smgr.switch_to_scene(Scenes.Id.SCENE_0, false, opts)
 	var result := await _smgr.reload_current_scene(opts)
 	assert_bool(result).is_true()
+
+
+func test_reload_current_scene_when_none_returns_false() -> void:
+	# reload_current_scene should return false when current scene
+	# is NONE (e.g. after remove_scene).
+	var opts := SceneLoadOptions.new()
+	opts.play_in_time = 0.0
+	opts.play_out_time = 0.0
+
+	await _smgr.switch_to_scene(Scenes.Id.SCENE_0, false, opts)
+	_smgr.remove_scene(Scenes.Id.SCENE_0)
+	await get_tree().process_frame
+
+	var result := await _smgr.reload_current_scene(opts)
+	assert_bool(result).is_false()
 
 
 # ------------- [Current Scene State] -------------
