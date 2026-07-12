@@ -34,7 +34,9 @@ func _on_begin_loading_button_pressed() -> void:
 		Scenes.Id.LOADING_SCREEN,
 		true,
 		SMgrInstance.DuplicateNameMode.WARN_AND_SKIP,
-		opt
+		opt,
+		opt,
+		true  # unload_old: free the old scene immediately
 	)
 
 

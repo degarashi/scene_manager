@@ -543,7 +543,8 @@ func load_scene_with_transition(
 	add_to_back: bool = true,
 	mode: DuplicateNameMode = DuplicateNameMode.WARN_AND_SKIP,
 	opt_play_in := SceneLoadOptions.new(),
-	opt_activate := opt_play_in
+	opt_activate := opt_play_in,
+	unload_old: bool = false
 ) -> void:
 	if next_scene == Scenes.Id.NONE:
 		_get_log().error("Scene Manager: next_scene cannot be NONE.")
@@ -569,6 +570,16 @@ func load_scene_with_transition(
 	trans_options.node_name = _loading_node_name
 
 	add_scene(transition_scene, mode, trans_options)
+
+	# Immediately free the old scene to release memory (optional)
+	# Skip the loading screen layer (just added above)
+	if unload_old:
+		_ebus.process_scene_layer.emit(
+			func(sc: SMgrSceneLayer) -> void:
+				if sc.name != _loading_node_name:
+					_remove_node_safely(sc)
+		)
+		_trash_can.flush()
 
 
 func instantiate_async_result() -> void:
