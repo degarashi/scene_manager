@@ -37,5 +37,12 @@ theme_override_font_sizes/font_size = 14
 text = "(0)"
 vertical_alignment = 1
 
+[node name="category_option" type="OptionButton" parent="." unique_id=456789012]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+tooltip_text = "Assign category to all scenes in this path"
+
 [connection signal="button_up" from="remove_button" to="." method="_on_remove_button_up"]
 [connection signal="button_up" from="jump_button" to="." method="_on_jump_button_up"]
+[connection signal="item_selected" from="category_option" to="." method="_on_category_option_selected"]

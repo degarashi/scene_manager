@@ -24,6 +24,14 @@ extends DebouncedResource
 		_validate_connections()
 		_on_any_data_changed()
 
+## Dictionary mapping include paths to category IDs (int)
+## Used for batch category assignment based on directory structure
+@export var _include_path_categories: Dictionary[String, int] = {}:
+	set(value):
+		if _include_path_categories != value:
+			_include_path_categories = value
+			_on_any_data_changed()
+
 # ------------- [Private Variable] -------------
 var _is_sorting: bool = false
 
@@ -206,6 +214,29 @@ func get_scene_enum_by_path(path: String) -> Scenes.Id:
 ## @return Array of paths
 func get_include_list() -> Array[String]:
 	return _include_list
+
+
+## Retrieves the category ID assigned to an include path
+## @param path The include path to check
+## @return Category ID (int) or ResourceUID.INVALID_ID if no category assigned
+func get_include_path_category(path: String) -> int:
+	return _include_path_categories.get(path, ResourceUID.INVALID_ID)
+
+
+## Sets the category ID for an include path
+## @param path The include path
+## @param category_id The category ID to assign (use ResourceUID.INVALID_ID to clear)
+func set_include_path_category(path: String, category_id: int) -> void:
+	if category_id == ResourceUID.INVALID_ID:
+		_include_path_categories.erase(path)
+	else:
+		_include_path_categories[path] = category_id
+
+
+## Retrieves all include path to category mappings
+## @return Dictionary mapping paths to category IDs
+func get_include_path_categories() -> Dictionary[String, int]:
+	return _include_path_categories.duplicate()
 
 
 ## Retrieves the full list of categories

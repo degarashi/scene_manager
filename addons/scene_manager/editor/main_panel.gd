@@ -300,7 +300,32 @@ func _add_include_item(path: String, count: int) -> void:
 	item.prepare(path, item)
 	item.set_count(count)
 	_AF.connect_if_not_connected(item.on_remove, _remove_include_path)
+
+	# Setup category dropdown
+	var data := _manager_data.get_data()
+	var categories := data.get_categories_list()
+	var current_category_id := data.get_include_path_category(path)
+	item.setup_category_dropdown(categories, current_category_id)
+	_AF.connect_if_not_connected(item.on_category_changed, _on_include_category_changed)
+
 	_include_path_list.add_child(item)
+
+
+func _on_include_category_changed(path: String, category_id: int) -> void:
+	# Get the old category ID to remove from scenes
+	var data := _manager_data.get_data()
+	var old_category_id := data.get_include_path_category(path)
+
+	# Update the mapping
+	_manager_data.set_include_path_category(path, category_id)
+
+	# Remove old category from scenes under this path
+	if old_category_id != ResourceUID.INVALID_ID:
+		_manager_data.remove_category_from_include_scenes(path, old_category_id)
+
+	# Assign new category to scenes under this path
+	if category_id != ResourceUID.INVALID_ID:
+		_manager_data.assign_category_to_include_scenes(path, category_id)
 
 
 func _reload_ui_includes() -> void:

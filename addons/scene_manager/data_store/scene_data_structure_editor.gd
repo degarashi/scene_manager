@@ -88,6 +88,7 @@ func _cleanup_filesystem_monitoring() -> void:
 ## - New entries are registered as SMgrDataScene via set_scene_data().
 ## - Existing scenes whose path changed (moved file) are updated.
 ## - Scenes managed by the include list but absent from entries are removed.
+## - New scenes are auto-assigned to categories based on include path mappings.
 func _sync_smgr_data_from_entries(entries: Array[FEWEntry]) -> void:
 	_log.debug("Syncing SMgrData from watcher entries...")
 
@@ -103,6 +104,9 @@ func _sync_smgr_data_from_entries(entries: Array[FEWEntry]) -> void:
 			if new_scene:
 				_data.set_scene_data(entry.uid, new_scene)
 				_log.debug("  Registered: %s (%d)" % [entry.name, entry.uid])
+
+				# Auto-assign category based on include path mapping
+				_auto_assign_category_to_scene(new_scene)
 		else:
 			# Existing file — update path if the file was moved
 			var actual_path := ResourceUID.get_id_path(entry.uid)
@@ -127,6 +131,33 @@ func _sync_smgr_data_from_entries(entries: Array[FEWEntry]) -> void:
 		_data.remove_scene_data(uid)
 
 	_log.debug("Sync complete.")
+
+
+## Automatically assigns a category to a scene based on include path mappings.
+## Finds the longest matching include path and assigns its category.
+## @param scene The scene to potentially assign a category to
+func _auto_assign_category_to_scene(scene: SMgrDataScene) -> void:
+	var best_match_path := ""
+	var best_match_length := 0
+
+	# Find the longest matching include path (most specific match)
+	for inc_path in _data.get_include_list():
+		if scene.path.begins_with(inc_path):
+			if inc_path.length() > best_match_length:
+				best_match_path = inc_path
+				best_match_length = inc_path.length()
+
+	if best_match_path.is_empty():
+		return
+
+	var category_id := _data.get_include_path_category(best_match_path)
+	if category_id == ResourceUID.INVALID_ID:
+		return
+
+	if not category_id in scene.categories:
+		scene.categories.append(category_id)
+		scene.emit_changed()
+		_log.debug("  Auto-assigned category to %s from path '%s'." % [scene.name, best_match_path])
 
 
 func _export_scene_enum_string() -> String:
@@ -330,6 +361,60 @@ func remove_category(category_id: int) -> void:
 		if category_id in sc.categories:
 			sc.categories.erase(category_id)
 			sc.emit_changed()
+
+
+## Sets the category ID for an include path
+## @param path The include path
+## @param category_id The category ID to assign (use ResourceUID.INVALID_ID to clear)
+func set_include_path_category(path: String, category_id: int) -> void:
+	_data.set_include_path_category(path, category_id)
+
+
+## Retrieves the category ID assigned to an include path
+## @param path The include path to check
+## @return Category ID (int) or ResourceUID.INVALID_ID if no category assigned
+func get_include_path_category(path: String) -> int:
+	return _data.get_include_path_category(path)
+
+
+## Batch assigns a category to all scenes under an include path
+## @param path The include path
+## @param category_id The category ID to assign
+## @return Number of scenes that were assigned
+func assign_category_to_include_scenes(path: String, category_id: int) -> int:
+	if _data.get_category_from_id(category_id) == null:
+		_log.error("Cannot assign category ID '%d' (category does not exist)." % category_id)
+		return 0
+
+	var assigned_count := 0
+	for sc in _data.get_scenes_all():
+		if sc.path.begins_with(path):
+			if not category_id in sc.categories:
+				sc.categories.append(category_id)
+				sc.emit_changed()
+				assigned_count += 1
+
+	_log.info("Assigned category to %d scenes under '%s'." % [assigned_count, path])
+	return assigned_count
+
+
+## Removes a category from all scenes under an include path
+## @param path The include path
+## @param category_id The category ID to remove
+## @return Number of scenes that were affected
+func remove_category_from_include_scenes(path: String, category_id: int) -> int:
+	var removed_count := 0
+	for sc in _data.get_scenes_all():
+		if sc.path.begins_with(path):
+			var idx := sc.categories.find(category_id)
+			if idx != -1:
+				sc.categories.remove_at(idx)
+				sc.emit_changed()
+				removed_count += 1
+
+	if removed_count > 0:
+		_log.info("Removed category from %d scenes under '%s'." % [removed_count, path])
+	return removed_count
 
 
 ## Adds an include path and scans the target directory or file.
