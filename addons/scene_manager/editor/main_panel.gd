@@ -324,8 +324,20 @@ func _on_include_category_changed(path: String, category_id: int) -> void:
 		_manager_data.remove_category_from_include_scenes(path, old_category_id)
 
 	# Assign new category to scenes under this path
-	if category_id != ResourceUID.INVALID_ID:
+	# Use _is_valid_category_id to guard against invalid IDs (0 or INVALID_ID)
+	if _is_valid_category_id(category_id):
 		_manager_data.assign_category_to_include_scenes(path, category_id)
+
+
+## Returns true if category_id is a valid, existing category ID.
+## Guards against ResourceUID.INVALID_ID (none) and 0 (which can occur
+## when OptionButton metadata truncates large negative values).
+func _is_valid_category_id(category_id: int) -> bool:
+	if category_id == ResourceUID.INVALID_ID:
+		return false
+	if category_id == 0:
+		return false
+	return _manager_data.get_data().get_category_from_id(category_id) != null
 
 
 func _reload_ui_includes() -> void:
