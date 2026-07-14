@@ -5,6 +5,9 @@ extends CanvasLayer
 # ------------- [Signal] -------------
 signal layer_disposed(id: Scenes.Id)
 
+# ------------- [Constants] -------------
+const _AF = preload("uid://dlgh4u64a7qxk")  # aux_func.gd
+
 # ------------- [Exports] -------------
 @export var _ebus: SMgrEbusRuntime
 
@@ -18,16 +21,12 @@ var _main_node: Node
 # ------------- [Callbacks] -------------
 func _exit_tree() -> void:
 	# Disconnect all signals to prevent memory leaks and dangling references
-	if child_order_changed.is_connected(_on_child_order_changed):
-		child_order_changed.disconnect(_on_child_order_changed)
-	if _ebus and _ebus.pause_threshold_changed.is_connected(_pause_threshold_changed):
-		_ebus.pause_threshold_changed.disconnect(_pause_threshold_changed)
-	if _ebus and _ebus.get_scene_by_id.is_connected(_get_scene_by_id):
-		_ebus.get_scene_by_id.disconnect(_get_scene_by_id)
-	if _ebus and _ebus.get_scene_by_name.is_connected(_get_scene_by_name):
-		_ebus.get_scene_by_name.disconnect(_get_scene_by_name)
-	if _ebus and _ebus.process_scene_layer.is_connected(_process_scene_layer):
-		_ebus.process_scene_layer.disconnect(_process_scene_layer)
+	_AF.disconnect_if_connected(child_order_changed, _on_child_order_changed)
+	if _ebus:
+		_AF.disconnect_if_connected(_ebus.pause_threshold_changed, _pause_threshold_changed)
+		_AF.disconnect_if_connected(_ebus.get_scene_by_id, _get_scene_by_id)
+		_AF.disconnect_if_connected(_ebus.get_scene_by_name, _get_scene_by_name)
+		_AF.disconnect_if_connected(_ebus.process_scene_layer, _process_scene_layer)
 
 
 func _on_child_order_changed() -> void:
@@ -72,12 +71,13 @@ func prepare(
 	follow_viewport_enabled = p_follow
 
 	# Connect to the signal that monitors the addition/removal of child nodes
-	child_order_changed.connect(_on_child_order_changed)
+	_AF.connect_if_not_connected(child_order_changed, _on_child_order_changed)
 	# Receive notification of the layer priority to be paused from SceneManager
-	_ebus.pause_threshold_changed.connect(_pause_threshold_changed)
-	_ebus.get_scene_by_id.connect(_get_scene_by_id)
-	_ebus.get_scene_by_name.connect(_get_scene_by_name)
-	_ebus.process_scene_layer.connect(_process_scene_layer)
+	if _ebus:
+		_AF.connect_if_not_connected(_ebus.pause_threshold_changed, _pause_threshold_changed)
+		_AF.connect_if_not_connected(_ebus.get_scene_by_id, _get_scene_by_id)
+		_AF.connect_if_not_connected(_ebus.get_scene_by_name, _get_scene_by_name)
+		_AF.connect_if_not_connected(_ebus.process_scene_layer, _process_scene_layer)
 
 
 ## Returns the main node of this layer.
@@ -89,6 +89,9 @@ func get_main_node() -> Node:
 
 
 func add_node(p_node: Node) -> void:
+	if not is_instance_valid(p_node):
+		push_warning("SMgrSceneLayer.add_node: Invalid node provided.")
+		return
 	if p_node.get_parent():
 		p_node.reparent(self)
 	else:

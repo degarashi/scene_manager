@@ -2,6 +2,18 @@
 class_name FadeTransitioner
 extends ScreenTransitioner
 
+# ------------- [Constants] -------------
+const _AF = preload("uid://dlgh4u64a7qxk")  # aux_func.gd
+
+# ------------- [Static Variable] -------------
+static var _log: DLoggerClass
+
+
+static func _get_log() -> DLoggerClass:
+	if not _log:
+		_log = DLoggerClass.new("Scene Manager")
+	return _log
+
 
 ## Definition of animation keys.
 class _AnimKey:
@@ -29,7 +41,7 @@ func set_layer(layer: int) -> void:
 func _play_fade(speed: float, backwards: bool) -> void:
 	# Warning if called again during a fade process.
 	if _is_playing:
-		push_warning("SceneEffector: Fade logic called while animation is already playing.")
+		_get_log().warn("FadeTransitioner: Fade logic called while animation is already playing.")
 		return
 
 	if speed <= 0:
@@ -38,7 +50,7 @@ func _play_fade(speed: float, backwards: bool) -> void:
 	_is_playing = true
 
 	if not _animation_player.has_animation(_AnimKey.FADE):
-		push_error("FadeTransitioner: Animation 'fade' not found.")
+		_get_log().error("FadeTransitioner: Animation 'fade' not found.")
 		_is_playing = false
 		return
 

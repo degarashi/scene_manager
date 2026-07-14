@@ -69,4 +69,4 @@ func _display_empty_message() -> void:
 
 
 func _on_previous_scene_button_button_up() -> void:
-	SceneManager.load_previous_scene()
+	await SceneManager.load_previous_scene()

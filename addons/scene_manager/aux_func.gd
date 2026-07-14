@@ -57,7 +57,7 @@ static func has_ancestor(node: Node, target_name: String) -> bool:
 ## Conversion of all array elements into a new string array
 ## @param src Source array for conversion
 ## @return Array containing elements converted to strings
-static func convert_to_array_string(src: Array) -> Array[String]:
+static func convert_to_array_string(src: Array[Variant]) -> Array[String]:
 	var ret: Array[String] = []
 	ret.assign(src.map(func(item): return str(item)))
 	return ret
@@ -152,6 +152,8 @@ static var _sanitize_regex: RegEx
 ## Returns the string form of the Scenes.Id enum.
 static func get_enum_string_from_enum(scene: Scenes.Id) -> String:
 	var index: int = Scenes.Id.values().find(scene)
+	if index == -1:
+		return "NONE"
 	return Scenes.Id.keys()[index]
 
 

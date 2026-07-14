@@ -44,7 +44,9 @@ func create_scene_layer(
 	var final_name := override_name
 	if final_name.is_empty():
 		final_name = summary.layer_name if not summary.layer_name.is_empty() else node_name
-	assert(not final_name.is_empty(), "Scene Manager: wrapper node name cannot be empty.")
+	if final_name.is_empty():
+		_log.error("Scene Manager: wrapper node name cannot be empty.")
+		final_name = _C.DEFAULT_TREE_NODE_NAME
 
 	var layer: SMgrSceneLayer = _SCENE_LAYER.instantiate()
 	layer.prepare(

@@ -44,7 +44,7 @@ func _on_quit_button_button_up() -> void:
 
 
 func _on_back_button_button_up() -> void:
-	if not SceneManager.load_previous_scene():
+	if not await SceneManager.load_previous_scene():
 		DLogger.info("Scene 1: No previous scene in history")
 
 # --- INTERFACE IMPLEMENTER (AUTO-GENERATED) ---

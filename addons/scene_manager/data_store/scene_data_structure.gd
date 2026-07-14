@@ -2,6 +2,16 @@
 class_name SMgrData
 extends DebouncedResource
 
+# ------------- [Static Variable] -------------
+static var _log: DLoggerClass
+
+
+static func _get_log() -> DLoggerClass:
+	if not _log:
+		_log = DLoggerClass.new("Scene Manager")
+	return _log
+
+
 # ------------- [Exports] -------------
 ## List of directory paths to include
 @export var _include_list: Array[String]:
@@ -75,6 +85,9 @@ func _validate_connections() -> void:
 # ------------- [Data Modification Methods] -------------
 ## Registers or updates a scene and notifies change
 func set_scene_data(uid: int, scene_data: SMgrDataScene) -> void:
+	if not scene_data:
+		_get_log().warn("set_scene_data: scene_data is null.")
+		return
 	_scenes[uid] = scene_data
 	_AF.connect_if_not_connected(scene_data.changed, _on_any_data_changed)
 	_on_any_data_changed()
@@ -88,6 +101,9 @@ func remove_scene_data(uid: int) -> void:
 
 ## Registers or updates a category and notifies change
 func set_category_data(id: int, category_data: SMgrCategoryData) -> void:
+	if not category_data:
+		_get_log().warn("set_category_data: category_data is null.")
+		return
 	_categories[id] = category_data
 	_AF.connect_if_not_connected(category_data.changed, _on_any_data_changed)
 	_on_any_data_changed()
@@ -103,6 +119,9 @@ func remove_category_data(id: int) -> void:
 ## @param old_id The current ID (hash) of the category
 ## @param new_name The new name for the category
 func rename_category(old_id: int, new_name: String) -> void:
+	if new_name.is_empty():
+		_get_log().warn("rename_category: new_name cannot be empty.")
+		return
 	var cat := get_category_from_id(old_id)
 	if not cat:
 		return

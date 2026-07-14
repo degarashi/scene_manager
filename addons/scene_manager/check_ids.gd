@@ -64,7 +64,7 @@ static func _scan_project_for_invalid_ids(path: String) -> int:
 	return invalid_count
 
 
-static func _check_file_content_for_invalid_ids(file_path: String, valid_keys: Dictionary) -> int:
+static func _check_file_content_for_invalid_ids(file_path: String, valid_keys: Dictionary[String, bool]) -> int:
 	# Skip "scenes.gd" itself
 	if file_path == _PS.scene_path:
 		return 0
