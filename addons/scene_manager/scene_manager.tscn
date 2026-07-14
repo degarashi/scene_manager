@@ -2,7 +2,9 @@
 
 [ext_resource type="Script" uid="uid://dwlyxot1g5tn7" path="res://addons/scene_manager/scene_manager.gd" id="1_1etm4"]
 [ext_resource type="Resource" uid="uid://ckcouxte4mino" path="res://addons/scene_manager/editor/event_bus/ebus_runtime.tres" id="2_uq7jj"]
+[ext_resource type="PackedScene" uid="uid://2iy8wfgenjka" path="res://addons/scene_manager/transitions/fade/fade_transitioner.tscn" id="3_fade1"]
 
 [node name="SceneManager" type="Node" unique_id=1229718288]
 script = ExtResource("1_1etm4")
 _ebus = ExtResource("2_uq7jj")
+_transitioner_source = ExtResource("3_fade1")

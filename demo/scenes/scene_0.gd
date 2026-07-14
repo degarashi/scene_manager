@@ -69,5 +69,12 @@ func _on_slide_transition_button_button_up() -> void:
 	opts.play_in_time = 0.6
 	SceneManager.switch_to_scene(Scenes.Id.SCENE_1, true, opts)
 
+
+func _on_fade_transition_button_button_up() -> void:
+	var opts := SceneLoadOptions.new()
+	opts.play_out_time = 1.0
+	opts.play_in_time = 1.0
+	SceneManager.switch_to_scene(Scenes.Id.SCENE_1, true, opts)
+
 # --- INTERFACE IMPLEMENTER (AUTO-GENERATED) ---
 # --- END INTERFACE IMPLEMENTER ---

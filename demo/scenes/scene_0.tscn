@@ -57,10 +57,14 @@ text = "Load Additional"
 layout_mode = 2
 text = "Load Scene1 (Slide Transition)"
 
-[node name="HSeparator3" type="HSeparator" parent="CenterContainer/VBoxContainer" index="7" unique_id=339469928]
+[node name="FadeTransitionButton" type="Button" parent="CenterContainer/VBoxContainer" index="7"]
+layout_mode = 2
+text = "Load Scene1 (Fade 1.0s)"
+
+[node name="HSeparator3" type="HSeparator" parent="CenterContainer/VBoxContainer" index="8" unique_id=339469928]
 layout_mode = 2
 
-[node name="QuitButton" type="Button" parent="CenterContainer/VBoxContainer" index="8" unique_id=1332624532]
+[node name="QuitButton" type="Button" parent="CenterContainer/VBoxContainer" index="9" unique_id=1332624532]
 layout_mode = 2
 text = "Quit"
 
@@ -72,4 +76,5 @@ position = Vector2(572, 546)
 [connection signal="pressed" from="CenterContainer/VBoxContainer/BeginFakeLoadingButton" to="." method="_on_begin_fake_loading_button_pressed"]
 [connection signal="button_up" from="CenterContainer/VBoxContainer/LoadAdditionalButton" to="." method="_on_load_additional_button_button_up"]
 [connection signal="button_up" from="CenterContainer/VBoxContainer/SlideTransitionButton" to="." method="_on_slide_transition_button_button_up"]
+[connection signal="button_up" from="CenterContainer/VBoxContainer/FadeTransitionButton" to="." method="_on_fade_transition_button_button_up"]
 [connection signal="pressed" from="CenterContainer/VBoxContainer/QuitButton" to="." method="_on_quit_button_pressed"]
