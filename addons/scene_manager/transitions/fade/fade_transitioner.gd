@@ -42,6 +42,11 @@ func _play_fade(speed: float, backwards: bool) -> void:
 		_is_playing = false
 		return
 
+	# For fade-in (backwards), ensure the overlay is fully opaque before starting
+	# to prevent the scene from flashing briefly.
+	if backwards:
+		_fade_color_rect.color.a = 1.0
+
 	# Adjust playback speed using 1.0 / speed.
 	_animation_player.play(
 		_AnimKey.FADE, -1, (1.0 / speed) * (-1.0 if backwards else 1.0), backwards
