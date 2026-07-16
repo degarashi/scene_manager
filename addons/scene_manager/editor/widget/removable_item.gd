@@ -21,10 +21,7 @@ func set_item_string(text: String) -> void:
 
 
 func _validate_path(path: String) -> void:
-	var is_valid := (
-		DirAccess.dir_exists_absolute(path)
-		or (FileAccess.file_exists(path) and path.begins_with("res://"))
-	)
+	var is_valid := SMgrUtil.is_valid_resource_path(path)
 	if is_valid:
 		%entry_lineedit.remove_theme_color_override("font_color")
 	else:

@@ -5,6 +5,7 @@ extends HBoxContainer
 const _MENU_ID_CATEGORY = 0
 const _THEME_DUPLICATE_LINE_EDIT: StyleBox = preload("uid://21mjw515mptn")  # line_edit_duplicate.tres
 const _C = preload("uid://c3vvdktou45u")  # scene_manager_constants.gd
+const _AF = preload("uid://dlgh4u64a7qxk")  # aux_func.gd
 
 @export var _ebus_editor: SMgrEbusEditor
 var _mouse_is_over_path: bool
@@ -121,11 +122,11 @@ func _on_popup_button_button_up() -> void:
 	var all_categories_id: Array[int]
 	_ebus_editor.get_categories.emit(all_categories_id)
 	for category_id in all_categories_id:
-		var recv2: Array[SMgrCategoryData]
-		_ebus_editor.get_category_by_id.emit(recv2, category_id)
-		if recv2.is_empty():
+		var cat := _AF.fetch_category_from_ebus(
+			_ebus_editor, category_id
+		)
+		if not cat:
 			continue
-		var cat := recv2[0]
 
 		_popup_menu.add_check_item(cat.name)
 		_popup_menu.set_item_id(idx, _MENU_ID_CATEGORY)
@@ -158,11 +159,11 @@ func _on_popup_menu_popup_hide() -> void:
 			continue
 
 		var category_id: int = _popup_menu.get_item_metadata(i)
-		var recv: Array[SMgrCategoryData]
-		_ebus_editor.get_category_by_id.emit(recv, category_id)
-		if recv.is_empty():
+		var cat := _AF.fetch_category_from_ebus(
+			_ebus_editor, category_id
+		)
+		if not cat:
 			continue
-		var cat := recv[0]
 
 		var is_now_checked := _popup_menu.is_item_checked(i)
 		var was_checked: bool = _initial_categories_state.get(category_id, false)

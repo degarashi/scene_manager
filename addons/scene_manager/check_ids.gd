@@ -1,19 +1,11 @@
 extends Object
 
 const _PS := preload("uid://dn6eh4s0h8jhi")  # project_settings.tres
-
-static var _log: DLoggerClass
-
-
-static func _get_log() -> DLoggerClass:
-	if not _log:
-		# Force console output enabled for this tool
-		_log = DLoggerClass.new("Scene Manager", DLoggerConstants.LogLevel.DEBUG, true)
-	return _log
+const _AF = preload("uid://dlgh4u64a7qxk")  # aux_func.gd
 
 
 static func check_invalid_ids() -> void:
-	_get_log().info("Checking for invalid Scenes.Id references...")
+	SMgrUtil.get_log(DLoggerConstants.LogLevel.DEBUG, true).info("Checking for invalid Scenes.Id references...")
 
 	# Reload the script to ensure Scenes.Id enum is up to date
 	var script: GDScript = ResourceLoader.load(
@@ -24,9 +16,9 @@ static func check_invalid_ids() -> void:
 
 	var count: int = _scan_project_for_invalid_ids("res://")
 	if count == 0:
-		_get_log().info("No invalid Scenes.Id references found.")
+		SMgrUtil.get_log(DLoggerConstants.LogLevel.DEBUG, true).info("No invalid Scenes.Id references found.")
 	else:
-		_get_log().info("Found {0} invalid references.", [count])
+		SMgrUtil.get_log(DLoggerConstants.LogLevel.DEBUG, true).info("Found {0} invalid references.", [count])
 
 
 static func _scan_project_for_invalid_ids(path: String) -> int:
@@ -87,7 +79,7 @@ static func _check_file_content_for_invalid_ids(file_path: String, valid_keys: D
 		for m: RegExMatch in matches:
 			var id_name: String = m.get_string(1)
 			if not valid_keys.has(id_name):
-				_get_log().error(
+				SMgrUtil.get_log(DLoggerConstants.LogLevel.DEBUG, true).error(
 					"Scene Manager: Invalid Scenes.Id.{0} found in {1}:{2}",
 					[id_name, file_path, i + 1]
 				)

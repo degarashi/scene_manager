@@ -12,6 +12,17 @@ static func _get_log() -> DLoggerClass:
 
 
 # ------------- [Public Method] -------------
+## Returns a DLoggerClass instance for Scene Manager logging.
+## All callers share the same static logger instance.
+static func get_log(
+	log_level: DLoggerConstants.LogLevel = DLoggerConstants.LogLevel.DEBUG,
+	enable_console: bool = true
+) -> DLoggerClass:
+	if not _log:
+		_log = DLoggerClass.new("Scene Manager", log_level, enable_console)
+	return _log
+
+
 ## Connects the signal to the callable only if the connection does not already exist
 static func connect_if_not_connected(sig: Signal, callable: Callable) -> void:
 	if not sig.is_connected(callable):
@@ -35,6 +46,16 @@ static func from_tmp_name(tmp_name: String) -> String:
 	return tmp_name.left(idx)
 
 
+## Fetches category data from the editor event bus.
+## Returns null if the category is not found.
+static func fetch_category_from_ebus(
+	ebus_editor: SMgrEbusEditor, category_id: int
+) -> SMgrCategoryData:
+	var recv: Array[SMgrCategoryData]
+	ebus_editor.get_category_by_id.emit(recv, category_id)
+	return recv[0] if not recv.is_empty() else null
+
+
 ## Check if the specified node has a parent node named "MainScreen"
 ## @param node Target node for judgment
 ## @return true if under MainScreen, false otherwise
@@ -52,6 +73,12 @@ static func has_ancestor(node: Node, target_name: String) -> bool:
 			return true
 		node = node.get_parent()
 	return false
+
+
+## Comparator for sorting objects by name using natural-case-insensitive comparison.
+## Usage: items.sort_custom(SMgrUtil.natural_case_sort)
+static func natural_case_sort(a: Resource, b: Resource) -> bool:
+	return a.name.naturalnocasecmp_to(b.name) < 0
 
 
 ## Conversion of all array elements into a new string array
@@ -143,6 +170,15 @@ static func change_resource_uid(path: String) -> void:
 		dir.remove(rel_backup_path)
 	if has_uid:
 		dir.remove(rel_backup_uid_path)
+
+
+## Returns true if the path is a valid resource path
+## (existing directory or res:// .tscn file).
+static func is_valid_resource_path(path: String) -> bool:
+	return (
+		DirAccess.dir_exists_absolute(path)
+		or (FileAccess.file_exists(path) and path.begins_with("res://"))
+	)
 
 
 # ------------- [Enum/String Utilities] -------------

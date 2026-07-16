@@ -7,6 +7,7 @@ signal on_remove(category_id: int)
 const _SCENE_ITEM = preload("uid://hh0sw1g7upfc")  # scene_item.tscn
 const _SUB_SECTION = preload("uid://b4edho3whn67t")  # section.tscn
 const _C = preload("uid://c3vvdktou45u")  # scene_manager_constants.gd
+const _AF = preload("uid://dlgh4u64a7qxk")  # aux_func.gd
 
 @export var _ebus_editor: SMgrEbusEditor
 var _category_id: int
@@ -35,10 +36,11 @@ func activate(category_id: int) -> void:
 		_activate()
 	else:
 		# get category-name from id
-		var recv: Array[SMgrCategoryData]
-		_ebus_editor.get_category_by_id.emit(recv, category_id)
-		if not recv.is_empty():
-			name = recv[0].name
+		var cat := _AF.fetch_category_from_ebus(
+			_ebus_editor, category_id
+		)
+		if cat:
+			name = cat.name
 			_activate()
 
 	# Force update on the first call; subsequent updates are handled via EventBus notifications.
@@ -57,10 +59,7 @@ func _populate_section(section: SMgrSection, scenes: Array[SMgrDataScene]) -> vo
 			func(sc: SMgrDataScene): return _search_filter.to_lower() in sc.name.to_lower()
 		)
 
-	scenes.sort_custom(
-		func(a: SMgrDataScene, b: SMgrDataScene) -> bool:
-			return a.name.naturalnocasecmp_to(b.name) < 0
-	)
+	scenes.sort_custom(SMgrUtil.natural_case_sort)
 
 	for sc: SMgrDataScene in scenes:
 		var item: SMgrSceneItem = _SCENE_ITEM.instantiate()

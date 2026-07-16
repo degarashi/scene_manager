@@ -166,10 +166,7 @@ func _export_scene_enum_string() -> String:
 	lines.append("\tNONE = {0},".format([ResourceUID.INVALID_ID]))
 
 	var scenes := _data.get_scenes_all()
-	scenes.sort_custom(
-		func(a: SMgrDataScene, b: SMgrDataScene) -> bool:
-			return a.name.naturalnocasecmp_to(b.name) < 0
-	)
+	scenes.sort_custom(SMgrUtil.natural_case_sort)
 
 	for sc in scenes:
 		lines.append("\t{0} = {1},".format([sc.name.to_upper(), sc.uid]))
@@ -182,10 +179,7 @@ func _export_category_enum_string() -> String:
 	lines.append("enum CategoryId {")
 	var categories := _data.get_categories_list()
 
-	categories.sort_custom(
-		func(a: SMgrCategoryData, b: SMgrCategoryData) -> bool:
-			return a.name.naturalnocasecmp_to(b.name) < 0
-	)
+	categories.sort_custom(SMgrUtil.natural_case_sort)
 
 	for c_data in categories:
 		var c_uid := c_data.name.hash()

@@ -494,10 +494,7 @@ func _on_add_include_button_button_up() -> void:
 func _validate_include_path() -> void:
 	var new_text := _address_edit.text
 	if new_text != "":
-		if (
-			DirAccess.dir_exists_absolute(new_text)
-			or FileAccess.file_exists(new_text) and new_text.begins_with("res://")
-		):
+		if _AF.is_valid_resource_path(new_text):
 			_add_include_button.disabled = false
 			_address_edit.remove_theme_color_override("font_color")
 		else:

@@ -18,11 +18,7 @@ func _ready() -> void:
 
 
 func _fetch_category(id: int) -> SMgrCategoryData:
-	var recv: Array[SMgrCategoryData]
-	_ebus_editor.get_category_by_id.emit(recv, id)
-	if recv.is_empty():
-		return null
-	return recv[0]
+	return _AF.fetch_category_from_ebus(_ebus_editor, id)
 
 
 func _on_category_selected(id: int) -> void:
@@ -42,44 +38,35 @@ func _on_category_selected(id: int) -> void:
 		self.visible = false
 
 
-func _on_layer_priority_box_value_changed(value: float) -> void:
+func _update_category_property(
+	property: String, value: Variant
+) -> void:
 	var cat := _fetch_category(_category_id)
 	if not cat:
 		return
+	cat.set(property, value)
 
-	cat.layer_priority = int(value)
+
+func _on_layer_priority_box_value_changed(value: float) -> void:
+	_update_category_property("layer_priority", int(value))
 
 
 func _on_pause_flag_cb_toggled(toggled_on: bool) -> void:
-	var cat := _fetch_category(_category_id)
-	if not cat:
-		return
-
-	cat.pauses_lower_priority_layers = toggled_on
+	_update_category_property(
+		"pauses_lower_priority_layers", toggled_on
+	)
 
 
 func _on_always_process_cb_toggled(toggled_on: bool) -> void:
-	var cat := _fetch_category(_category_id)
-	if not cat:
-		return
-
-	cat.always_process = toggled_on
+	_update_category_property("always_process", toggled_on)
 
 
 func _on_follow_viewport_cb_toggled(toggled_on: bool) -> void:
-	var cat := _fetch_category(_category_id)
-	if not cat:
-		return
-
-	cat.follow_viewport = toggled_on
+	_update_category_property("follow_viewport", toggled_on)
 
 
 func _on_layer_name_confirmed() -> void:
-	var cat := _fetch_category(_category_id)
-	if not cat:
-		return
-
-	cat.layer_name = _layer_name_edit.text
+	_update_category_property("layer_name", _layer_name_edit.text)
 
 
 func _on_layer_name_edit_focus_exited() -> void:

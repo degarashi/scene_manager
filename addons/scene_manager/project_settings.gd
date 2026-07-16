@@ -41,12 +41,6 @@ class Key:
 
 
 # ------------- [Static Variable] -------------
-static var _log: DLoggerClass
-
-static func _get_log() -> DLoggerClass:
-	if not _log:
-		_log = DLoggerClass.new("Scene Manager")
-	return _log
 
 # ------------- [Public Variable] -------------
 # Runtime Properties linked to ProjectSettings
@@ -124,13 +118,13 @@ var _last_enable_log: bool = false
 func _ensure_data_dir_exists(dir_path: String) -> void:
 	if not DirAccess.dir_exists_absolute(dir_path):
 		DirAccess.make_dir_recursive_absolute(dir_path)
-		_get_log().debug("Created data directory at {0}", [dir_path])
+		SMgrUtil.get_log().debug("Created data directory at {0}", [dir_path])
 
 
 func _save() -> void:
 	var error: Error = ProjectSettings.save()
 	if error != OK:
-		_get_log().error("SceneManager: Failed to _save ProjectSettings (Error code: {0})", [error])
+		SMgrUtil.get_log().error("SceneManager: Failed to _save ProjectSettings (Error code: {0})", [error])
 
 
 ## Handler to detect changes made to settings from external sources like the Project Settings window

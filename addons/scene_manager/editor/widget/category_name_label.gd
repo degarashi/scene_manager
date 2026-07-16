@@ -1,6 +1,7 @@
 @tool
 extends HBoxContainer
 
+const _AF = preload("uid://dlgh4u64a7qxk")  # aux_func.gd
 @export var _ebus_editor: SMgrEbusEditor
 
 var _current_category_id: int = ResourceUID.INVALID_ID
@@ -27,9 +28,9 @@ func _refresh_ui() -> void:
 		_edit_button.visible = false
 		return
 
-	var recv: Array[SMgrCategoryData]
-	_ebus_editor.get_category_by_id.emit(recv, _current_category_id)
-	var cat := recv[0] if not recv.is_empty() else null
+	var cat := _AF.fetch_category_from_ebus(
+		_ebus_editor, _current_category_id
+	)
 
 	if cat:
 		_name_edit.text = cat.name
