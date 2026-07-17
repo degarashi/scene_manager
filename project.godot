@@ -20,9 +20,9 @@ config/icon="res://icon.svg"
 
 [autoload]
 
-Scenes="*res://scene_manager_data/scenes.gd"
-SceneManager="*res://addons/scene_manager/scene_manager.tscn"
 DLogger="*uid://dk8w65jl35vbd"
+Scenes="*uid://bekjq8vm3f06"
+SceneManager="*uid://odlo584mmi4c"
 
 [debug]
 
@@ -43,7 +43,7 @@ window/size/resizable=false
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/d_interface/plugin.cfg", "res://addons/d_logger/plugin.cfg", "res://addons/scene_manager/plugin.cfg", "res://addons/godot-D_FileEnumWatch/plugin.cfg")
+enabled=PackedStringArray("res://addons/d_interface/plugin.cfg", "res://addons/d_logger/plugin.cfg", "res://addons/scene_manager/plugin.cfg", "res://addons/godot-D_FileEnumWatch/plugin.cfg", "res://addons/gdUnit4/plugin.cfg")
 
 [filesystem]
 
