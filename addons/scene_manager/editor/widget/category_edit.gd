@@ -102,16 +102,43 @@ func _build_priority_map() -> void:
 	var range_p: int = max_p - min_p
 
 	for e in entries:
-		var row := HBoxContainer.new()
-		row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		row.layout_mode = 2
+		var is_selected: bool = e.id == _category_id
+		var row: Control
+
+		if is_selected:
+			# Use PanelContainer with border to highlight the selected row
+			var panel := PanelContainer.new()
+			panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			panel.layout_mode = 2
+			var style := StyleBoxFlat.new()
+			style.border_width_left = 1
+			style.border_width_top = 1
+			style.border_width_right = 1
+			style.border_width_bottom = 1
+			style.border_color = Color(0.4, 0.7, 1.0, 0.8)
+			panel.add_theme_stylebox_override("panel", style)
+			row = panel
+		else:
+			row = HBoxContainer.new()
+			row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			row.layout_mode = 2
+
+		# Inner HBox for layout (PanelContainer needs a child to layout)
+		var inner: HBoxContainer
+		if is_selected:
+			inner = HBoxContainer.new()
+			inner.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			inner.layout_mode = 2
+			row.add_child(inner)
+		else:
+			inner = row as HBoxContainer
 
 		var name_label := Label.new()
 		name_label.text = e.name
 		name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		name_label.size_flags_stretch_ratio = 1.0
 		name_label.layout_mode = 2
-		row.add_child(name_label)
+		inner.add_child(name_label)
 
 		# Bar container to give the ColorRect a fixed height context
 		var bar_bg := ColorRect.new()
@@ -131,32 +158,20 @@ func _build_priority_map() -> void:
 		else:
 			bar.anchor_right = 1.0
 
-		# Highlight selected category row with a background
-		if e.id == _category_id:
-			var bg := ColorRect.new()
-			bg.layout_mode = 2
-			bg.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			bg.size_flags_vertical = Control.SIZE_EXPAND_FILL
-			bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			bg.color = Color(0.3, 0.6, 1.0, 0.12)
-			row.add_child(bg)
-			row.move_child(bg, 0)  # Keep at bottom
-
-		# Highlight selected category
-		if e.id == _category_id:
+		if is_selected:
 			bar.color = Color(0.4, 0.7, 1.0, 0.9)
 		else:
 			bar.color = Color(0.3, 0.6, 0.9, 0.5)
 
 		bar_bg.add_child(bar)
-		row.add_child(bar_bg)
+		inner.add_child(bar_bg)
 
 		var prio_label := Label.new()
 		prio_label.text = str(e.priority)
 		prio_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		prio_label.custom_minimum_size.x = 48
 		prio_label.layout_mode = 2
-		row.add_child(prio_label)
+		inner.add_child(prio_label)
 
 		_priority_map_container.add_child(row)
 
