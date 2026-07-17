@@ -12,21 +12,6 @@ grow_vertical = 2
 script = ExtResource("1_homsn")
 _ebus_editor = ExtResource("2_u5pvp")
 
-[node name="_title" type="HBoxContainer" parent="." unique_id=998588827]
-layout_mode = 2
-
-[node name="padding" type="Control" parent="_title" unique_id=1003304835]
-custom_minimum_size = Vector2(28, 28)
-layout_mode = 2
-
-[node name="unsaved_label" type="Label" parent="_title" unique_id=1217865863]
-unique_name_in_owner = true
-visible = false
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Unsaved changes*"
-horizontal_alignment = 2
-
 [node name="scenes" type="ScrollContainer" parent="." unique_id=1654194592]
 layout_mode = 2
 size_flags_horizontal = 3

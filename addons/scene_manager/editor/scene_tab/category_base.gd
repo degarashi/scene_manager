@@ -10,7 +10,6 @@ const _AF = preload("uid://dlgh4u64a7qxk")  # aux_func.gd
 @export var _ebus_editor: SMgrEbusEditor
 var _category_id: int
 @onready var _subsection_cont: VBoxContainer = %container
-@onready var _unsaved_label: Label = %unsaved_label
 var _search_filter: String = ""
 
 
