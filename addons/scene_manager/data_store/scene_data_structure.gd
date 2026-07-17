@@ -65,11 +65,15 @@ func _on_debounce_timeout() -> void:
 func _validate_connections() -> void:
 	for scene_data in _scenes.values():
 		if scene_data:
-			_AF.connect_if_not_connected(scene_data.changed, _on_any_data_changed)
+			_AF.connect_if_not_connected(
+				scene_data.changed, _on_any_data_changed
+			)
 
 	for category_data in _categories.values():
 		if category_data:
-			_AF.connect_if_not_connected(category_data.changed, _on_any_data_changed)
+			_AF.connect_if_not_connected(
+				category_data.changed, _on_any_data_changed
+			)
 
 
 # ------------- [Data Modification Methods] -------------
@@ -157,7 +161,9 @@ func sort_data_structures() -> void:
 	var category_keys := _categories.keys()
 	category_keys.sort_custom(
 		func(a, b) -> bool:
-			return _categories[a].name.naturalnocasecmp_to(_categories[b].name) < 0
+			return (
+				_categories[a].name.naturalnocasecmp_to(_categories[b].name) < 0
+			)
 	)
 	var sorted_categories: Dictionary[int, SMgrCategoryData] = {}
 	for key in category_keys:
@@ -272,20 +278,29 @@ func get_scenes_all() -> Array[SMgrDataScene]:
 ## Retrieves scenes that are not categorized
 ## @return Array of scene data
 func get_scenes_uncategorized() -> Array[SMgrDataScene]:
-	return _get_scenes(func(sc: SMgrDataScene) -> bool: return sc.categories.is_empty())
+	return _get_scenes(
+		func(sc: SMgrDataScene) -> bool: return sc.categories.is_empty()
+	)
 
 
 ## Retrieves scenes that are categorized
 ## @return Array of scene data
 func get_scenes_categorized() -> Array[SMgrDataScene]:
-	return _get_scenes(func(sc: SMgrDataScene) -> bool: return not sc.categories.is_empty())
+	return _get_scenes(
+		func(sc: SMgrDataScene) -> bool: return not sc.categories.is_empty()
+	)
 
 
 ## Retrieves scenes belonging to a specific category ID
 ## @param category_id The ID of the category (Scenes.CategoryId)
 ## @return Array of scene data objects
-func get_scenes_by_category_id(category_id: Scenes.CategoryId) -> Array[SMgrDataScene]:
-	return _get_scenes(func(sc: SMgrDataScene) -> bool: return int(category_id) in sc.categories)
+func get_scenes_by_category_id(
+	category_id: Scenes.CategoryId
+) -> Array[SMgrDataScene]:
+	return _get_scenes(
+		func(sc: SMgrDataScene) -> bool:
+			return int(category_id) in sc.categories
+	)
 
 
 ## Retrieves scenes belonging to a specific category
@@ -343,7 +358,9 @@ func get_scene_ids_with_category_name(
 ## Retrieves a list of scene Enums (Id) belonging to a category Enum (CategoryId)
 ## @param category_id Categories.CategoryId
 ## @return Array of Scenes.Id
-func get_scene_ids_by_category(category_id: Scenes.CategoryId) -> Array[Scenes.Id]:
+func get_scene_ids_by_category(
+	category_id: Scenes.CategoryId
+) -> Array[Scenes.Id]:
 	# category-id is the key of _categories, so it can be determined directly
 	var ret: Array[Scenes.Id] = []
 	for id in _scenes:
@@ -377,7 +394,8 @@ class CategoryDiff:
 	var unchanged: Array[Scenes.CategoryId] = []
 
 	func _init(
-		current_cats: Array[Scenes.CategoryId], target_cats: Array[Scenes.CategoryId]
+		current_cats: Array[Scenes.CategoryId],
+		target_cats: Array[Scenes.CategoryId]
 	) -> void:
 		# Identify removed and unchanged categories
 		for c in current_cats:
@@ -392,14 +410,19 @@ class CategoryDiff:
 				added.append(c)
 
 	func _to_string() -> String:
-		return "Added: %s, Removed: %s, Unchanged: %s" % [added, removed, unchanged]
+		return (
+			"Added: %s, Removed: %s, Unchanged: %s"
+			% [added, removed, unchanged]
+		)
 
 
 ## Compares categories between two scenes and returns the difference as an object
 ## @param current_id The scene ID to compare from
 ## @param target_id The scene ID to compare to
 ## @return CategoryDiff object containing 'added', 'removed', and 'unchanged' arrays
-func compare_scene_categories(current_id: Scenes.Id, target_id: Scenes.Id) -> CategoryDiff:
+func compare_scene_categories(
+	current_id: Scenes.Id, target_id: Scenes.Id
+) -> CategoryDiff:
 	var current_cats := get_category_ids_by_scene(current_id)
 	var target_cats := get_category_ids_by_scene(target_id)
 	return CategoryDiff.new(current_cats, target_cats)
@@ -436,7 +459,11 @@ func _toggle_ebus_connections(ebus: SMgrEbusEditor, connect: bool) -> void:
 		[ebus.scene_name_duplication_check, _ebus_duplicate_name_check],
 		[ebus.change_scene_name, _ebus_change_scene_name],
 		[ebus.rename_category, _ebus_rename_category],
-		[ebus.category_name_duplication_check, _ebus_category_duplicate_name_check]
+		[ebus.remove_category, _ebus_remove_category],
+		[
+			ebus.category_name_duplication_check,
+			_ebus_category_duplicate_name_check
+		]
 	]
 
 	for conn in connections:
@@ -475,7 +502,9 @@ func _ebus_get_categories(recv: Array[int]) -> void:
 		recv.append(int(id))
 
 
-func _ebus_get_category_by_id(recv: Array[SMgrCategoryData], category_id: int) -> void:
+func _ebus_get_category_by_id(
+	recv: Array[SMgrCategoryData], category_id: int
+) -> void:
 	var cat := get_category_from_id(category_id)
 	if cat:
 		recv.append(cat)
@@ -510,7 +539,13 @@ func _ebus_rename_category(category_id: int, new_name: String) -> void:
 	rename_category(category_id, new_name)
 
 
-func _ebus_category_duplicate_name_check(recv: Array[bool], category_name: String) -> void:
+func _ebus_remove_category(category_id: int) -> void:
+	remove_category_data(category_id)
+
+
+func _ebus_category_duplicate_name_check(
+	recv: Array[bool], category_name: String
+) -> void:
 	var is_duplicate := false
 	for cat in _categories.values():
 		if cat.name.to_lower() == category_name.to_lower():

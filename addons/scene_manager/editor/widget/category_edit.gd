@@ -11,6 +11,8 @@ var _category_id: int
 @onready var _layer_priority_box: SpinBox = %LayerPriorityBox
 @onready var _always_process_cb: CheckBox = %AlwaysProcessCB
 @onready var _scene_list_container: VBoxContainer = %SceneListContainer
+@onready var _delete_button: Button = %DeleteButton
+@onready var _delete_confirm: ConfirmationDialog = %DeleteConfirm
 
 
 func _ready() -> void:
@@ -46,6 +48,7 @@ func _on_category_selected(id: int) -> void:
 			label.mouse_filter = Control.MOUSE_FILTER_PASS
 			_scene_list_container.add_child(label)
 
+		_delete_button.visible = true
 		_layer_name_edit.text = cat.layer_name
 		_layer_priority_box.value = cat.layer_priority
 		_pause_flag_cb.button_pressed = cat.pauses_lower_priority_layers
@@ -76,6 +79,14 @@ func _on_always_process_cb_toggled(toggled_on: bool) -> void:
 
 func _on_follow_viewport_cb_toggled(toggled_on: bool) -> void:
 	_update_category_property("follow_viewport", toggled_on)
+
+
+func _on_delete_button_button_up() -> void:
+	_delete_confirm.popup_centered()
+
+
+func _on_delete_confirm_confirmed() -> void:
+	_ebus_editor.remove_category.emit(_category_id)
 
 
 func _on_layer_name_confirmed() -> void:

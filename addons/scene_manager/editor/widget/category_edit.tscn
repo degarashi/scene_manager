@@ -99,9 +99,24 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 
+[node name="HSeparator" type="HSeparator" parent="."]
+layout_mode = 2
+
+[node name="DeleteButton" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Delete Category"
+
+[node name="DeleteConfirm" type="ConfirmationDialog" parent="."]
+unique_name_in_owner = true
+title = "Delete Category"
+dialog_text = "Are you sure you want to delete this category?\nScenes in this category will not be removed."
+
 [connection signal="focus_exited" from="LayerName/LayerNameEdit" to="." method="_on_layer_name_edit_focus_exited"]
 [connection signal="text_submitted" from="LayerName/LayerNameEdit" to="." method="_on_layer_name_edit_text_submitted"]
 [connection signal="value_changed" from="LayerPriority/LayerPriorityBox" to="." method="_on_layer_priority_box_value_changed"]
 [connection signal="toggled" from="PauseFlag/PauseFlagCB" to="." method="_on_pause_flag_cb_toggled"]
 [connection signal="toggled" from="AlwaysProcess/AlwaysProcessCB" to="." method="_on_always_process_cb_toggled"]
 [connection signal="toggled" from="FollowViewport/FollowViewportCB" to="." method="_on_follow_viewport_cb_toggled"]
+[connection signal="button_up" from="DeleteButton" to="." method="_on_delete_button_button_up"]
+[connection signal="confirmed" from="DeleteConfirm" to="." method="_on_delete_confirm_confirmed"]

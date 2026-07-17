@@ -7,6 +7,7 @@ signal change_scene_name(scene_id: int, scene_name: String)
 signal add_scene_to_category(scene_id: int, category_id: int)
 signal remove_scene_from_category(scene_id: int, category_id: int)
 signal rename_category(category_id: int, new_name: String)
+signal remove_category(category_id: int)
 
 # --- Notify ---
 signal on_dirty_flag_changed(dirty: bool)
