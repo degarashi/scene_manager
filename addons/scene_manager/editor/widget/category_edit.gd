@@ -47,6 +47,7 @@ func _on_category_selected(id: int) -> void:
 			var label := Label.new()
 			label.text = sc.name
 			label.mouse_filter = Control.MOUSE_FILTER_PASS
+			label.layout_mode = 2
 			_scene_list_container.add_child(label)
 
 		_delete_button.visible = true
@@ -103,11 +104,13 @@ func _build_priority_map() -> void:
 	for e in entries:
 		var row := HBoxContainer.new()
 		row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.layout_mode = 2
 
 		var name_label := Label.new()
 		name_label.text = e.name
 		name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		name_label.size_flags_stretch_ratio = 1.0
+		name_label.layout_mode = 2
 		row.add_child(name_label)
 
 		# Bar container to give the ColorRect a fixed height context
@@ -116,11 +119,13 @@ func _build_priority_map() -> void:
 		bar_bg.size_flags_stretch_ratio = 2.0
 		bar_bg.custom_minimum_size.y = 16
 		bar_bg.color = Color(0.15, 0.15, 0.15, 0.3)
+		bar_bg.layout_mode = 2
 
 		var bar := ColorRect.new()
 		bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		bar.custom_minimum_size.y = 12
 		bar.anchor_right = 0.0
+		bar.layout_mode = 2
 		if range_p > 0:
 			bar.anchor_right = float(e.priority - min_p) / range_p
 		else:
@@ -139,6 +144,7 @@ func _build_priority_map() -> void:
 		prio_label.text = str(e.priority)
 		prio_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		prio_label.custom_minimum_size.x = 48
+		prio_label.layout_mode = 2
 		row.add_child(prio_label)
 
 		_priority_map_container.add_child(row)
@@ -153,6 +159,7 @@ func _update_category_property(property: String, value: Variant) -> void:
 
 func _on_layer_priority_box_value_changed(value: float) -> void:
 	_update_category_property("layer_priority", int(value))
+	_build_priority_map()
 
 
 func _on_pause_flag_cb_toggled(toggled_on: bool) -> void:
