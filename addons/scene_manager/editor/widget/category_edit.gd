@@ -56,9 +56,12 @@ func _on_category_selected(id: int) -> void:
 			_scene_list_container.add_child(label)
 
 		_delete_button.visible = true
-		_build_priority_map()
 		_layer_name_edit.text = cat.layer_name
+		# Set SpinBox before building map so _build_priority_map reads the correct value.
+		# Cancel any debounce triggered by value_changed above.
 		_layer_priority_box.value = cat.layer_priority
+		_priority_debouncer.cancel()
+		_build_priority_map()
 		_pause_flag_cb.button_pressed = cat.pauses_lower_priority_layers
 		_always_process_cb.button_pressed = cat.always_process
 		_follow_viewport_cb.button_pressed = cat.follow_viewport

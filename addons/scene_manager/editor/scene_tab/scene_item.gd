@@ -19,6 +19,7 @@ var _initial_categories_state: Dictionary[int, bool] = {}
 @onready var _scene_name_edit: LineEdit = %scene_name_edit
 @onready var _scene_path_edit: LineEdit = %scene_path
 @onready var _thumbnail: TextureRect = %thumbnail
+var _name_debouncer: Debouncer
 
 
 func activate(sc_uid: int) -> void:
@@ -180,8 +181,15 @@ func _on_popup_menu_popup_hide() -> void:
 			_ebus_editor.remove_scene_from_category.emit(_scene_uid, category_id)
 
 
-func _on_scene_name_changed(new_name: String) -> void:
-	if _check_name_duplication(new_name):
+func _on_scene_name_changed(_new_name: String) -> void:
+	# Debounce the duplicate check — text_changed fires on every keystroke,
+	# but the check iterates all scenes via EventBus (O(n) per call).
+	_name_debouncer.call_debounced()
+
+
+func _on_name_debounce_timeout() -> void:
+	var name_str := _scene_name_edit.text
+	if _check_name_duplication(name_str):
 		_custom_set_theme(_THEME_DUPLICATE_LINE_EDIT)
 	else:
 		_remove_custom_theme()
@@ -225,4 +233,8 @@ func _on_scene_name_edit_focus_entered() -> void:
 
 
 func _ready() -> void:
+	_name_debouncer = Debouncer.new(0.3)
+	add_child(_name_debouncer)
+	_name_debouncer.timeout.connect(_on_name_debounce_timeout)
+
 	_refresh_ui_from_uid()
