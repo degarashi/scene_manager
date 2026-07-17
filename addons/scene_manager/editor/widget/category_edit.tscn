@@ -99,6 +99,20 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 
+[node name="PriorityMapLabel" type="Label" parent="."]
+layout_mode = 2
+text = "Layer Priority Map"
+
+[node name="PriorityMapScroll" type="ScrollContainer" parent="."]
+layout_mode = 2
+size_flags_vertical = 3
+vertical_scroll_mode = 0
+
+[node name="PriorityMapContainer" type="VBoxContainer" parent="PriorityMapScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
 [node name="HSeparator" type="HSeparator" parent="."]
 layout_mode = 2
 
