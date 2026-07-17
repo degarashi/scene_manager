@@ -92,13 +92,13 @@ func _build_priority_map() -> void:
 	entries.sort_custom(func(a, b): return a.priority > b.priority)
 
 	# Determine range for bar normalization
-	var min_p := entries[0].priority
-	var max_p := entries[0].priority
+	var min_p: int = entries[0].priority
+	var max_p: int = entries[0].priority
 	for e in entries:
 		min_p = mini(min_p, e.priority)
 		max_p = maxi(max_p, e.priority)
 
-	var range_p := max_p - min_p
+	var range_p: int = max_p - min_p
 
 	for e in entries:
 		var row := HBoxContainer.new()
