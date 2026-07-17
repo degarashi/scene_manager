@@ -2,8 +2,6 @@
 class_name SMgrCategoryGUIBase
 extends Control
 
-signal on_remove(category_id: int)
-
 const _SCENE_ITEM = preload("uid://hh0sw1g7upfc")  # scene_item.tscn
 const _SUB_SECTION = preload("uid://b4edho3whn67t")  # section.tscn
 const _C = preload("uid://c3vvdktou45u")  # scene_manager_constants.gd
@@ -12,7 +10,6 @@ const _AF = preload("uid://dlgh4u64a7qxk")  # aux_func.gd
 @export var _ebus_editor: SMgrEbusEditor
 var _category_id: int
 @onready var _subsection_cont: VBoxContainer = %container
-@onready var _remove_list_button: Button = %remove_list
 @onready var _unsaved_label: Label = %unsaved_label
 var _search_filter: String = ""
 
@@ -36,9 +33,7 @@ func activate(category_id: int) -> void:
 		_activate()
 	else:
 		# get category-name from id
-		var cat := _AF.fetch_category_from_ebus(
-			_ebus_editor, category_id
-		)
+		var cat := _AF.fetch_category_from_ebus(_ebus_editor, category_id)
 		if cat:
 			name = cat.name
 			_activate()
@@ -48,7 +43,9 @@ func activate(category_id: int) -> void:
 	_refresh_ui()
 
 
-func _populate_section(section: SMgrSection, scenes: Array[SMgrDataScene]) -> void:
+func _populate_section(
+	section: SMgrSection, scenes: Array[SMgrDataScene]
+) -> void:
 	section.clear_list()
 
 	if scenes.is_empty():
@@ -56,7 +53,8 @@ func _populate_section(section: SMgrSection, scenes: Array[SMgrDataScene]) -> vo
 
 	if not _search_filter.is_empty():
 		scenes = scenes.filter(
-			func(sc: SMgrDataScene): return _search_filter.to_lower() in sc.name.to_lower()
+			func(sc: SMgrDataScene):
+				return _search_filter.to_lower() in sc.name.to_lower()
 		)
 
 	scenes.sort_custom(SMgrUtil.natural_case_sort)
@@ -73,10 +71,6 @@ func _refresh_ui() -> void:
 
 func _on_data_changed() -> void:
 	_refresh_ui()
-
-
-func _on_remove_list_button_up() -> void:
-	on_remove.emit(_category_id)
 
 
 func get_category_id() -> int:

@@ -76,14 +76,20 @@ func _ready() -> void:
 	_show_includes_list(_ps.includes_visible)
 
 	# Setup drop confirmation dialog
-	var add_include_btn := _drop_confirm_dialog.add_button("Add Directory", false, "add_include")
+	var add_include_btn := _drop_confirm_dialog.add_button(
+		"Add Directory", false, "add_include"
+	)
 	add_include_btn.button_up.connect(_on_drop_confirm_add_include)
 	_drop_confirm_dialog.confirmed.connect(_on_drop_confirm_register_only)
 	_drop_confirm_dialog.canceled.connect(_on_drop_confirm_canceled)
 
 	# subscribe to editor file system changes
 	if Engine.is_editor_hint():
-		_scene_file_watcher = DFileWatcher.new(get_tree(), func() -> PackedStringArray: return PackedStringArray([_ps.scene_path]))
+		_scene_file_watcher = DFileWatcher.new(
+			get_tree(),
+			func() -> PackedStringArray:
+				return PackedStringArray([_ps.scene_path])
+		)
 		_scene_file_watcher.files_changed.connect(_on_scene_file_changed)
 
 	_search_bar.text_changed.connect(_on_search_text_changed)
@@ -119,7 +125,11 @@ func _on_dirty_flag_changed(dirty: bool) -> void:
 
 
 func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
-	if typeof(data) == TYPE_DICTIONARY and data.has("type") and data["type"] == "files":
+	if (
+		typeof(data) == TYPE_DICTIONARY
+		and data.has("type")
+		and data["type"] == "files"
+	):
 		var files: Array = data["files"]
 		for file in files:
 			if file.ends_with(".tscn"):
@@ -149,7 +159,11 @@ func _on_drop_confirm_register_only() -> void:
 			added_count += 1
 
 	if added_count > 0:
-		_log.info("Registered {0} scenes as individual include paths.".format([added_count]))
+		_log.info(
+			"Registered {0} scenes as individual include paths.".format(
+				[added_count]
+			)
+		)
 		_refresh_ui()
 	_pending_drop_files.clear()
 
@@ -166,7 +180,9 @@ func _on_drop_confirm_add_include() -> void:
 			added_dirs += 1
 
 	if added_dirs > 0:
-		_log.info("Added {0} directories to include paths.".format([added_dirs]))
+		_log.info(
+			"Added {0} directories to include paths.".format([added_dirs])
+		)
 		_refresh_ui()
 
 	_drop_confirm_dialog.hide()
@@ -209,8 +225,12 @@ func _do_connect_ebus() -> void:
 	_AF.connect_if_not_connected(
 		_ebus_ins.get_scene_enums_as_string, _ebus_get_scene_enums_as_string
 	)
-	_AF.connect_if_not_connected(_ebus_editor.on_scene_selected, _on_scene_selected)
-	_AF.connect_if_not_connected(_play_transition_button.button_up, _on_play_transition_button_up)
+	_AF.connect_if_not_connected(
+		_ebus_editor.on_scene_selected, _on_scene_selected
+	)
+	_AF.connect_if_not_connected(
+		_play_transition_button.button_up, _on_play_transition_button_up
+	)
 
 
 func _disconnect_ebus() -> void:
@@ -219,8 +239,12 @@ func _disconnect_ebus() -> void:
 	_AF.disconnect_if_connected(
 		_ebus_ins.get_scene_enums_as_string, _ebus_get_scene_enums_as_string
 	)
-	_AF.disconnect_if_connected(_ebus_editor.on_scene_selected, _on_scene_selected)
-	_AF.disconnect_if_connected(_play_transition_button.button_up, _on_play_transition_button_up)
+	_AF.disconnect_if_connected(
+		_ebus_editor.on_scene_selected, _on_scene_selected
+	)
+	_AF.disconnect_if_connected(
+		_play_transition_button.button_up, _on_play_transition_button_up
+	)
 	_connect_ebus = false
 
 
@@ -241,7 +265,9 @@ func _on_scene_selected(scene_id: int) -> void:
 	if scene:
 		var state := scene.get_state()
 		var node_type := state.get_node_type(0)
-		var is_transitioner := ClassDB.is_parent_class(node_type, &"ScreenTransitioner")
+		var is_transitioner := ClassDB.is_parent_class(
+			node_type, &"ScreenTransitioner"
+		)
 
 		# If node type is a generic engine type (e.g. "Node"), check script inheritance
 		if not is_transitioner:
@@ -274,7 +300,10 @@ func _root_extends_screen_transitioner(state: SceneState) -> bool:
 
 
 func _on_preview_ready(
-	path: String, preview: Texture2D, _thumbnail_preview: Texture2D, _userdata: Variant
+	path: String,
+	preview: Texture2D,
+	_thumbnail_preview: Texture2D,
+	_userdata: Variant
 ) -> void:
 	var recv: Array[SMgrDataScene]
 	_ebus_editor.get_scene_info.emit(recv, _selected_scene_id)
@@ -334,7 +363,9 @@ func _add_include_item(path: String, count: int) -> void:
 	var categories := data.get_categories_list()
 	var current_category_id := data.get_include_path_category(path)
 	item.setup_category_dropdown(categories, current_category_id)
-	_AF.connect_if_not_connected(item.on_category_changed, _on_include_category_changed)
+	_AF.connect_if_not_connected(
+		item.on_category_changed, _on_include_category_changed
+	)
 
 	_include_path_list.add_child(item)
 
@@ -383,10 +414,6 @@ func _reload_ui_includes() -> void:
 		_add_include_item(path, count)
 
 
-func _on_category_remove(category_id: int) -> void:
-	_manager_data.remove_category(category_id)
-
-
 func _reload_ui_scenes() -> void:
 	var data := _manager_data.get_data()
 	var category_ids: Array[int] = [ResourceUID.INVALID_ID]
@@ -419,7 +446,6 @@ func _reload_ui_scenes() -> void:
 			_category_tab_cont.add_child(cat_gui)
 			cat_gui.activate(id)
 			cat_gui.set_search_filter(_search_bar.text)
-			_AF.connect_if_not_connected(cat_gui.on_remove, _on_category_remove)
 			# The widget handles its own internal updates, so no explicit refresh command is needed here.
 
 		# Ensure the tab order matches the sorted data order
@@ -440,9 +466,15 @@ func _refresh_ui() -> void:
 
 func _cleanup_manager_data() -> void:
 	if _manager_data:
-		_AF.disconnect_if_connected(_manager_data.data_changed_debounced, _refresh_ui)
-		_AF.disconnect_if_connected(_manager_data.on_dirty_flag_changed, _on_dirty_flag_changed)
-		_AF.disconnect_if_connected(_manager_data.data_changed_debounced, _on_data_changed)
+		_AF.disconnect_if_connected(
+			_manager_data.data_changed_debounced, _refresh_ui
+		)
+		_AF.disconnect_if_connected(
+			_manager_data.on_dirty_flag_changed, _on_dirty_flag_changed
+		)
+		_AF.disconnect_if_connected(
+			_manager_data.data_changed_debounced, _on_data_changed
+		)
 		_manager_data.cleanup(_ebus_editor)
 		_manager_data = null
 
@@ -482,9 +514,15 @@ func _reload_data() -> void:
 	_manager_data.sync_with_filesystem()
 	if _scene_file_watcher:
 		_scene_file_watcher.update_watched_state()
-	_AF.connect_if_not_connected(_manager_data.data_changed_debounced, _refresh_ui)
-	_AF.connect_if_not_connected(_manager_data.on_dirty_flag_changed, _on_dirty_flag_changed)
-	_AF.connect_if_not_connected(_manager_data.data_changed_debounced, _on_data_changed)
+	_AF.connect_if_not_connected(
+		_manager_data.data_changed_debounced, _refresh_ui
+	)
+	_AF.connect_if_not_connected(
+		_manager_data.on_dirty_flag_changed, _on_dirty_flag_changed
+	)
+	_AF.connect_if_not_connected(
+		_manager_data.data_changed_debounced, _on_data_changed
+	)
 	_ebus_editor.on_dirty_flag_changed.emit(false)
 
 
@@ -492,7 +530,11 @@ func _init_logger(enable: bool) -> void:
 	# Re-create the logger instance
 	_log = DLoggerClass.new(
 		"Scene Manager",
-		DLoggerConstants.LogLevel.DEBUG if enable else DLoggerConstants.LogLevel.ERROR,
+		(
+			DLoggerConstants.LogLevel.DEBUG
+			if enable
+			else DLoggerConstants.LogLevel.ERROR
+		),
 		enable
 	)
 	_log.debug("Logger updated. Enable: {0}", [enable])
