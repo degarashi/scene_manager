@@ -3,6 +3,39 @@
 [ext_resource type="Script" uid="uid://bo434a87u2aec" path="res://addons/scene_manager/editor/widget/category_edit.gd" id="1_7tx63"]
 [ext_resource type="Resource" uid="uid://ra25t5in8erp" path="res://addons/scene_manager/editor/event_bus/ebus_editor.tres" id="2_7tx63"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_delete_normal"]
+bg_color = Color(0.7, 0.2, 0.15, 0.2)
+border_color = Color(0.7, 0.2, 0.15, 0.4)
+border_width_all = 1
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+content_margin_left = 8
+content_margin_right = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_delete_hover"]
+bg_color = Color(0.7, 0.2, 0.15, 0.35)
+border_color = Color(0.7, 0.2, 0.15, 0.6)
+border_width_all = 1
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+content_margin_left = 8
+content_margin_right = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_delete_pressed"]
+bg_color = Color(0.7, 0.2, 0.15, 0.5)
+border_color = Color(0.7, 0.2, 0.15, 0.8)
+border_width_all = 1
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+content_margin_left = 8
+content_margin_right = 8
+
 [node name="CategoryEdit" type="VBoxContainer" unique_id=351967343]
 offset_right = 355.0
 offset_bottom = 87.0
@@ -120,6 +153,9 @@ layout_mode = 2
 unique_name_in_owner = true
 layout_mode = 2
 text = "Delete Category"
+theme_override_styles/normal = SubResource("StyleBoxFlat_delete_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_delete_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_delete_pressed")
 
 [node name="DeleteConfirm" type="ConfirmationDialog" parent="."]
 unique_name_in_owner = true
