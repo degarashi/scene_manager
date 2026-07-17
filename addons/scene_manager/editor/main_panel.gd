@@ -242,7 +242,35 @@ func _on_scene_selected(scene_id: int) -> void:
 		var state := scene.get_state()
 		var node_type := state.get_node_type(0)
 		var is_transitioner := ClassDB.is_parent_class(node_type, &"ScreenTransitioner")
+
+		# If node type is a generic engine type (e.g. "Node"), check script inheritance
+		if not is_transitioner:
+			is_transitioner = _root_extends_screen_transitioner(state)
+
 		_play_transition_button.disabled = not is_transitioner
+
+
+## Check if the root node's script (or any base script) has class_name ScreenTransitioner.
+## This catches scenes where the root node uses a generic engine type but has
+## a ScreenTransitioner subclass script attached (e.g. FadeTransitioner on type="Node").
+func _root_extends_screen_transitioner(state: SceneState) -> bool:
+	for i in state.get_node_property_count(0):
+		if state.get_node_property_name(0, i) == &"script":
+			var script_val := state.get_node_property_value(0, i)
+			var scr := script_val as Script
+			if not scr and typeof(script_val) == TYPE_STRING:
+				scr = load(script_val)
+			if not scr:
+				return false
+
+			var current: Script = scr
+			while current:
+				if current.get_global_name() == &"ScreenTransitioner":
+					return true
+				current = current.get_base_script()
+			return false
+
+	return false
 
 
 func _on_preview_ready(

@@ -107,7 +107,7 @@ stretch = true
 unique_name_in_owner = true
 handle_input_locally = false
 size = Vector2i(2, 2)
-render_target_update_mode = 0
+render_target_update_mode = 2
 
 [node name="PreviewImage" type="TextureRect" parent="MainContainer/VSplitContainer/MiscTab/Preview/PreviewContainer/SubViewport" unique_id=987654326]
 unique_name_in_owner = true
