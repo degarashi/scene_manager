@@ -131,6 +131,17 @@ func _build_priority_map() -> void:
 		else:
 			bar.anchor_right = 1.0
 
+		# Highlight selected category row with a background
+		if e.id == _category_id:
+			var bg := ColorRect.new()
+			bg.layout_mode = 2
+			bg.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			bg.size_flags_vertical = Control.SIZE_EXPAND_FILL
+			bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			bg.color = Color(0.3, 0.6, 1.0, 0.12)
+			row.add_child(bg)
+			row.move_child(bg, 0)  # Keep at bottom
+
 		# Highlight selected category
 		if e.id == _category_id:
 			bar.color = Color(0.4, 0.7, 1.0, 0.9)
