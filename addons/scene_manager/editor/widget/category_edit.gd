@@ -10,6 +10,7 @@ var _category_id: int
 @onready var _pause_flag_cb: CheckBox = %PauseFlagCB
 @onready var _layer_priority_box: SpinBox = %LayerPriorityBox
 @onready var _always_process_cb: CheckBox = %AlwaysProcessCB
+@onready var _scene_list_container: VBoxContainer = %SceneListContainer
 
 
 func _ready() -> void:
@@ -31,10 +32,19 @@ func _on_category_selected(id: int) -> void:
 	if cat:
 		self.visible = true
 
-		# Count scenes in this category
+		# Count and list scenes in this category
 		var recv: Array[SMgrDataScene]
 		_ebus_editor.get_scenes.emit(recv, _category_id)
 		_scene_count_label.text = "Scenes: %d" % recv.size()
+
+		# Populate scene list
+		for child in _scene_list_container.get_children():
+			child.queue_free()
+		for sc in recv:
+			var label := Label.new()
+			label.text = sc.name
+			label.mouse_filter = Control.MOUSE_FILTER_PASS
+			_scene_list_container.add_child(label)
 
 		_layer_name_edit.text = cat.layer_name
 		_layer_priority_box.value = cat.layer_priority

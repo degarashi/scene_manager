@@ -85,6 +85,20 @@ text = "Follow Viewport"
 unique_name_in_owner = true
 layout_mode = 2
 
+[node name="SceneListLabel" type="Label" parent="."]
+layout_mode = 2
+text = "Scenes in Category"
+
+[node name="SceneListScroll" type="ScrollContainer" parent="."]
+layout_mode = 2
+size_flags_vertical = 3
+vertical_scroll_mode = 0
+
+[node name="SceneListContainer" type="VBoxContainer" parent="SceneListScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
 [connection signal="focus_exited" from="LayerName/LayerNameEdit" to="." method="_on_layer_name_edit_focus_exited"]
 [connection signal="text_submitted" from="LayerName/LayerNameEdit" to="." method="_on_layer_name_edit_text_submitted"]
 [connection signal="value_changed" from="LayerPriority/LayerPriorityBox" to="." method="_on_layer_priority_box_value_changed"]
