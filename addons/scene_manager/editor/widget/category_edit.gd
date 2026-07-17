@@ -14,12 +14,17 @@ var _category_id: int
 @onready var _delete_button: Button = %DeleteButton
 @onready var _delete_confirm: ConfirmationDialog = %DeleteConfirm
 @onready var _priority_map_container: VBoxContainer = %PriorityMapContainer
+var _priority_debouncer: Debouncer
 
 
 func _ready() -> void:
 	if _AF.is_in_main_screen(self):
 		return
 	_ebus_editor.on_category_selected.connect(_on_category_selected)
+
+	_priority_debouncer = Debouncer.new(0.3)
+	add_child(_priority_debouncer)
+	_priority_debouncer.timeout.connect(_build_priority_map)
 
 
 func _fetch_category(id: int) -> SMgrCategoryData:
@@ -186,7 +191,7 @@ func _update_category_property(property: String, value: Variant) -> void:
 
 func _on_layer_priority_box_value_changed(value: float) -> void:
 	_update_category_property("layer_priority", int(value))
-	_build_priority_map()
+	_priority_debouncer.call_debounced()
 
 
 func _on_pause_flag_cb_toggled(toggled_on: bool) -> void:
