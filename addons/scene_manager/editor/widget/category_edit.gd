@@ -115,7 +115,8 @@ func _build_priority_map() -> void:
 			style.border_width_top = 1
 			style.border_width_right = 1
 			style.border_width_bottom = 1
-			style.border_color = Color(0.4, 0.7, 1.0, 0.8)
+			style.bg_color = Color(0.4, 0.7, 1.0, 0.04)
+			style.border_color = Color(0.4, 0.7, 1.0, 0.5)
 			panel.add_theme_stylebox_override("panel", style)
 			row = panel
 		else:
