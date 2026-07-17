@@ -67,6 +67,11 @@ func _on_category_selected(id: int) -> void:
 
 
 func _build_priority_map() -> void:
+	# Apply the pending priority value before building the map.
+	# Writing here (debounced) instead of on every value_changed avoids
+	# triggering expensive signal cascades on each SpinBox increment.
+	_update_category_property("layer_priority", int(_layer_priority_box.value))
+
 	# Clear previous entries
 	for child in _priority_map_container.get_children():
 		child.queue_free()
@@ -189,8 +194,9 @@ func _update_category_property(property: String, value: Variant) -> void:
 	cat.set(property, value)
 
 
-func _on_layer_priority_box_value_changed(value: float) -> void:
-	_update_category_property("layer_priority", int(value))
+func _on_layer_priority_box_value_changed(_value: float) -> void:
+	# Defer property write - writing on every value change triggers
+	# expensive signal cascades (data sort, full UI rebuild).
 	_priority_debouncer.call_debounced()
 
 
