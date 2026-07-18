@@ -10,8 +10,7 @@ const _C = preload("uid://c3vvdktou45u")  # scene_manager_constants.gd
 const _AF = preload("uid://dlgh4u64a7qxk")  # aux_func.gd
 const DFileWatcher := preload("uid://2u0usajy085y")  # DFileWatch
 const _CHK = preload("uid://bfsxxd1vc4jm7")  # check_ids.gd
-const _ICON_EXPAND_BUTTON = preload("uid://t6iu67x15d3")  # Expand.svg
-const _ICON_COLLAPSE_BUTTON = preload("uid://bd6ob6pgam1gt")  # Collapse.svg
+
 
 @export var _ebus_editor: SMgrEbusEditor
 @export var _ebus_ins: SMgrEbusInspector
@@ -34,7 +33,7 @@ var _connect_ebus: bool = false
 # --- include list ---
 @onready var _address_edit: LineEdit = %AddressEdit
 @onready var _file_dialog: FileDialog = %FileDialog
-@onready var _hide_include_button: Button = %HideIncludeButton
+
 @onready var _add_include_button: Button = %AddIncludeButton
 
 @onready var _include_path_list: Control = %IncludeList
@@ -72,8 +71,6 @@ func _ready() -> void:
 
 	_reload_data()
 	_refresh_ui()
-
-	_show_includes_list(_ps.includes_visible)
 
 	# Setup drop confirmation dialog
 	var add_include_btn := _drop_confirm_dialog.add_button(
@@ -590,15 +587,7 @@ func _validate_category_input() -> void:
 	_add_category_button.disabled = _category_name_edit.text.is_empty()
 
 
-func _show_includes_list(show: bool) -> void:
-	var icon: Texture2D = _ICON_COLLAPSE_BUTTON if show else _ICON_EXPAND_BUTTON
-	_hide_include_button.icon = icon
-	_misc_tab.visible = show
 
-
-func _on_hide_button_up() -> void:
-	_ps.includes_visible = not _ps.includes_visible
-	_show_includes_list(_ps.includes_visible)
 
 
 func _on_refresh_button_up() -> void:

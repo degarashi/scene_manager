@@ -18,8 +18,6 @@ var _priority_debouncer: Debouncer
 
 
 func _ready() -> void:
-	if _AF.is_in_main_screen(self):
-		return
 	_ebus_editor.on_category_selected.connect(_on_category_selected)
 
 	_priority_debouncer = Debouncer.new(0.3)
