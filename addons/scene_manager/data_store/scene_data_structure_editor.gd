@@ -25,6 +25,10 @@ extends Node
 var _data: SMgrData
 var _log: DLoggerClass
 var _watcher: FileEnumWatcher
+## True while the file watcher's initial scan is populating _data from the
+## filesystem. During this phase we must NOT raise the dirty flag, because
+## registering scenes that already exist on disk is not a user-visible edit.
+var _initial_load := true
 
 var _dirty_flag: bool = false:
 	set(value):
@@ -62,6 +66,11 @@ func _on_entries_changed(entries: Array[FEWEntry]) -> void:
 
 
 func _on_data_changed() -> void:
+	# Ignore data modifications during the initial watcher scan — these are
+	# just registrations of scenes that already exist on disk and should
+	# not be treated as user edits.
+	if _initial_load:
+		return
 	_dirty_flag = true
 	# Trigger the debouncer inherited from DebouncedResource
 	emit_changed()
@@ -73,9 +82,32 @@ func _setup_filesystem_monitoring() -> void:
 	_watcher.set_extensions([".tscn"])
 	_watcher.entries_changed.connect(_on_entries_changed)
 
-	# Re-add existing include paths so the watcher is aware of them
+	# Re-add existing include paths so the watcher is aware of them.
+	# add_include_path synchronously scans the directory and emits
+	# entries_changed, so by the time the loop below finishes the
+	# synchronous part of the initial sync is complete.
 	for path in _data.get_include_list():
 		_watcher.add_include_path(path)
+
+	# Keep _initial_load true until the debouncer in SMgrData settles.
+	# SMgrData inherits a DebouncedResource with DEFAULT_DEBOUNCE_TIME (0.3 s).
+	# Any emit_changed() during the scan restarts that timer, so the LAST
+	# emit_changed determines when data_changed_debounced fires.
+	# We schedule a timer longer than that to ensure the debounced
+	# _on_data_changed is also suppressed — otherwise it would re-raise
+	# the dirty flag after _initial_load becomes false.
+	Engine.get_main_loop().create_timer(1.0).timeout.connect(
+		_on_initial_load_complete
+	)
+
+
+func _on_initial_load_complete() -> void:
+	_initial_load = false
+	# If anything raised the dirty flag during the initial scan through
+	# a path other than _on_data_changed, reset it now so the user
+	# starts with a clean state.
+	if _dirty_flag:
+		_dirty_flag = false
 
 
 func _cleanup_filesystem_monitoring() -> void:
@@ -100,7 +132,9 @@ func _sync_smgr_data_from_entries(entries: Array[FEWEntry]) -> void:
 		var existing := _data.get_scene_from_uid(entry.uid)
 		if existing == null:
 			# New file — register it, preserving any custom name set previously
-			var new_scene := SMgrDataScene.initialize(entry.name, entry.path, entry.uid)
+			var new_scene := SMgrDataScene.initialize(
+				entry.name, entry.path, entry.uid
+			)
 			if new_scene:
 				_data.set_scene_data(entry.uid, new_scene)
 				_log.debug("  Registered: %s (%d)" % [entry.name, entry.uid])
@@ -111,7 +145,9 @@ func _sync_smgr_data_from_entries(entries: Array[FEWEntry]) -> void:
 			# Existing file — update path if the file was moved
 			var actual_path := ResourceUID.get_id_path(entry.uid)
 			if not actual_path.is_empty() and existing.path != actual_path:
-				_log.info("  Path updated: %s -> %s" % [existing.path, actual_path])
+				_log.info(
+					"  Path updated: %s -> %s" % [existing.path, actual_path]
+				)
 				existing.path = actual_path
 
 	# Remove scenes that are managed but no longer present
@@ -127,7 +163,12 @@ func _sync_smgr_data_from_entries(entries: Array[FEWEntry]) -> void:
 
 	for uid in uids_to_remove:
 		var sc_data := _data.get_scene_from_uid(uid)
-		_log.info("  Removing missing scene: " + (sc_data.name if sc_data else str(uid)))
+		_log.info(
+			(
+				"  Removing missing scene: "
+				+ (sc_data.name if sc_data else str(uid))
+			)
+		)
 		_data.remove_scene_data(uid)
 
 	_log.debug("Sync complete.")
@@ -157,7 +198,12 @@ func _auto_assign_category_to_scene(scene: SMgrDataScene) -> void:
 	if not category_id in scene.categories:
 		scene.categories.append(category_id)
 		scene.emit_changed()
-		_log.debug("  Auto-assigned category to %s from path '%s'." % [scene.name, best_match_path])
+		_log.debug(
+			(
+				"  Auto-assigned category to %s from path '%s'."
+				% [scene.name, best_match_path]
+			)
+		)
 
 
 func _export_scene_enum_string() -> String:
@@ -242,7 +288,12 @@ func save_data(path: String, data_path: String) -> void:
 	_data.sort_data_structures()
 	var error := ResourceSaver.save(_data, data_path)
 	if error != OK:
-		_log.error("Failed to save SMgrData resource at '%s' (Error: %d)." % [data_path, error])
+		_log.error(
+			(
+				"Failed to save SMgrData resource at '%s' (Error: %d)."
+				% [data_path, error]
+			)
+		)
 	else:
 		_log.info("Successfully saved scene data to: " + path)
 
@@ -307,7 +358,12 @@ func remove_include_path(scene_path: String) -> void:
 		# emit_changed is called via the setter by property assignment
 		_data._include_list = list
 	else:
-		_log.error("Cannot remove include path. Path '%s' is not in the list." % scene_path)
+		_log.error(
+			(
+				"Cannot remove include path. Path '%s' is not in the list."
+				% scene_path
+			)
+		)
 		return
 
 	if _watcher:
@@ -377,7 +433,12 @@ func get_include_path_category(path: String) -> int:
 ## @return Number of scenes that were assigned
 func assign_category_to_include_scenes(path: String, category_id: int) -> int:
 	if _data.get_category_from_id(category_id) == null:
-		_log.error("Cannot assign category ID '%d' (category does not exist)." % category_id)
+		_log.error(
+			(
+				"Cannot assign category ID '%d' (category does not exist)."
+				% category_id
+			)
+		)
 		return 0
 
 	var assigned_count := 0
@@ -388,7 +449,9 @@ func assign_category_to_include_scenes(path: String, category_id: int) -> int:
 				sc.emit_changed()
 				assigned_count += 1
 
-	_log.info("Assigned category to %d scenes under '%s'." % [assigned_count, path])
+	_log.info(
+		"Assigned category to %d scenes under '%s'." % [assigned_count, path]
+	)
 	return assigned_count
 
 
@@ -407,7 +470,12 @@ func remove_category_from_include_scenes(path: String, category_id: int) -> int:
 				removed_count += 1
 
 	if removed_count > 0:
-		_log.info("Removed category from %d scenes under '%s'." % [removed_count, path])
+		_log.info(
+			(
+				"Removed category from %d scenes under '%s'."
+				% [removed_count, path]
+			)
+		)
 	return removed_count
 
 
@@ -418,22 +486,33 @@ func remove_category_from_include_scenes(path: String, category_id: int) -> int:
 ## @return true if successful
 func add_include_path(inc_path: String) -> bool:
 	var is_dir := DirAccess.dir_exists_absolute(inc_path)
-	var is_file := FileAccess.file_exists(inc_path) and inc_path.ends_with(".tscn")
+	var is_file := (
+		FileAccess.file_exists(inc_path) and inc_path.ends_with(".tscn")
+	)
 
 	if not is_dir and not is_file:
-		_log.warn("Path '%s' is not a valid directory or .tscn file." % inc_path)
+		_log.warn(
+			"Path '%s' is not a valid directory or .tscn file." % inc_path
+		)
 		return false
 
 	# Check for inclusion relationships
 	var list := _data.get_include_list()
 	for existing_path in list:
 		if inc_path.begins_with(existing_path):
-			_log.warn("Path '%s' is already covered by '%s'." % [inc_path, existing_path])
+			_log.warn(
+				(
+					"Path '%s' is already covered by '%s'."
+					% [inc_path, existing_path]
+				)
+			)
 			return false
 
 	# If the new path is a parent of existing paths, remove those sub-paths
 	var original_size := list.size()
-	list = list.filter(func(p: String) -> bool: return not p.begins_with(inc_path))
+	list = list.filter(
+		func(p: String) -> bool: return not p.begins_with(inc_path)
+	)
 
 	if list.size() < original_size:
 		_log.info("Removed sub-paths covered by '%s'." % inc_path)
