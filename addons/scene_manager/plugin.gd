@@ -58,7 +58,8 @@ func _exit_tree() -> void:
 
 
 func _enable_plugin() -> void:
-	_setup_data_and_autoloads()
+	# Data setup is already scheduled by _enter_tree() via call_deferred.
+	# _enable_plugin() is responsible only for registering autoloads.
 	_register_autoloads()
 
 
@@ -143,9 +144,12 @@ func _setup_default_data() -> bool:
 
 				file_name = dir.get_next()
 
-			# Start filesystem scan and notify that a scan is required
+			# Start filesystem scan and notify that a scan is required.
+			# Guard against double scan (e.g. when called from both
+			# _enter_tree deferred and _enable_plugin on first activation).
 			var fs := EditorInterface.get_resource_filesystem()
-			fs.scan()
+			if not fs.is_scanning():
+				fs.scan()
 			return true
 	return false
 
