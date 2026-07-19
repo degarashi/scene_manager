@@ -100,7 +100,7 @@ func test_category_reapplied_signal_argument_type() -> void:
 
 	SceneManager.category_reapplied.connect(callback)
 
-	var tags: Array[ScenesClass.CategoryId] = []
+	var tags: Array[int] = []
 	SceneManager.category_reapplied.emit(tags)
 
 	assert_object(received[0]).is_not_null()
@@ -117,7 +117,7 @@ func test_category_tags_notified_signal_argument_type() -> void:
 
 	SceneManager.category_tags_notified.connect(callback)
 
-	var tags: Array[ScenesClass.CategoryId] = []
+	var tags: Array[int] = []
 	SceneManager.category_tags_notified.emit(tags)
 
 	assert_object(received[0]).is_not_null()
@@ -137,8 +137,8 @@ func test_category_diff_object_structure() -> void:
 
 
 func test_category_diff_added_categories() -> void:
-	var current_cats: Array[ScenesClass.CategoryId] = []
-	var target_cats: Array[ScenesClass.CategoryId] = [100, 200]
+	var current_cats: Array[int] = []
+	var target_cats: Array[int] = [100, 200]
 	var diff := SMgrDataScript.CategoryDiff.new(current_cats, target_cats)
 
 	assert_int(diff.added.size()).is_equal(2)
@@ -148,8 +148,8 @@ func test_category_diff_added_categories() -> void:
 
 
 func test_category_diff_removed_categories() -> void:
-	var current_cats: Array[ScenesClass.CategoryId] = [100, 200]
-	var target_cats: Array[ScenesClass.CategoryId] = []
+	var current_cats: Array[int] = [100, 200]
+	var target_cats: Array[int] = []
 	var diff := SMgrDataScript.CategoryDiff.new(current_cats, target_cats)
 
 	assert_int(diff.removed.size()).is_equal(2)
@@ -159,8 +159,8 @@ func test_category_diff_removed_categories() -> void:
 
 
 func test_category_diff_unchanged_categories() -> void:
-	var current_cats: Array[ScenesClass.CategoryId] = [100, 200]
-	var target_cats: Array[ScenesClass.CategoryId] = [100, 200]
+	var current_cats: Array[int] = [100, 200]
+	var target_cats: Array[int] = [100, 200]
 	var diff := SMgrDataScript.CategoryDiff.new(current_cats, target_cats)
 
 	assert_int(diff.unchanged.size()).is_equal(2)
@@ -170,8 +170,8 @@ func test_category_diff_unchanged_categories() -> void:
 
 
 func test_category_diff_mixed_changes() -> void:
-	var current_cats: Array[ScenesClass.CategoryId] = [100, 200]
-	var target_cats: Array[ScenesClass.CategoryId] = [200, 300]
+	var current_cats: Array[int] = [100, 200]
+	var target_cats: Array[int] = [200, 300]
 	var diff := SMgrDataScript.CategoryDiff.new(current_cats, target_cats)
 
 	assert_int(diff.added.size()).is_equal(1)
@@ -184,8 +184,8 @@ func test_category_diff_mixed_changes() -> void:
 
 
 func test_category_diff_to_string() -> void:
-	var current_cats: Array[ScenesClass.CategoryId] = [100]
-	var target_cats: Array[ScenesClass.CategoryId] = [200]
+	var current_cats: Array[int] = [100]
+	var target_cats: Array[int] = [200]
 	var diff := SMgrDataScript.CategoryDiff.new(current_cats, target_cats)
 
 	var result := diff._to_string()
@@ -263,7 +263,7 @@ func test_signal_emission_category_reapplied() -> void:
 
 	SceneManager.category_reapplied.connect(callback)
 
-	var tags: Array[ScenesClass.CategoryId] = []
+	var tags: Array[int] = []
 	SceneManager.category_reapplied.emit(tags)
 
 	assert_int(emission_order.size()).is_equal(1)
@@ -280,7 +280,7 @@ func test_signal_emission_category_tags_notified() -> void:
 
 	SceneManager.category_tags_notified.connect(callback)
 
-	var tags: Array[ScenesClass.CategoryId] = []
+	var tags: Array[int] = []
 	SceneManager.category_tags_notified.emit(tags)
 
 	assert_int(emission_order.size()).is_equal(1)
@@ -291,8 +291,8 @@ func test_signal_emission_category_tags_notified() -> void:
 
 
 func test_category_diff_empty_arrays() -> void:
-	var current_cats: Array[ScenesClass.CategoryId] = []
-	var target_cats: Array[ScenesClass.CategoryId] = []
+	var current_cats: Array[int] = []
+	var target_cats: Array[int] = []
 	var diff := SMgrDataScript.CategoryDiff.new(current_cats, target_cats)
 
 	assert_int(diff.added.size()).is_equal(0)
