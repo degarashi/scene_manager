@@ -103,6 +103,9 @@ func _add_scene(p_name: String, p_path: String, p_uid: int) -> void:
 
 ## Replicates SMgrDataEditor.assign_category_to_include_scenes() logic
 func _assign_category_to_include_scenes(path: String, category_id: int) -> int:
+	# Validate category exists (mirrors SMgrDataEditor validation)
+	if _data.get_category_from_id(category_id) == null:
+		return 0
 	var assigned := 0
 	for sc in _data.get_scenes_all():
 		if sc.path.begins_with(path):
@@ -191,6 +194,49 @@ func test_batch_assign_empty_scene_list() -> void:
 	assert_int(count).is_equal(0)
 
 
+func test_batch_assign_returns_zero_for_nonexistent_category() -> void:
+	_add_scene("Level1", PATH_LEVELS + "level_1.tscn", UID_A)
+	var fake_id := "FakeCategory".hash()
+
+	var count := _assign_category_to_include_scenes(PATH_LEVELS, fake_id)
+
+	assert_int(count).is_equal(0)
+	assert_bool(_data.get_scene_from_uid(UID_A).categories.is_empty()).is_true()
+
+
+func test_batch_assign_returns_zero_for_nonexistent_category_invalid_id_format() -> void:
+	_add_scene("Level1", PATH_LEVELS + "level_1.tscn", UID_A)
+
+	var count := _assign_category_to_include_scenes(PATH_LEVELS, 0)
+
+	assert_int(count).is_equal(0)
+
+
+func test_batch_assign_with_path_exact_match_not_prefix() -> void:
+	# Scene path exactly equals the include path (not a directory prefix)
+	_add_scene("Exact", PATH_LEVELS + "exact.tscn", UID_A)
+	_add_scene("Other", PATH_LEVELS + "other.tscn", UID_B)
+
+	var count := _assign_category_to_include_scenes(PATH_LEVELS + "exact.tscn", _cat_levels_id)
+
+	# Only the exact-matching scene should be assigned
+	assert_int(count).is_equal(1)
+	assert_bool(_cat_levels_id in _data.get_scene_from_uid(UID_A).categories).is_true()
+	assert_bool(_data.get_scene_from_uid(UID_B).categories.is_empty()).is_true()
+
+
+func test_batch_assign_path_begins_with_directory_separator() -> void:
+	# Verify that "res://scenes" doesn't match "res://scenes_extra/"
+	_add_scene("Normal", PATH_LEVELS + "level_1.tscn", UID_A)
+	_add_scene("Extra", "res://scenes_extra/other.tscn", UID_B)
+
+	var count := _assign_category_to_include_scenes(PATH_LEVELS, _cat_levels_id)
+
+	assert_int(count).is_equal(1)
+	assert_bool(_cat_levels_id in _data.get_scene_from_uid(UID_A).categories).is_true()
+	assert_bool(_data.get_scene_from_uid(UID_B).categories.is_empty()).is_true()
+
+
 func test_batch_remove_removes_category_from_matching_scenes() -> void:
 	_add_scene("Level1", PATH_LEVELS + "level_1.tscn", UID_A)
 	_add_scene("Level2", PATH_LEVELS + "level_2.tscn", UID_B)
@@ -219,6 +265,66 @@ func test_batch_remove_preserves_other_categories() -> void:
 	var count := _remove_category_from_include_scenes(PATH_LEVELS, _cat_levels_id)
 
 	assert_int(count).is_equal(1)
+	assert_bool(_cat_levels_id in _data.get_scene_from_uid(UID_A).categories).is_false()
+	assert_bool(_cat_ui_id in _data.get_scene_from_uid(UID_A).categories).is_true()
+
+
+func test_batch_remove_empty_scene_list() -> void:
+	var count := _remove_category_from_include_scenes(PATH_LEVELS, _cat_levels_id)
+	assert_int(count).is_equal(0)
+
+
+func test_batch_remove_nonexistent_category_id() -> void:
+	_add_scene("Level1", PATH_LEVELS + "level_1.tscn", UID_A)
+	_data.get_scene_from_uid(UID_A).categories.append(_cat_levels_id)
+	var fake_id := "Fake".hash()
+
+	var count := _remove_category_from_include_scenes(PATH_LEVELS, fake_id)
+
+	assert_int(count).is_equal(0)
+	assert_int(_data.get_scene_from_uid(UID_A).categories.size()).is_equal(1)
+
+
+# ------------- [Multi-Category Overlapping Include Paths] -------------
+
+
+func test_scene_receives_categories_from_multiple_matching_paths() -> void:
+	# Scene under two include paths with different categories
+	_data._include_list = [PATH_LEVELS, PATH_LEVELS_SUB]
+	_data.set_include_path_category(PATH_LEVELS, _cat_levels_id)
+	_data.set_include_path_category(PATH_LEVELS_SUB, _cat_ui_id)
+
+	_add_scene("Boss", PATH_LEVELS_SUB + "boss_1.tscn", UID_A)
+
+	_assign_category_to_include_scenes(PATH_LEVELS, _cat_levels_id)
+	_assign_category_to_include_scenes(PATH_LEVELS_SUB, _cat_ui_id)
+
+	# Scene under sub-directory gets both parent and child categories
+	assert_bool(_cat_levels_id in _data.get_scene_from_uid(UID_A).categories).is_true()
+	assert_bool(_cat_ui_id in _data.get_scene_from_uid(UID_A).categories).is_true()
+
+
+func test_batch_assign_from_parent_path_does_not_duplicate_subpath_categories() -> void:
+	_add_scene("Boss", PATH_LEVELS_SUB + "boss_1.tscn", UID_A)
+	_data.get_scene_from_uid(UID_A).categories.append(_cat_ui_id)
+
+	# Assign parent category
+	var count := _assign_category_to_include_scenes(PATH_LEVELS, _cat_levels_id)
+
+	# Both categories present
+	assert_int(count).is_equal(1)
+	assert_int(_data.get_scene_from_uid(UID_A).categories.size()).is_equal(2)
+	assert_bool(_cat_levels_id in _data.get_scene_from_uid(UID_A).categories).is_true()
+	assert_bool(_cat_ui_id in _data.get_scene_from_uid(UID_A).categories).is_true()
+
+
+func test_remove_parent_path_category_keeps_subpath_category() -> void:
+	_add_scene("Boss", PATH_LEVELS_SUB + "boss_1.tscn", UID_A)
+	_data.get_scene_from_uid(UID_A).categories.append(_cat_levels_id)
+	_data.get_scene_from_uid(UID_A).categories.append(_cat_ui_id)
+
+	_remove_category_from_include_scenes(PATH_LEVELS, _cat_levels_id)
+
 	assert_bool(_cat_levels_id in _data.get_scene_from_uid(UID_A).categories).is_false()
 	assert_bool(_cat_ui_id in _data.get_scene_from_uid(UID_A).categories).is_true()
 
@@ -284,7 +390,138 @@ func test_auto_assign_skips_already_assigned() -> void:
 	assert_int(_data.get_scene_from_uid(UID_A).categories.size()).is_equal(1)
 
 
-# ------------- [Scenario: Category Change on Include Path] -------------
+func test_auto_assign_with_empty_include_list() -> void:
+	_data._include_list = []
+	_add_scene("Level1", PATH_LEVELS + "level_1.tscn", UID_A)
+
+	_auto_assign_category(_data.get_scene_from_uid(UID_A))
+
+	assert_bool(_data.get_scene_from_uid(UID_A).categories.is_empty()).is_true()
+
+
+func test_auto_assign_multiple_include_paths_same_category() -> void:
+	# Both parent and sub path map to same category — should not duplicate
+	_data._include_list = [PATH_LEVELS, PATH_LEVELS_SUB]
+	_data.set_include_path_category(PATH_LEVELS, _cat_levels_id)
+	_data.set_include_path_category(PATH_LEVELS_SUB, _cat_levels_id)
+
+	_add_scene("Boss", PATH_LEVELS_SUB + "boss_1.tscn", UID_A)
+
+	_auto_assign_category(_data.get_scene_from_uid(UID_A))
+
+	assert_int(_data.get_scene_from_uid(UID_A).categories.size()).is_equal(1)
+	assert_bool(_cat_levels_id in _data.get_scene_from_uid(UID_A).categories).is_true()
+
+
+# ------------- [Include Path List Integration] -------------
+
+
+func test_include_list_does_not_affect_batch_assign() -> void:
+	# Batch assign works independently of include list contents
+	_add_scene("Level1", PATH_LEVELS + "level_1.tscn", UID_A)
+
+	_data._include_list = []
+	var count := _assign_category_to_include_scenes(PATH_LEVELS, _cat_levels_id)
+
+	assert_int(count).is_equal(1)
+	assert_bool(_cat_levels_id in _data.get_scene_from_uid(UID_A).categories).is_true()
+
+
+func test_auto_assign_uses_current_include_list_after_path_removal() -> void:
+	_data._include_list = [PATH_LEVELS]
+	_data.set_include_path_category(PATH_LEVELS, _cat_levels_id)
+
+	_add_scene("Level1", PATH_LEVELS + "level_1.tscn", UID_A)
+	assert_bool(_cat_levels_id in _data.get_scene_from_uid(UID_A).categories).is_false()
+
+	# Now add to include list
+	_data._include_list = [PATH_LEVELS]
+	_auto_assign_category(_data.get_scene_from_uid(UID_A))
+	assert_bool(_cat_levels_id in _data.get_scene_from_uid(UID_A).categories).is_true()
+
+
+# ------------- [Category Change Workflow] -------------
+
+
+func _is_valid_category_id(category_id: int) -> bool:
+	"""Replicates MainPanel._is_valid_category_id() logic."""
+	if category_id == ResourceUID.INVALID_ID:
+		return false
+	if category_id == 0:
+		return false
+	return _data.get_category_from_id(category_id) != null
+
+
+func test_is_valid_category_id_valid() -> void:
+	assert_bool(_is_valid_category_id(_cat_levels_id)).is_true()
+
+
+func test_is_valid_category_id_invalid_id() -> void:
+	assert_bool(_is_valid_category_id(ResourceUID.INVALID_ID)).is_false()
+
+
+func test_is_valid_category_id_zero() -> void:
+	assert_bool(_is_valid_category_id(0)).is_false()
+
+
+func test_is_valid_category_id_nonexistent() -> void:
+	assert_bool(_is_valid_category_id("Fake".hash())).is_false()
+
+
+func test_scenario_change_category_via_mapping_update() -> void:
+	"""Simulates _on_include_category_changed: update mapping, remove old, assign new."""
+	_add_scene("Level1", PATH_LEVELS + "level_1.tscn", UID_A)
+	_add_scene("Level2", PATH_LEVELS + "level_2.tscn", UID_B)
+
+	# Step 1: Initial assignment via mapping
+	_data.set_include_path_category(PATH_LEVELS, _cat_levels_id)
+	var count := _assign_category_to_include_scenes(PATH_LEVELS, _cat_levels_id)
+	assert_int(count).is_equal(2)
+
+	# Step 2: Update mapping (simulate user changing category dropdown)
+	_data.set_include_path_category(PATH_LEVELS, _cat_ui_id)
+
+	# Step 3: Remove old category from scenes
+	_remove_category_from_include_scenes(PATH_LEVELS, _cat_levels_id)
+
+	# Step 4: Assign new category to scenes
+	_assign_category_to_include_scenes(PATH_LEVELS, _cat_ui_id)
+
+	assert_bool(_cat_levels_id in _data.get_scene_from_uid(UID_A).categories).is_false()
+	assert_bool(_cat_ui_id in _data.get_scene_from_uid(UID_A).categories).is_true()
+	assert_bool(_cat_ui_id in _data.get_scene_from_uid(UID_B).categories).is_true()
+
+
+func test_scenario_clear_category_mapping() -> void:
+	"""Simulates changing category dropdown to 'None' (INVALID_ID)."""
+	_add_scene("Level1", PATH_LEVELS + "level_1.tscn", UID_A)
+	_data.get_scene_from_uid(UID_A).categories.append(_cat_levels_id)
+
+	# Step 1: Update mapping to INVALID_ID (None)
+	_data.set_include_path_category(PATH_LEVELS, ResourceUID.INVALID_ID)
+
+	# Step 2: Remove old category
+	_remove_category_from_include_scenes(PATH_LEVELS, _cat_levels_id)
+
+	# Step 3: Assign new (nonexistent) category — should do nothing
+	var count := _assign_category_to_include_scenes(PATH_LEVELS, ResourceUID.INVALID_ID)
+
+	assert_int(count).is_equal(0)
+	assert_bool(_data.get_scene_from_uid(UID_A).categories.is_empty()).is_true()
+	assert_int(_data.get_include_path_category(PATH_LEVELS)).is_equal(ResourceUID.INVALID_ID)
+
+
+func test_scenario_reassign_same_category_idempotent() -> void:
+	"""Re-assigning the same category should be a no-op (already assigned)."""
+	_add_scene("Level1", PATH_LEVELS + "level_1.tscn", UID_A)
+	_data.set_include_path_category(PATH_LEVELS, _cat_levels_id)
+	_assign_category_to_include_scenes(PATH_LEVELS, _cat_levels_id)
+
+	# Same assignment again
+	var count := _assign_category_to_include_scenes(PATH_LEVELS, _cat_levels_id)
+
+	assert_int(count).is_equal(0)
+	assert_int(_data.get_scene_from_uid(UID_A).categories.size()).is_equal(1)
 
 
 func test_scenario_change_category_on_include_path() -> void:
