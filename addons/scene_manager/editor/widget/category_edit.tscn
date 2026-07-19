@@ -42,14 +42,6 @@ offset_bottom = 87.0
 script = ExtResource("1_7tx63")
 _ebus_editor = ExtResource("2_7tx63")
 
-[node name="SceneCount" type="HBoxContainer" parent="."]
-layout_mode = 2
-
-[node name="SceneCountLabel" type="Label" parent="SceneCount"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Scenes: 0"
-
 [node name="LayerName" type="HBoxContainer" parent="." unique_id=678059410]
 layout_mode = 2
 

@@ -18,6 +18,13 @@ alignment = 1
 editable = false
 flat = true
 
+[node name="SceneCountLabel" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+vertical_alignment = 1
+modulate = Color(0.7, 0.7, 0.7, 1)
+
 [node name="EditButton" type="Button" parent="."]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(28, 28)

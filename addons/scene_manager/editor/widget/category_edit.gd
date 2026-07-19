@@ -4,7 +4,6 @@ extends VBoxContainer
 const _AF = preload("uid://dlgh4u64a7qxk")  # aux_func.gd
 @export var _ebus_editor: SMgrEbusEditor
 var _category_id: int
-@onready var _scene_count_label: Label = %SceneCountLabel
 @onready var _layer_name_edit: LineEdit = %LayerNameEdit
 @onready var _follow_viewport_cb: CheckBox = %FollowViewportCB
 @onready var _pause_flag_cb: CheckBox = %PauseFlagCB
@@ -36,11 +35,6 @@ func _on_category_selected(id: int) -> void:
 	var cat := _fetch_category(id)
 	if cat:
 		self.visible = true
-
-		# Count and list scenes in this category
-		var recv: Array[SMgrDataScene]
-		_ebus_editor.get_scenes.emit(recv, _category_id)
-		_scene_count_label.text = "Scenes: %d" % recv.size()
 
 		_delete_button.visible = true
 		_layer_name_edit.text = cat.layer_name

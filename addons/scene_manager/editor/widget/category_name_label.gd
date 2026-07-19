@@ -9,6 +9,7 @@ var _previous_name: String = ""
 
 @onready var _name_edit: LineEdit = %NameEdit
 @onready var _edit_button: Button = %EditButton
+@onready var _scene_count_label: Label = %SceneCountLabel
 
 
 func _ready() -> void:
@@ -35,9 +36,16 @@ func _refresh_ui() -> void:
 	if cat:
 		_name_edit.text = cat.name
 		_edit_button.visible = true
+
+		# Fetch scene count for this category
+		var recv: Array[SMgrDataScene]
+		_ebus_editor.get_scenes.emit(recv, _current_category_id)
+		_scene_count_label.text = "(%d)" % recv.size()
+		_scene_count_label.show()
 	else:
 		_name_edit.text = "----"
 		_edit_button.visible = false
+		_scene_count_label.hide()
 
 	_name_edit.editable = false
 	_name_edit.flat = true
