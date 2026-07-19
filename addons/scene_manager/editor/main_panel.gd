@@ -508,7 +508,8 @@ func _reload_data() -> void:
 
 	_manager_data = SMgrDataEditor.new(raw_data, _ebus_editor, _log)
 
-	_manager_data.sync_with_filesystem()
+	# Note: _setup_filesystem_monitoring() is call_deferred'd inside SMgrDataEditor._init(),
+	# so _watcher is null at this point. Initial sync is handled inside that deferred call.
 	if _scene_file_watcher:
 		_scene_file_watcher.update_watched_state()
 	_AF.connect_if_not_connected(

@@ -80,14 +80,19 @@ func _on_data_changed() -> void:
 func _setup_filesystem_monitoring() -> void:
 	_watcher = FileEnumWatcher.new(_log)
 	_watcher.set_extensions([".tscn"])
-	_watcher.entries_changed.connect(_on_entries_changed)
 
-	# Re-add existing include paths so the watcher is aware of them.
-	# add_include_path synchronously scans the directory and emits
-	# entries_changed, so by the time the loop below finishes the
-	# synchronous part of the initial sync is complete.
+	# Register all include paths BEFORE connecting entries_changed.
+	# add_include_path() emits entries_changed synchronously, so connecting
+	# the signal first would cause _sync_smgr_data_from_entries to fire
+	# once per path — each time with only a partial view of all entries,
+	# leading to spurious "Removing missing scene" log messages.
 	for path in _data.get_include_list():
 		_watcher.add_include_path(path)
+
+	# Connect after all paths are registered, then perform a single
+	# combined sync so future changes are tracked correctly.
+	_watcher.entries_changed.connect(_on_entries_changed)
+	_on_entries_changed(_watcher.get_entries())
 
 	# Keep _initial_load true until the debouncer in SMgrData settles.
 	# SMgrData inherits a DebouncedResource with DEFAULT_DEBOUNCE_TIME (0.3 s).
