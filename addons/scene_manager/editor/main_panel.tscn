@@ -242,6 +242,7 @@ size_flags_horizontal = 3
 [node name="SaveButton" parent="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer/SaveRefreshContainer/SaveContainer" unique_id=117147505 instance=ExtResource("5_efl6f")]
 unique_name_in_owner = true
 layout_mode = 2
+disabled = false
 
 [node name="AutoSaveRefreshContainer" type="HBoxContainer" parent="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer" unique_id=297657268]
 layout_mode = 2

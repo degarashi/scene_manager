@@ -57,7 +57,7 @@ text = "Load Additional"
 layout_mode = 2
 text = "Load Scene1 (Slide Transition)"
 
-[node name="FadeTransitionButton" type="Button" parent="CenterContainer/VBoxContainer" index="7"]
+[node name="FadeTransitionButton" type="Button" parent="CenterContainer/VBoxContainer" index="7" unique_id=76093334]
 layout_mode = 2
 text = "Load Scene1 (Fade 1.0s)"
 

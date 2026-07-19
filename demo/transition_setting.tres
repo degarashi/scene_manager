@@ -6,4 +6,5 @@
 script = ExtResource("1_d86jb")
 play_out_time = 0.1
 play_in_time = 0.1
+params = null
 metadata/_custom_type_script = "uid://cnwtgrgtiwo2n"

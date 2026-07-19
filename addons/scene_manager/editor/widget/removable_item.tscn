@@ -1,4 +1,4 @@
-[gd_scene load_steps=4 format=3 uid="uid://ciaqe7l3hugns"]
+[gd_scene format=3 uid="uid://ciaqe7l3hugns"]
 
 [ext_resource type="Script" uid="uid://ch4kd34yt31v6" path="res://addons/scene_manager/editor/widget/removable_item.gd" id="1_4r8to"]
 [ext_resource type="Texture2D" uid="uid://36xdho566h28" path="res://addons/scene_manager/icons/ImportFail.svg" id="2_drn60"]
@@ -39,8 +39,8 @@ vertical_alignment = 1
 
 [node name="category_option" type="OptionButton" parent="." unique_id=456789012]
 unique_name_in_owner = true
-layout_mode = 2
 custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
 tooltip_text = "Assign category to all scenes in this path"
 
 [connection signal="button_up" from="remove_button" to="." method="_on_remove_button_up"]

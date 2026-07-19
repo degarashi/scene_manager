@@ -8,7 +8,6 @@
 size_flags_horizontal = 3
 size_flags_vertical = 2
 tooltip_text = "Stores all data to the generated scenes.gd file."
-disabled = true
 text = "Save"
 icon = ExtResource("1_ff6us")
 script = ExtResource("2_cf6fy")

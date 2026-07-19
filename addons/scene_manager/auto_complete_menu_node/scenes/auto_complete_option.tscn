@@ -3,10 +3,8 @@
 [ext_resource type="Theme" uid="uid://cadhcdxa0snif" path="res://addons/scene_manager/themes/auto_complete_theme.tres" id="1_d2uxr"]
 [ext_resource type="Script" uid="uid://dqmo2krgik6g0" path="res://addons/scene_manager/auto_complete_menu_node/scenes/auto_complete_option.gd" id="1_ugh68"]
 
-[sub_resource type="LabelSettings" id="LabelSettings_un4au"]
-font_color = Color(0.572988, 0.572988, 0.572988, 1)
-
 [node name="AutoCompleteOption" type="ColorRect" unique_id=2102150951]
+anchors_preset = 10
 anchor_right = 1.0
 offset_bottom = 30.0
 grow_horizontal = 2

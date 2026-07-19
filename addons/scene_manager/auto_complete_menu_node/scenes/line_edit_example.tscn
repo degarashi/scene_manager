@@ -39,7 +39,7 @@ offset_bottom = 15.5
 grow_horizontal = 2
 grow_vertical = 2
 focus_neighbor_top = NodePath("/root/@EditorNode@16886/@Panel@13/@VBoxContainer@14/DockHSplitLeftL/DockHSplitLeftR/DockHSplitMain/@VBoxContainer@25/DockVSplitCenter/@VSplitContainer@52/@VBoxContainer@53/@PanelContainer@98/MainScreen/@CanvasItemEditor@9272/@VSplitContainer@9094/@HSplitContainer@9096/@HSplitContainer@9098/@Control@9099/@SubViewportContainer@9100/@SubViewport@9101/LineEditExample/AutoCompleteAssistant/CompleteMenu/ScrollContainer/OptionHolder/BackgroundColorRect/Button")
-focus_neighbor_bottom = NodePath("/root/@EditorNode@18065/@Panel@14/@VBoxContainer@15/DockHSplitMain/@VBoxContainer@28/DockVSplitCenter/@VSplitContainer@70/@VBoxContainer@71/@EditorMainScreen@125/MainScreen/@CanvasItemEditor@9318/@VSplitContainer@9101/@HSplitContainer@9103/@HSplitContainer@9105/@Control@9106/@SubViewportContainer@9107/@SubViewport@9108/LineEditExample/AutoCompleteAssistant/CompleteMenu/ScrollContainer/OptionHolder/AutoCompleteOption/CompleteButton")
+focus_neighbor_bottom = NodePath("/root/@EditorNode@19513/@Panel@14/@VBoxContainer@15/DockVSplitMain/DockHSplitMain/@VBoxContainer@37/DockVSplitCenter/@VSplitContainer@101/@VBoxContainer@102/@EditorMainScreen@160/MainScreen/@CanvasItemEditor@10138/@VSplitContainer@9897/@HSplitContainer@9899/@HSplitContainer@9901/@Control@9902/@SubViewportContainer@9903/@SubViewport@9904/LineEditExample/AutoCompleteAssistant/CompleteMenu/ScrollContainer/OptionHolder/AutoCompleteOption/CompleteButton")
 placeholder_text = "Insert Text"
 
 [node name="OutOfCoverageTestControl" type="Control" parent="." unique_id=1421193766]

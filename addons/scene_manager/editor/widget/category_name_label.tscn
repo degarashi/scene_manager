@@ -3,12 +3,16 @@
 [ext_resource type="Script" uid="uid://cvyepml5aadq8" path="res://addons/scene_manager/editor/widget/category_name_label.gd" id="1_tf777"]
 [ext_resource type="Resource" uid="uid://ra25t5in8erp" path="res://addons/scene_manager/editor/event_bus/ebus_editor.tres" id="2_yojnu"]
 
+[sub_resource type="DPITexture" id="DPITexture_tf777"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><path fill=\"#ff5d5d\" d=\"M2 1v8.586l1.293-1.293a1 1 0 0 1 1.414 0L7 10.587l2.293-2.293a1 1 0 0 1 1.414 0L13 10.586l1-1V6H9V1H2zm8 0v4h4zm-6 9.414-2 2V15h12v-2.586l-.293.293a1 1 0 0 1-1.414 0L10 10.414l-2.293 2.293a1 1 0 0 1-1.414 0L4 10.414z\"/></svg>
+"
+
 [node name="CategoryNameLabel" type="HBoxContainer" unique_id=620587194]
 alignment = 1
 script = ExtResource("1_tf777")
 _ebus_editor = ExtResource("2_yojnu")
 
-[node name="NameEdit" type="LineEdit" parent="."]
+[node name="NameEdit" type="LineEdit" parent="." unique_id=1686154892]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -18,17 +22,18 @@ alignment = 1
 editable = false
 flat = true
 
-[node name="SceneCountLabel" type="Label" parent="."]
+[node name="SceneCountLabel" type="Label" parent="." unique_id=1595746034]
 unique_name_in_owner = true
+modulate = Color(0.7, 0.7, 0.7, 1)
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
 vertical_alignment = 1
-modulate = Color(0.7, 0.7, 0.7, 1)
 
-[node name="EditButton" type="Button" parent="."]
+[node name="EditButton" type="Button" parent="." unique_id=549789131]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(28, 28)
 layout_mode = 2
+icon = SubResource("DPITexture_tf777")
 flat = true
 
 [connection signal="focus_exited" from="NameEdit" to="." method="_on_name_edit_focus_exited"]

@@ -6,5 +6,5 @@
 
 [node name="SceneManager" type="Node" unique_id=1229718288]
 script = ExtResource("1_1etm4")
-_ebus = ExtResource("2_uq7jj")
 _transitioner_source = ExtResource("3_fade1")
+_ebus = ExtResource("2_uq7jj")
