@@ -82,7 +82,7 @@ text = "+ Category"
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 150)
 layout_mode = 2
-size_flags_vertical = 0
+size_flags_vertical = 3
 current_tab = 2
 
 [node name="Preview" type="VBoxContainer" parent="MainContainer/VSplitContainer/MiscTab" unique_id=987654321]
@@ -109,7 +109,7 @@ stretch = true
 [node name="SubViewport" type="SubViewport" parent="MainContainer/VSplitContainer/MiscTab/Preview/PreviewContainer" unique_id=987654325]
 unique_name_in_owner = true
 handle_input_locally = false
-size = Vector2i(2, 120)
+size = Vector2i(1152, 120)
 render_target_update_mode = 0
 
 [node name="PreviewImage" type="TextureRect" parent="MainContainer/VSplitContainer/MiscTab/Preview/PreviewContainer/SubViewport" unique_id=987654326]
@@ -242,7 +242,6 @@ size_flags_horizontal = 3
 [node name="SaveButton" parent="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer/SaveRefreshContainer/SaveContainer" unique_id=117147505 instance=ExtResource("5_efl6f")]
 unique_name_in_owner = true
 layout_mode = 2
-disabled = false
 
 [node name="AutoSaveRefreshContainer" type="HBoxContainer" parent="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer" unique_id=297657268]
 layout_mode = 2
