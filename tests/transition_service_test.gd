@@ -54,6 +54,7 @@ func test_init_stores_references() -> void:
 	@warning_ignore("unsafe_call_argument")
 	var service := TransitionService.new(null, log, null)
 	assert_object(service).is_not_null()
+	service.queue_free()
 
 
 ## Verify _ready creates the main transition player
@@ -109,6 +110,8 @@ func test_noop_play_out_with_positive_speed() -> void:
 	await get_tree().process_frame
 	assert_bool(noop.is_playing()).is_false()
 
+	noop.queue_free()
+
 
 ## NoOpTransitioner.play_in(speed>0) sets _is_playing and clears it after a frame
 func test_noop_play_in_with_positive_speed() -> void:
@@ -124,6 +127,8 @@ func test_noop_play_in_with_positive_speed() -> void:
 	await get_tree().process_frame
 	assert_bool(noop.is_playing()).is_false()
 
+	noop.queue_free()
+
 
 ## NoOpTransitioner.play_out(speed<=0) returns immediately without changing _is_playing
 func test_noop_play_out_zero_or_negative_speed() -> void:
@@ -135,6 +140,8 @@ func test_noop_play_out_zero_or_negative_speed() -> void:
 
 	noop.play_out(-1.0)
 	assert_bool(noop.is_playing()).is_false()
+
+	noop.queue_free()
 
 
 ## NoOpTransitioner.play_in(speed<=0) returns immediately without changing _is_playing
@@ -148,6 +155,8 @@ func test_noop_play_in_zero_or_negative_speed() -> void:
 	noop.play_in(-1.0)
 	assert_bool(noop.is_playing()).is_false()
 
+	noop.queue_free()
+
 
 ## NoOpTransitioner.set_clickable / set_layer do nothing (no errors)
 func test_noop_setters_are_noops() -> void:
@@ -159,6 +168,8 @@ func test_noop_setters_are_noops() -> void:
 	noop.set_clickable(false)
 	noop.set_layer(0)
 	noop.set_layer(999)
+
+	noop.queue_free()
 
 	assert_bool(true).is_true()  # Reaching here means success
 
@@ -206,6 +217,8 @@ func test_setup_transition_player_propagates_clickable() -> void:
 
 	assert_bool(capturer.captured_clickable).is_true()
 
+	capturer.queue_free()
+
 
 ## Verify setup_transition_player reflects SceneLoadOptions transition_layer
 func test_setup_transition_player_propagates_layer() -> void:
@@ -219,6 +232,8 @@ func test_setup_transition_player_propagates_layer() -> void:
 	_service.setup_transition_player(opts)
 
 	assert_int(capturer.captured_layer).is_equal(42)
+
+	capturer.queue_free()
 
 
 ## Verify default project setting is used when transition_layer = -1
@@ -234,6 +249,8 @@ func test_setup_transition_player_default_layer() -> void:
 
 	# Default transition_layer from project settings is 100
 	assert_int(capturer.captured_layer).is_equal(100)
+
+	capturer.queue_free()
 
 
 # ------------- [Test: _get_custom_transitioner] -------------
