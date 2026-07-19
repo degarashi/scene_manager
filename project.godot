@@ -49,6 +49,10 @@ enabled=PackedStringArray("res://addons/d_interface/plugin.cfg", "res://addons/d
 
 import/blender/enabled=false
 
+[gdunit4]
+
+settings/test/test_lookup_folder="tests"
+
 [input]
 
 test_signal0={
