@@ -10,7 +10,6 @@ var _category_id: int
 @onready var _pause_flag_cb: CheckBox = %PauseFlagCB
 @onready var _layer_priority_box: SpinBox = %LayerPriorityBox
 @onready var _always_process_cb: CheckBox = %AlwaysProcessCB
-@onready var _scene_list_container: HFlowContainer = %SceneListContainer
 @onready var _delete_button: Button = %DeleteButton
 @onready var _delete_confirm: ConfirmationDialog = %DeleteConfirm
 @onready var _priority_map_container: VBoxContainer = %PriorityMapContainer
@@ -42,14 +41,6 @@ func _on_category_selected(id: int) -> void:
 		var recv: Array[SMgrDataScene]
 		_ebus_editor.get_scenes.emit(recv, _category_id)
 		_scene_count_label.text = "Scenes: %d" % recv.size()
-
-		# Populate scene list
-		for child in _scene_list_container.get_children():
-			child.queue_free()
-		for i in recv.size():
-			var sc := recv[i]
-			var row := _make_scene_list_item(sc.name, i)
-			_scene_list_container.add_child(row)
 
 		_delete_button.visible = true
 		_layer_name_edit.text = cat.layer_name
@@ -184,28 +175,6 @@ func _build_priority_map() -> void:
 		inner.add_child(prio_label)
 
 		_priority_map_container.add_child(row)
-
-
-func _make_scene_list_item(scene_name: String, index: int) -> Control:
-	var panel := PanelContainer.new()
-	panel.layout_mode = 2
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.3, 0.5, 0.8, 0.06) if index % 2 == 0 else Color(0.3, 0.5, 0.8, 0.02)
-	style.border_color = Color(0.3, 0.5, 0.8, 0.15)
-	style.set_corner_radius_all(3)
-	style.content_margin_left = 8
-	style.content_margin_right = 8
-	style.content_margin_top = 2
-	style.content_margin_bottom = 2
-	panel.add_theme_stylebox_override("panel", style)
-
-	var name_label := Label.new()
-	name_label.text = scene_name
-	name_label.layout_mode = 2
-	name_label.mouse_filter = Control.MOUSE_FILTER_PASS
-	panel.add_child(name_label)
-
-	return panel
 
 
 func _update_category_property(property: String, value: Variant) -> void:

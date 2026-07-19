@@ -118,19 +118,7 @@ text = "Follow Viewport"
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="SceneListLabel" type="Label" parent="."]
-layout_mode = 2
-text = "Scenes in Category"
 
-[node name="SceneListScroll" type="ScrollContainer" parent="."]
-layout_mode = 2
-size_flags_vertical = 3
-vertical_scroll_mode = 0
-
-[node name="SceneListContainer" type="HFlowContainer" parent="SceneListScroll"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
 
 [node name="PriorityMapLabel" type="Label" parent="."]
 layout_mode = 2
