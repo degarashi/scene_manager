@@ -41,7 +41,8 @@ func _enter_tree() -> void:
 	)
 
 	_setup_data_and_autoloads.call_deferred()
-	# _setup_editor_panels is called from _finish_setup after autoloads are registered
+	# _setup_editor_panels is called from _finish_setup
+	# Autoload registration is done only in _enable_plugin (not on every editor startup)
 
 
 # Plugin uninstallation
@@ -58,6 +59,7 @@ func _exit_tree() -> void:
 
 func _enable_plugin() -> void:
 	_setup_data_and_autoloads()
+	_register_autoloads()
 
 
 func _disable_plugin() -> void:
@@ -161,7 +163,6 @@ func _setup_data_and_autoloads() -> void:
 
 
 func _finish_setup() -> void:
-	_register_autoloads()
 	_setup_editor_panels.call_deferred()
 
 
