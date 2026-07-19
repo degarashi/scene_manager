@@ -151,4 +151,5 @@ Scenes in this category will not be removed."
 [connection signal="toggled" from="PauseFlag/PauseFlagCB" to="." method="_on_pause_flag_cb_toggled"]
 [connection signal="toggled" from="AlwaysProcess/AlwaysProcessCB" to="." method="_on_always_process_cb_toggled"]
 [connection signal="toggled" from="FollowViewport/FollowViewportCB" to="." method="_on_follow_viewport_cb_toggled"]
+[connection signal="button_up" from="DeleteButtonContainer/DeleteButton" to="." method="_on_delete_button_button_up"]
 [connection signal="confirmed" from="DeleteConfirm" to="." method="_on_delete_confirm_confirmed"]
