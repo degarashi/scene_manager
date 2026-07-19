@@ -6,7 +6,7 @@ extends Resource
 @export var string_value: String
 
 ## Accessor to get the enum from the string value in this resource.
-var scene_value: Scenes.Id:
+var scene_value: int:
 	get:
 		return SMgrUtil.get_enum_from_scene_name(string_value)
 

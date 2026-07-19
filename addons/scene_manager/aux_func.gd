@@ -183,23 +183,40 @@ static func is_valid_resource_path(path: String) -> bool:
 
 # ------------- [Enum/String Utilities] -------------
 static var _sanitize_regex: RegEx
+static var _scenes_script: Script
+
+
+## Returns the Scenes script, loading it from disk on demand.
+## The file must exist (may not be available during plugin bootstrapping).
+static func _get_scenes() -> Script:
+	if not _scenes_script:
+		var path := "res://scene_manager_data/scenes.gd"
+		if FileAccess.file_exists(path):
+			_scenes_script = load(path)
+	return _scenes_script
 
 
 ## Returns the string form of the Scenes.Id enum.
-static func get_enum_string_from_enum(scene: Scenes.Id) -> String:
-	var index: int = Scenes.Id.values().find(scene)
+static func get_enum_string_from_enum(scene: int) -> String:
+	var S := _get_scenes()
+	if not S:
+		return "NONE"
+	var index: int = S.Id.values().find(scene)
 	if index == -1:
 		return "NONE"
-	return Scenes.Id.keys()[index]
+	return S.Id.keys()[index]
 
 
 ## Returns the Scenes.Id enum from the provided string.
-## Returns Scenes.Id.NONE if the string doesn't match anything.
-static func get_enum_from_scene_name(scene_name: String) -> Scenes.Id:
+## Returns -1 (Scenes.Id.NONE) if the string doesn't match anything.
+static func get_enum_from_scene_name(scene_name: String) -> int:
+	var S := _get_scenes()
+	if not S:
+		return -1
 	var sanitized := sanitize_as_enum_string(scene_name)
-	if sanitized in Scenes.Id.keys():
-		return Scenes.Id.get(sanitized) as Scenes.Id
-	return Scenes.Id.NONE
+	if sanitized in S.Id.keys():
+		return S.Id.get(sanitized) as int
+	return -1
 
 
 ## Returns a string that is all caps with spaces replaced with underscores.

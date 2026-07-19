@@ -42,15 +42,26 @@ func _init() -> void:
 
 
 func _on_open_button_up() -> void:
-	if current_value == null or current_value.scene_value == Scenes.Id.NONE:
+	if current_value == null or current_value.scene_value == -1:
 		return
 
-	var path := Scenes.get_scene_path(current_value.scene_value)
+	var path := _get_scene_path(current_value.scene_value)
 	if path.is_empty():
 		return
 
 	EditorInterface.open_scene_from_path(path)
 	EditorInterface.select_file(path)
+
+
+## Runtime-safe accessor for Scenes.get_scene_path (avoids parse-time dependency).
+static func _get_scene_path(value: int) -> String:
+	var path := "res://scene_manager_data/scenes.gd"
+	if not FileAccess.file_exists(path):
+		return ""
+	var S: Script = load(path)
+	if not S:
+		return ""
+	return S.get_scene_path(value)
 
 
 func _on_text_changed(new_text: String) -> void:
@@ -95,7 +106,7 @@ func _refresh_control_text() -> void:
 
 
 func _update_theme() -> void:
-	var is_invalid := current_value == null or current_value.scene_value == Scenes.Id.NONE
+	var is_invalid := current_value == null or current_value.scene_value == -1
 	if is_invalid:
 		property_control.add_theme_stylebox_override("normal", DUPLICATE_LINE_EDIT)
 	else:

@@ -17,7 +17,7 @@ static var _empty_cb := func(_arg: Node) -> void: pass
 ## Duration of the fade in effect.
 @export var play_in_time: float = 0.5
 ## Override the default transitioner with a custom one by specifying its Scene ID.
-@export var transition_id: Scenes.Id = Scenes.Id.NONE
+@export var transition_id: int = -1
 ## Layer priority for the transition CanvasLayer. (-1 to use project default)
 @export var transition_layer: int = -1
 
@@ -54,7 +54,7 @@ func _init(
 	p_play_in: float = -1.0,
 	p_pre_wrap_cb: Callable = _empty_cb,
 	p_pre_node_cb: Callable = _empty_cb,
-	p_transition_id: Scenes.Id = Scenes.Id.NONE,
+	p_transition_id: int = -1,
 	p_transition_layer: int = -1,
 	p_scene_loaded_cb: Callable = _empty_cb,
 ) -> void:

@@ -4,6 +4,21 @@ const _PS := preload("uid://dn6eh4s0h8jhi")  # project_settings.tres
 const _AF = preload("uid://dlgh4u64a7qxk")  # aux_func.gd
 
 
+## Returns the Scenes singleton at runtime, or null if not yet registered.
+static func _get_scenes_singleton() -> Node:
+	if not Engine.has_singleton("Scenes"):
+		return null
+	return Engine.get_singleton("Scenes")
+
+
+## Loads the Scenes script file from disk, or null if unavailable.
+static func _get_scenes_script() -> Script:
+	var path := "res://scene_manager_data/scenes.gd"
+	if not FileAccess.file_exists(path):
+		return null
+	return ResourceLoader.load(path, "GDScript", ResourceLoader.CACHE_MODE_REPLACE)
+
+
 static func check_invalid_ids() -> void:
 	SMgrUtil.get_log(DLoggerConstants.LogLevel.DEBUG, true).info("Checking for invalid Scenes.Id references...")
 
@@ -12,7 +27,9 @@ static func check_invalid_ids() -> void:
 		_PS.scene_path, "GDScript", ResourceLoader.CACHE_MODE_REPLACE
 	)
 	if script:
-		Scenes.set_script(script)
+		var scenes := _get_scenes_singleton()
+		if scenes:
+			scenes.set_script(script)
 
 	var count: int = _scan_project_for_invalid_ids("res://")
 	if count == 0:
@@ -41,8 +58,10 @@ static func _scan_project_for_invalid_ids(path: String) -> int:
 
 	# Get the current valid enum key
 	var valid_keys: Dictionary = {}
-	for key: String in Scenes.Id.keys():
-		valid_keys[key] = true
+	var S := _get_scenes_script()
+	if S:
+		for key: String in S.Id.keys():
+			valid_keys[key] = true
 
 	while file_name != "":
 		var full_path: String = path.path_join(file_name)

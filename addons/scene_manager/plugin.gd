@@ -40,7 +40,8 @@ func _enter_tree() -> void:
 		preload("uid://cpepbcd57iype")
 	)
 
-	_setup_editor_panels.call_deferred()
+	_setup_data_and_autoloads.call_deferred()
+	# _setup_editor_panels is called from _finish_setup after autoloads are registered
 
 
 # Plugin uninstallation
@@ -56,16 +57,7 @@ func _exit_tree() -> void:
 
 
 func _enable_plugin() -> void:
-	# Attempt setup first
-	var needs_scan := _setup_default_data()
-
-	if needs_scan:
-		# If scan is required, wait for completion (filesystem_changed) before registering autoloads
-		var fs := EditorInterface.get_resource_filesystem()
-		fs.filesystem_changed.connect(_register_autoloads, CONNECT_ONE_SHOT)
-	else:
-		# If files already exist, register immediately
-		_register_autoloads()
+	_setup_data_and_autoloads()
 
 
 func _disable_plugin() -> void:
@@ -93,6 +85,8 @@ func _get_plugin_icon() -> Texture2D:
 
 # ------------- [Private Method] -------------
 func _setup_editor_panels() -> void:
+	if _main_panel:
+		return  # Already set up
 	_main_panel = MAIN_PANEL_SCENE.instantiate()
 	_main_panel.name = MAIN_PANEL_NAME
 	_main_panel.prepare(true)
@@ -112,17 +106,30 @@ func _setup_default_data() -> bool:
 		var source_dir := "res://addons/scene_manager/default_data/"
 		var dir := DirAccess.open(source_dir)
 		if dir:
+			# Ensure target directory exists before copying
+			var target_dir := "res://scene_manager_data"
+			if not DirAccess.dir_exists_absolute(target_dir):
+				DirAccess.make_dir_recursive_absolute(target_dir)
+
 			dir.list_dir_begin()
 			var file_name := dir.get_next()
 			while file_name != "":
 				if not dir.current_is_dir():
 					var source_path := source_dir.path_join(file_name)
-					var target_path := "res://scene_manager_data".path_join(
-						file_name
-					)
+					var target_path := target_dir.path_join(file_name)
 
-					# Copy file
-					dir.copy(source_path, target_path)
+					# Copy file using absolute-path-safe static method
+					var result := DirAccess.copy_absolute(
+						source_path, target_path
+					)
+					if result != OK:
+						push_error(
+							(
+								"Scene Manager: Failed to copy %s to %s (error: %d)"
+								% [source_path, target_path, result]
+							)
+						)
+						return false
 
 					# Reset UID for resource files to avoid conflicts
 					if (
@@ -139,6 +146,23 @@ func _setup_default_data() -> bool:
 			fs.scan()
 			return true
 	return false
+
+
+func _setup_data_and_autoloads() -> void:
+	var needs_scan := _setup_default_data()
+
+	if needs_scan:
+		# If scan is required, wait for completion (filesystem_changed) before finishing setup
+		var fs := EditorInterface.get_resource_filesystem()
+		fs.filesystem_changed.connect(_finish_setup, CONNECT_ONE_SHOT)
+	else:
+		# If files already exist, finish setup immediately
+		_finish_setup()
+
+
+func _finish_setup() -> void:
+	_register_autoloads()
+	_setup_editor_panels.call_deferred()
 
 
 func _get_autoload_list() -> Array[AutoloadInfo]:

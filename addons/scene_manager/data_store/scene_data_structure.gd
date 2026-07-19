@@ -174,8 +174,8 @@ func sort_data_structures() -> void:
 
 
 # ------------- [Private Method] -------------
-func _get_scene_from_enum(scene: Scenes.Id) -> SMgrDataScene:
-	if scene == Scenes.Id.NONE:
+func _get_scene_from_enum(scene: int) -> SMgrDataScene:
+	if scene == -1:
 		return null
 
 	# If the enum's underlying value is a UID, it can be retrieved directly from the dictionary.
@@ -206,7 +206,7 @@ func get_scene_from_uid(uid: int) -> SMgrDataScene:
 ## Retrieves a scene path from an enum key
 ## @param scene Scene enum
 ## @return Scene path string
-func get_scene_path_from_enum(scene: Scenes.Id) -> String:
+func get_scene_path_from_enum(scene: int) -> String:
 	var sc := _get_scene_from_enum(scene)
 	return sc.path if sc else ""
 
@@ -214,17 +214,17 @@ func get_scene_path_from_enum(scene: Scenes.Id) -> String:
 ## Retrieves an enum key from a scene path
 ## @param path Full path of the scene
 ## @return Corresponding Id
-func get_scene_enum_by_path(path: String) -> Scenes.Id:
+func get_scene_enum_by_path(path: String) -> int:
 	# Retrieve the UID (int) directly from the path
 	var uid := ResourceLoader.get_resource_uid(path)
 	if uid == ResourceUID.INVALID_ID:
-		return Scenes.Id.NONE
+		return -1
 
 	# Check if the UID exists in the managed scenes dictionary
 	if _scenes.has(uid):
-		return uid as Scenes.Id
+		return uid as int
 
-	return Scenes.Id.NONE
+	return -1
 
 
 ## Retrieves the full include list
@@ -295,7 +295,7 @@ func get_scenes_categorized() -> Array[SMgrDataScene]:
 ## @param category_id The ID of the category (Scenes.CategoryId)
 ## @return Array of scene data objects
 func get_scenes_by_category_id(
-	category_id: Scenes.CategoryId
+	category_id: int
 ) -> Array[SMgrDataScene]:
 	return _get_scenes(
 		func(sc: SMgrDataScene) -> bool:
@@ -346,12 +346,12 @@ func get_scene_by_name(scene_name: String) -> SMgrDataScene:
 ## @return Array of Scenes.Id
 func get_scene_ids_with_category_name(
 	category_name: String, case_insensitive := false
-) -> Array[Scenes.Id]:
-	var ret: Array[Scenes.Id] = []
+) -> Array[int]:
+	var ret: Array[int] = []
 	var scenes_data := get_scenes_with_category(category_name, case_insensitive)
 	for sc in scenes_data:
 		# Cast UID to Scenes.Id and store it
-		ret.append(sc.uid as Scenes.Id)
+		ret.append(sc.uid as int)
 	return ret
 
 
@@ -359,22 +359,22 @@ func get_scene_ids_with_category_name(
 ## @param category_id Categories.CategoryId
 ## @return Array of Scenes.Id
 func get_scene_ids_by_category(
-	category_id: Scenes.CategoryId
-) -> Array[Scenes.Id]:
+	category_id: int
+) -> Array[int]:
 	# category-id is the key of _categories, so it can be determined directly
-	var ret: Array[Scenes.Id] = []
+	var ret: Array[int] = []
 	for id in _scenes:
 		var sc: SMgrDataScene = _scenes[id]
 		if int(category_id) in sc.categories:
-			ret.append(id as Scenes.Id)
+			ret.append(id as int)
 	return ret
 
 
 ## Retrieves a list of category Enums (CategoryId) belonging to a specific scene Enum (Id)
 ## @param scene_id Scenes.Id
 ## @return Array of Scenes.CategoryId
-func get_category_ids_by_scene(scene_id: Scenes.Id) -> Array[Scenes.CategoryId]:
-	var category_ids: Array[Scenes.CategoryId] = []
+func get_category_ids_by_scene(scene_id: int) -> Array[int]:
+	var category_ids: Array[int] = []
 	var sc := _get_scene_from_enum(scene_id)
 
 	if not sc:
@@ -389,13 +389,13 @@ func get_category_ids_by_scene(scene_id: Scenes.Id) -> Array[Scenes.CategoryId]:
 
 ## Result object for comparing categories between two scenes
 class CategoryDiff:
-	var added: Array[Scenes.CategoryId] = []
-	var removed: Array[Scenes.CategoryId] = []
-	var unchanged: Array[Scenes.CategoryId] = []
+	var added: Array[int] = []
+	var removed: Array[int] = []
+	var unchanged: Array[int] = []
 
 	func _init(
-		current_cats: Array[Scenes.CategoryId],
-		target_cats: Array[Scenes.CategoryId]
+		current_cats: Array[int],
+		target_cats: Array[int]
 	) -> void:
 		# Identify removed and unchanged categories
 		for c in current_cats:
@@ -421,7 +421,7 @@ class CategoryDiff:
 ## @param target_id The scene ID to compare to
 ## @return CategoryDiff object containing 'added', 'removed', and 'unchanged' arrays
 func compare_scene_categories(
-	current_id: Scenes.Id, target_id: Scenes.Id
+	current_id: int, target_id: int
 ) -> CategoryDiff:
 	var current_cats := get_category_ids_by_scene(current_id)
 	var target_cats := get_category_ids_by_scene(target_id)
@@ -430,8 +430,8 @@ func compare_scene_categories(
 
 ## Retrieves a list of all category IDs (CategoryId)
 ## @return Array of Scenes.CategoryId
-func get_categories_all_ids() -> Array[Scenes.CategoryId]:
-	var ret: Array[Scenes.CategoryId] = []
+func get_categories_all_ids() -> Array[int]:
+	var ret: Array[int] = []
 	for c_id in _categories:
 		ret.append(c_id)
 	return ret
