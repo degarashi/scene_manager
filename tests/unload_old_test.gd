@@ -35,7 +35,7 @@ func test_unload_old_true_removes_old_scene_layer() -> void:
 	assert_object(old_layer).is_not_null()
 
 	# Start async load with unload_old=true
-	SceneManager.load_scene_with_transition(
+	await SceneManager.load_scene_with_transition(
 		Scenes.Id.SCENE_1,
 		Scenes.Id.LOADING_SCREEN,
 		false,
@@ -78,7 +78,7 @@ func test_unload_old_false_keeps_old_scene_layer() -> void:
 	assert_object(old_layer).is_not_null()
 
 	# Start async load with unload_old=false (default)
-	SceneManager.load_scene_with_transition(
+	await SceneManager.load_scene_with_transition(
 		Scenes.Id.SCENE_1,
 		Scenes.Id.LOADING_SCREEN,
 		false,
@@ -116,7 +116,7 @@ func test_unload_old_default_keeps_old_scene_layer() -> void:
 	assert_object(old_layer).is_not_null()
 
 	# Call without unload_old parameter (default behavior)
-	SceneManager.load_scene_with_transition(
+	await SceneManager.load_scene_with_transition(
 		Scenes.Id.SCENE_1,
 		Scenes.Id.LOADING_SCREEN,
 		false,

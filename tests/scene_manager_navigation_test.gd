@@ -164,7 +164,7 @@ func test_scenes_get_scene_valid_id() -> void:
 
 func test_add_scene_none_returns_null() -> void:
 	# add_scene with Scenes.Id.NONE should warn and return null.
-	var result: Node = _smgr.add_scene(Scenes.Id.NONE)
+	var result: Node = await _smgr.add_scene(Scenes.Id.NONE)
 	assert_object(result).is_null()
 
 

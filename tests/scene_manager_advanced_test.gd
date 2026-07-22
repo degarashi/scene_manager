@@ -57,7 +57,7 @@ func test_async_loading_flow() -> void:
 
 	# Start async load with transition
 	# SCENE_1 as next, LOADING_SCREEN as transition
-	SceneManager.load_scene_with_transition(
+	await SceneManager.load_scene_with_transition(
 		Scenes.Id.SCENE_1,
 		Scenes.Id.LOADING_SCREEN,
 		true,

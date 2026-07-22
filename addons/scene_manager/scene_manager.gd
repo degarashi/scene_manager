@@ -77,12 +77,18 @@ var _is_transitioning := false
 func _ready() -> void:
 	if _ebus:
 		if not _ebus.instance_check.get_connections().is_empty():
-			SMgrUtil.get_log().error(
-				"Multiple SceneManager instances detected. This may cause unexpected behavior."
+			(
+				SMgrUtil
+				. get_log()
+				. error(
+					"Multiple SceneManager instances detected. This may cause unexpected behavior."
+				)
 			)
 		_ebus.instance_check.connect(_instance_dummy)
 	else:
-		SMgrUtil.get_log().error("_ebus is not set. SceneManager will be disabled.")
+		SMgrUtil.get_log().error(
+			"_ebus is not set. SceneManager will be disabled."
+		)
 		set_process(false)
 		set_process_mode(PROCESS_MODE_DISABLED)
 		return
@@ -93,11 +99,15 @@ func _ready() -> void:
 	# SMgrData is a Resource, so read it with the loader
 	_scene_db = load(_PS.scene_data_path)
 	if _scene_db == null:
-		SMgrUtil.get_log().error("Scene Manager: Failed to load scene database resource.")
+		SMgrUtil.get_log().error(
+			"Scene Manager: Failed to load scene database resource."
+		)
 		return
 
 	_layer_mgr = SMgrLayerManager.new(_scene_db, _ebus, SMgrUtil.get_log())
-	_transition_service = SMgrTransitionService.new(_scene_db, SMgrUtil.get_log(), _transitioner_source)
+	_transition_service = SMgrTransitionService.new(
+		_scene_db, SMgrUtil.get_log(), _transitioner_source
+	)
 	add_child(_transition_service)
 
 	_on_initial_setup.call_deferred()
@@ -107,7 +117,9 @@ func _ready() -> void:
 ## Validates that scene_id is not NONE. Logs a warning and returns true if invalid.
 func _validate_scene_id(scene_id: Scenes.Id, method_name: String) -> bool:
 	if scene_id == Scenes.Id.NONE:
-		SMgrUtil.get_log().warn("{0} called with Scenes.Id.NONE.", [method_name])
+		SMgrUtil.get_log().warn(
+			"{0} called with Scenes.Id.NONE.", [method_name]
+		)
 		return false
 	return true
 
@@ -121,15 +133,24 @@ func _validate_ebus(method_name: String) -> bool:
 
 
 ## Returns true if a transition is already in progress (and logs a warning).
-func _is_transition_blocked(method_name: String, scene_id: Scenes.Id = Scenes.Id.NONE) -> bool:
+func _is_transition_blocked(
+	method_name: String, scene_id: Scenes.Id = Scenes.Id.NONE
+) -> bool:
 	if _is_transitioning:
 		if scene_id != Scenes.Id.NONE:
-			SMgrUtil.get_log().warn(
-				"{0}: Transition already in progress. Ignoring request for {1}.",
-				[method_name, Scenes.Id.find_key(scene_id)]
+			(
+				SMgrUtil
+				. get_log()
+				. warn(
+					"{0}: Transition already in progress. Ignoring request for {1}.",
+					[method_name, Scenes.Id.find_key(scene_id)]
+				)
 			)
 		else:
-			SMgrUtil.get_log().warn("{0}: Transition already in progress. Ignoring request.", [method_name])
+			SMgrUtil.get_log().warn(
+				"{0}: Transition already in progress. Ignoring request.",
+				[method_name]
+			)
 		return true
 	return false
 
@@ -162,9 +183,13 @@ func _get_actual_scene_container() -> Node:
 	var target_node := get_node_or_null(_actual_scene_container_path)
 	if target_node:
 		return target_node
-	SMgrUtil.get_log().warn(
-		"_actual_scene_container_path '%s' is invalid. Falling back to root node.",
-		[_actual_scene_container_path]
+	(
+		SMgrUtil
+		. get_log()
+		. warn(
+			"_actual_scene_container_path '%s' is invalid. Falling back to root node.",
+			[_actual_scene_container_path]
+		)
 	)
 	return get_tree().root
 
@@ -175,7 +200,13 @@ func _on_initial_setup() -> void:
 	if _wrap_initial_scene:
 		var scene_node := get_tree().current_scene
 		if scene_node == null:
-			SMgrUtil.get_log().warn("Scene Manager: current_scene is null during initial setup. Skipping wrap.")
+			(
+				SMgrUtil
+				. get_log()
+				. warn(
+					"Scene Manager: current_scene is null during initial setup. Skipping wrap."
+				)
+			)
 			_is_transitioning = false
 			return
 
@@ -197,12 +228,16 @@ func _on_initial_setup() -> void:
 		_get_actual_scene_container().add_child(layer)
 		layer.add_node(scene_node)
 		if _current_scene_enum == Scenes.Id.NONE:
-			SMgrUtil.get_log().warn("Initial scene not found in DB (Scenes.Id.NONE).")
+			SMgrUtil.get_log().warn(
+				"Initial scene not found in DB (Scenes.Id.NONE)."
+			)
 
 	# Initial fade-in effect
 	var player := _transition_service.get_main_player()
 	if not player:
-		SMgrUtil.get_log().error("_on_initial_setup: Failed to get transition player.")
+		SMgrUtil.get_log().error(
+			"_on_initial_setup: Failed to get transition player."
+		)
 		_is_transitioning = false
 		return
 
@@ -228,10 +263,14 @@ func _remove_name_node(sc: SMgrSceneLayer, p_name: String) -> void:
 		_remove_node_safely(sc)
 
 
-func _perform_scene_setup(scene_id: Scenes.Id, options: SceneLoadOptions) -> Node:
-	var new_scene_node := _create_scene_instance_blocking(scene_id)
+func _setup_scene_from_packed(
+	packed_scene: PackedScene, scene_id: Scenes.Id, options: SceneLoadOptions
+) -> Node:
+	var new_scene_node := packed_scene.instantiate()
 	if not new_scene_node:
-		SMgrUtil.get_log().error("Failed to instantiate scene: {0}", [Scenes.Id.find_key(scene_id)])
+		SMgrUtil.get_log().error(
+			"Failed to instantiate scene: {0}", [Scenes.Id.find_key(scene_id)]
+		)
 		return null
 
 	_notify_scene_init(new_scene_node, options.params)
@@ -248,6 +287,70 @@ func _perform_scene_setup(scene_id: Scenes.Id, options: SceneLoadOptions) -> Nod
 
 	scene_loaded.emit(scene_id, new_scene_node)
 	return new_scene_node
+
+
+## Asynchronously loads a scene PackedScene using threaded resource loading.
+## Returns the PackedScene without instantiating. Uses cached fast path
+## or threaded request with 30s timeout.
+func _load_scene_async(scene_id: Scenes.Id) -> PackedScene:
+	var path := _scene_db.get_scene_path_from_enum(scene_id)
+	if path.is_empty():
+		SMgrUtil.get_log().error(
+			"_load_scene_async: Empty path for scene {0}",
+			[Scenes.Id.find_key(scene_id)]
+		)
+		return null
+
+	# Fast path: use cached resource
+	if ResourceLoader.has_cached(path):
+		var packed := load(path) as PackedScene
+		if not packed:
+			SMgrUtil.get_log().error(
+				"_load_scene_async: Failed to load cached scene: {0}", [path]
+			)
+			return null
+		return packed
+
+	# Slow path: threaded loading with 30-second timeout
+	ResourceLoader.load_threaded_request(path, "", true)
+	var elapsed := 0.0
+	var status := ResourceLoader.load_threaded_get_status(path)
+	while status == ResourceLoader.THREAD_LOAD_IN_PROGRESS and elapsed < 30.0:
+		await get_tree().process_frame
+		elapsed += get_process_delta_time()
+		status = ResourceLoader.load_threaded_get_status(path)
+
+	if status == ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+		SMgrUtil.get_log().error(
+			"_load_scene_async: Timeout loading scene: {0}", [path]
+		)
+		return null
+
+	if status != ResourceLoader.THREAD_LOAD_LOADED:
+		SMgrUtil.get_log().error(
+			"_load_scene_async: Failed to load scene (status: {0}): {1}",
+			[status, path]
+		)
+		return null
+
+	var packed_scene := ResourceLoader.load_threaded_get(path) as PackedScene
+	if not packed_scene:
+		SMgrUtil.get_log().error(
+			"_load_scene_async: Loaded resource is not a PackedScene: {0}",
+			[path]
+		)
+		return null
+
+	return packed_scene
+
+
+## Asynchronously loads a scene and instantiates it.
+## Thin wrapper around _load_scene_async for callers that need a Node directly.
+func _create_scene_instance_async(scene_id: Scenes.Id) -> Node:
+	var packed := await _load_scene_async(scene_id)
+	if not packed:
+		return null
+	return packed.instantiate()
 
 
 func _get_layer_by_id(scene_id: Scenes.Id) -> SMgrSceneLayer:
@@ -325,7 +428,8 @@ func switch_to_scene(
 	var is_reloading := scene_id == _current_scene_enum
 
 	SMgrUtil.get_log().info(
-		"Switching to scene: {0} (is_reloading: {1})", [Scenes.Id.find_key(scene_id), is_reloading]
+		"Switching to scene: {0} (is_reloading: {1})",
+		[Scenes.Id.find_key(scene_id), is_reloading]
 	)
 
 	if is_reloading:
@@ -337,7 +441,9 @@ func switch_to_scene(
 	# --- Transition Start ---
 	var player := _transition_service.setup_transition_player(options)
 	if not player:
-		SMgrUtil.get_log().error("switch_to_scene: Failed to setup transition player.")
+		SMgrUtil.get_log().error(
+			"switch_to_scene: Failed to setup transition player."
+		)
 		_is_transitioning = false
 		return null
 
@@ -353,19 +459,40 @@ func switch_to_scene(
 	_trash_can.flush()
 
 	# Update history stack (only for new scene transitions)
-	if not is_reloading and add_to_back and _current_scene_enum != Scenes.Id.NONE:
+	if (
+		not is_reloading
+		and add_to_back
+		and _current_scene_enum != Scenes.Id.NONE
+	):
 		_history_stack.push(_current_scene_enum)
 
 	# Instantiate and setup the scene (this internally emits 'scene_loaded')
-	var new_scene_node := _perform_scene_setup(scene_id, options)
+	var packed_scene := _get_scene_blocking(scene_id)
+	if not packed_scene:
+		SMgrUtil.get_log().error(
+			"Failed to get scene for switch: {0}",
+			[Scenes.Id.find_key(scene_id)]
+		)
+		player.set_clickable(true)
+		_cleanup_transition_player(player)
+		_is_transitioning = false
+		return null
+	var new_scene_node := _setup_scene_from_packed(
+		packed_scene, scene_id, options
+	)
 	if not new_scene_node:
-		SMgrUtil.get_log().error("Failed to instantiate switch_to_scene: {0}", [Scenes.Id.find_key(scene_id)])
+		SMgrUtil.get_log().error(
+			"Failed to instantiate switch_to_scene: {0}",
+			[Scenes.Id.find_key(scene_id)]
+		)
 		player.set_clickable(true)
 		_cleanup_transition_player(player)
 		_is_transitioning = false
 		return null
 
-	var category_diff := _scene_db.compare_scene_categories(_current_scene_enum, scene_id)
+	var category_diff := _scene_db.compare_scene_categories(
+		_current_scene_enum, scene_id
+	)
 	_current_scene_enum = scene_id
 
 	if is_reloading:
@@ -382,7 +509,9 @@ func switch_to_scene(
 
 	_cleanup_transition_player(player)
 
-	SMgrUtil.get_log().debug("Scene transition completed: {0}", [Scenes.Id.find_key(scene_id)])
+	SMgrUtil.get_log().debug(
+		"Scene transition completed: {0}", [Scenes.Id.find_key(scene_id)]
+	)
 	scene_transition_completed.emit(scene_id)
 	_is_transitioning = false
 	return new_scene_node
@@ -403,7 +532,9 @@ func add_scene(
 
 	var summary := _layer_mgr.get_category_summary(scene_id)
 	var target_name := (
-		summary.layer_name if not summary.layer_name.is_empty() else options.node_name
+		summary.layer_name
+		if not summary.layer_name.is_empty()
+		else options.node_name
 	)
 
 	var existing_layer := _get_layer_by_name(target_name)
@@ -413,29 +544,35 @@ func add_scene(
 				unload_scene_by_name(target_name)
 
 			DuplicateNameMode.WARN_AND_SKIP:
-				SMgrUtil.get_log().warn("Scene with name '{0}' is already loaded. Skipping.", [target_name])
+				SMgrUtil.get_log().warn(
+					"Scene with name '{0}' is already loaded. Skipping.",
+					[target_name]
+				)
 				return null
 
 			DuplicateNameMode.RENAME_NEW:
-				options.node_name = _layer_mgr.get_unique_layer_name(target_name)
+				options.node_name = _layer_mgr.get_unique_layer_name(
+					target_name
+				)
 
 			DuplicateNameMode.APPEND:
-				# Instead of creating a new layer, append the instance to the existing layer
-				var new_node := _create_scene_instance_blocking(scene_id)
+				# Use async helper for non-blocking scene loading
+				var new_node := await _create_scene_instance_async(scene_id)
 				if new_node:
 					existing_layer.add_node(new_node)
-					# Apply pre-callback to the existing layer and new node
 					options.call_pre_cb(existing_layer, new_node)
 
 					if options.scene_loaded_cb.is_valid():
 						options.scene_loaded_cb.call(new_node)
 
-					# Manually emit since we bypass _perform_scene_setup
 					scene_loaded.emit(scene_id, new_node)
 				return new_node
 
-	# For other modes (or if no duplicate was found), proceed with standard setup
-	return _perform_scene_setup(scene_id, options)
+	# For other modes, set up scene from packed with async loading
+	var packed := await _load_scene_async(scene_id)
+	if not packed:
+		return null
+	return _setup_scene_from_packed(packed, scene_id, options)
 
 
 ## Removes a specific scene by its ID. (Additive counterpart of add_scene)
@@ -445,11 +582,16 @@ func remove_scene(scene_id: Scenes.Id) -> bool:
 	if not _validate_ebus("remove_scene"):
 		return false
 
-	SMgrUtil.get_log().info("Removing scene: {0}", [Scenes.Id.find_key(scene_id)])
+	SMgrUtil.get_log().info(
+		"Removing scene: {0}", [Scenes.Id.find_key(scene_id)]
+	)
 
 	var layer := _get_layer_by_id(scene_id)
 	if not layer:
-		SMgrUtil.get_log().warn("Scene '{0}' is not currently loaded.", [Scenes.Id.find_key(scene_id)])
+		SMgrUtil.get_log().warn(
+			"Scene '{0}' is not currently loaded.",
+			[Scenes.Id.find_key(scene_id)]
+		)
 		return false
 
 	_remove_node_safely(layer)
@@ -459,9 +601,13 @@ func remove_scene(scene_id: Scenes.Id) -> bool:
 	return true
 
 
-func load_previous_scene(options: SceneLoadOptions = SceneLoadOptions.new()) -> bool:
+func load_previous_scene(
+	options: SceneLoadOptions = SceneLoadOptions.new()
+) -> bool:
 	if _history_stack.size() == 0:
-		SMgrUtil.get_log().warn("Attempted to load previous scene, but history is empty.")
+		SMgrUtil.get_log().warn(
+			"Attempted to load previous scene, but history is empty."
+		)
 		return false
 
 	return await back_to_previous_by_offset(1, options)
@@ -469,7 +615,9 @@ func load_previous_scene(options: SceneLoadOptions = SceneLoadOptions.new()) -> 
 
 ## Go back in history by the specified number (offset)
 ## from the current scene and transition to that scene.
-func back_to_previous_by_offset(offset: int, options: SceneLoadOptions = SceneLoadOptions.new()) -> bool:
+func back_to_previous_by_offset(
+	offset: int, options: SceneLoadOptions = SceneLoadOptions.new()
+) -> bool:
 	if offset <= 0:
 		SMgrUtil.get_log().warn("Offset must be greater than 0.")
 		return false
@@ -483,7 +631,9 @@ func back_to_previous_by_offset(offset: int, options: SceneLoadOptions = SceneLo
 			break
 
 	if target_scene == Scenes.Id.NONE:
-		SMgrUtil.get_log().warn("Failed to go back, history is empty or offset out of bounds.")
+		SMgrUtil.get_log().warn(
+			"Failed to go back, history is empty or offset out of bounds."
+		)
 		return false
 
 	var result := await switch_to_scene(target_scene, false, options)
@@ -492,10 +642,14 @@ func back_to_previous_by_offset(offset: int, options: SceneLoadOptions = SceneLo
 
 ## Reloads the current scene.
 ## @return True if executed.
-func reload_current_scene(options: SceneLoadOptions = SceneLoadOptions.new()) -> bool:
+func reload_current_scene(
+	options: SceneLoadOptions = SceneLoadOptions.new()
+) -> bool:
 	# Use the same parent node the scene currently has to keep it consistent.
 	if _current_scene_enum == Scenes.Id.NONE:
-		SMgrUtil.get_log().warn("Attempted to reload current scene, but current scene is NONE.")
+		SMgrUtil.get_log().warn(
+			"Attempted to reload current scene, but current scene is NONE."
+		)
 		return false
 
 	# The reload logic is handled within switch_to_scene(), so simply calling it is sufficient.
@@ -526,7 +680,9 @@ func exit_game(fade_time: float = 1.0) -> void:
 
 
 # ------------- [Async Loading] -------------
-func start_async_load(scene_id: Scenes.Id, use_sub_threads: bool = true) -> void:
+func start_async_load(
+	scene_id: Scenes.Id, use_sub_threads: bool = true
+) -> void:
 	if not _validate_scene_id(scene_id, "start_async_load"):
 		return
 
@@ -574,7 +730,7 @@ func load_scene_with_transition(
 	var trans_options := opt_play_in.copy()
 	trans_options.node_name = _loading_node_name
 
-	add_scene(transition_scene, mode, trans_options)
+	await add_scene(transition_scene, mode, trans_options)
 
 	# Immediately free the old scene to release memory (optional)
 	# Skip the loading screen layer (just added above)
@@ -590,7 +746,9 @@ func load_scene_with_transition(
 func instantiate_async_result() -> void:
 	var path := _scene_db.get_scene_path_from_enum(_reserved.scene_id)
 	if path == "" or _reserved.scene_id == Scenes.Id.NONE:
-		SMgrUtil.get_log().warn("instantiate_async_result: No reserved scene to instantiate.")
+		SMgrUtil.get_log().warn(
+			"instantiate_async_result: No reserved scene to instantiate."
+		)
 		return
 
 	# Add current scene to history before switching
@@ -626,7 +784,8 @@ func instantiate_async_result() -> void:
 		scene_loaded.emit(_reserved.scene_id, scene_node)
 	else:
 		SMgrUtil.get_log().error(
-			"instantiate_async_result: Failed to load scene from path: {0}", [path]
+			"instantiate_async_result: Failed to load scene from path: {0}",
+			[path]
 		)
 
 
@@ -634,7 +793,9 @@ func instantiate_async_result() -> void:
 ## This is the final step of the 'load_scene_with_transition' flow.
 func activate_prepared_scene() -> Node:
 	if _reserved.scene_id == Scenes.Id.NONE:
-		SMgrUtil.get_log().warn("activate_prepared_scene called but no scene is reserved.")
+		SMgrUtil.get_log().warn(
+			"activate_prepared_scene called but no scene is reserved."
+		)
 		return null
 	if not _validate_ebus("activate_prepared_scene"):
 		return null
@@ -644,7 +805,10 @@ func activate_prepared_scene() -> Node:
 
 	_is_transitioning = true
 
-	SMgrUtil.get_log().info("Activating prepared scene: {0}", [Scenes.Id.find_key(_reserved.scene_id)])
+	SMgrUtil.get_log().info(
+		"Activating prepared scene: {0}",
+		[Scenes.Id.find_key(_reserved.scene_id)]
+	)
 
 	var recv: Array[SMgrSceneLayer]
 	_ebus.get_scene_by_id.emit(recv, _reserved.scene_id)
@@ -657,7 +821,9 @@ func activate_prepared_scene() -> Node:
 
 	var player := _transition_service.setup_transition_player(_reserved.options)
 	if not player:
-		SMgrUtil.get_log().error("activate_prepared_scene: Failed to setup transition player.")
+		SMgrUtil.get_log().error(
+			"activate_prepared_scene: Failed to setup transition player."
+		)
 		_is_transitioning = false
 		return null
 
@@ -666,7 +832,9 @@ func activate_prepared_scene() -> Node:
 
 	await player.play_out(_reserved.options.play_out_time)
 
-	var diff := _scene_db.compare_scene_categories(_current_scene_enum, _reserved.scene_id)
+	var diff := _scene_db.compare_scene_categories(
+		_current_scene_enum, _reserved.scene_id
+	)
 
 	# Remove the transition/loading scene layer
 	unload_scene_by_name(_loading_node_name)
@@ -701,7 +869,10 @@ func activate_prepared_scene() -> Node:
 
 	_cleanup_transition_player(player)
 
-	SMgrUtil.get_log().debug("Scene transition completed: {0}", [Scenes.Id.find_key(_current_scene_enum)])
+	SMgrUtil.get_log().debug(
+		"Scene transition completed: {0}",
+		[Scenes.Id.find_key(_current_scene_enum)]
+	)
 	scene_transition_completed.emit(_current_scene_enum)
 
 	_is_transitioning = false
@@ -758,13 +929,17 @@ func _notify_fade_out_end(exclude_id: Scenes.Id = Scenes.Id.NONE) -> void:
 
 func _notify_fade_in(node: Node) -> void:
 	Interface.proc_interface(
-		node, IFadeInNotify, func(ifc: IFadeInNotify) -> void: ifc.on_fade_in_end()
+		node,
+		IFadeInNotify,
+		func(ifc: IFadeInNotify) -> void: ifc.on_fade_in_end()
 	)
 
 
 func _notify_scene_init(node: Node, params: Variant) -> void:
 	Interface.proc_interface(
-		node, ISceneInitializer, func(ifc: ISceneInitializer) -> void: ifc.on_scene_init(params)
+		node,
+		ISceneInitializer,
+		func(ifc: ISceneInitializer) -> void: ifc.on_scene_init(params)
 	)
 
 
