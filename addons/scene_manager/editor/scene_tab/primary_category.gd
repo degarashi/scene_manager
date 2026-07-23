@@ -24,6 +24,11 @@ func _ready() -> void:
 	_uncategorized_sec = _create_sub_section(_Name.UNCATEGORIZED)
 
 
+func _refilter() -> void:
+	_categorized_sec.filter_items(_search_filter)
+	_uncategorized_sec.filter_items(_search_filter)
+
+
 func _refresh_ui() -> void:
 	for tup in [
 		[_categorized_sec, _ebus_editor.get_scenes_categorized],

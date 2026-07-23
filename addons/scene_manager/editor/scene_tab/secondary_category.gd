@@ -12,6 +12,10 @@ func _ready() -> void:
 	_subs.open()
 
 
+func _refilter() -> void:
+	_subs.filter_items(_search_filter)
+
+
 func _refresh_ui() -> void:
 	var recv: Array[SMgrDataScene]
 	_ebus_editor.get_scenes.emit(recv, _category_id)

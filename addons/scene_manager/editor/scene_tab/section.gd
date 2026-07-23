@@ -26,6 +26,19 @@ func add_item(item: SMgrSceneItem) -> void:
 	_scene_item_cont.add_child(item)
 
 
+## Filters visible items by search text. Toggles visibility on existing items
+## instead of destroying and recreating them — critical for search performance.
+func filter_items(search_text: String) -> void:
+	for child in _scene_item_cont.get_children():
+		var item := child as SMgrSceneItem
+		if not item:
+			continue
+		var matches := search_text.is_empty()
+		if not matches:
+			matches = search_text.to_lower() in item.get_scene_name().to_lower()
+		item.visible = matches
+
+
 func open() -> void:
 	_is_open = true
 	_scene_item_cont.visible = true

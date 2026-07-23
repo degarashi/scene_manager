@@ -24,7 +24,13 @@ func _activate() -> void:
 func set_search_filter(filter: String) -> void:
 	if _search_filter != filter:
 		_search_filter = filter
-		_refresh_ui()
+		_refilter()
+
+
+## Lightweight search filtering that toggles visibility on existing items
+## instead of rebuilding the entire scene list. Override in subclasses.
+func _refilter() -> void:
+	_refresh_ui()
 
 
 func activate(category_id: int) -> void:
@@ -54,18 +60,17 @@ func _populate_section(
 	if scenes.is_empty():
 		return
 
-	if not _search_filter.is_empty():
-		scenes = scenes.filter(
-			func(sc: SMgrDataScene):
-				return _search_filter.to_lower() in sc.name.to_lower()
-		)
-
+	# Always create items for ALL scenes. Search filtering is applied afterward
+	# via _refilter()/filter_items() to avoid destroying and recreating nodes
+	# on every keystroke.
 	scenes.sort_custom(SMgrUtil.natural_case_sort)
 
 	for sc: SMgrDataScene in scenes:
 		var item: SMgrSceneItem = _SCENE_ITEM.instantiate()
 		section.add_item(item)
 		item.activate(sc.uid)
+
+	section.filter_items(_search_filter)
 
 
 func _refresh_ui() -> void:
