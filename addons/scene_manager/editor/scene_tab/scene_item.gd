@@ -2,12 +2,16 @@
 class_name SMgrSceneItem
 extends HBoxContainer
 
+# ------------- [Constants] -------------
 const _MENU_ID_CATEGORY = 0
 const _THEME_DUPLICATE_LINE_EDIT: StyleBox = preload("uid://21mjw515mptn")  # line_edit_duplicate.tres
 const _C = preload("uid://c3vvdktou45u")  # scene_manager_constants.gd
 const _AF = preload("uid://dlgh4u64a7qxk")  # aux_func.gd
 
+# ------------- [Exports] -------------
 @export var _ebus_editor: SMgrEbusEditor
+
+# ------------- [Private Variable] -------------
 var _mouse_is_over_path: bool
 var _scene_uid: int
 var _previous_name: String
@@ -22,6 +26,7 @@ var _initial_categories_state: Dictionary[int, bool] = {}
 var _name_debouncer: Debouncer
 
 
+# ------------- [Public Method] -------------
 func activate(sc_uid: int) -> void:
 	_scene_uid = sc_uid
 	if is_node_ready():
@@ -56,6 +61,7 @@ func _request_thumbnail(path: String) -> void:
 	previewer.queue_resource_preview(path, self, "_on_thumbnail_ready", null)
 
 
+# ------------- [Callbacks] -------------
 func _on_thumbnail_ready(
 	path: String, preview: Texture2D, _thumbnail_preview: Texture2D, _userdata: Variant
 ) -> void:

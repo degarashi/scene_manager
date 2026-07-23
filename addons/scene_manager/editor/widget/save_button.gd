@@ -1,12 +1,16 @@
 @tool
 extends Button
 
+# ------------- [Exports] -------------
 @export var _ebus_editor: SMgrEbusEditor
+
+# ------------- [Private Variable] -------------
 var _ps := preload("uid://dn6eh4s0h8jhi")  # project_settings.tres
 var _dirty_style: StyleBoxFlat
 var _auto_save_style: StyleBoxFlat
 
 
+# ------------- [Callbacks] -------------
 func _ready() -> void:
 	_ebus_editor.on_dirty_flag_changed.connect(_adapter_func)
 	_ps.on_auto_save_changed.connect(_adapter_func)

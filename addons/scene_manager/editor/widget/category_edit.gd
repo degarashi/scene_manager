@@ -1,8 +1,11 @@
 @tool
 extends VBoxContainer
 
+# ------------- [Constants] -------------
 const _AF = preload("uid://dlgh4u64a7qxk")  # aux_func.gd
+# ------------- [Exports] -------------
 @export var _ebus_editor: SMgrEbusEditor
+# ------------- [Private Variable] -------------
 var _category_id: int
 @onready var _layer_name_edit: LineEdit = %LayerNameEdit
 @onready var _follow_viewport_cb: CheckBox = %FollowViewportCB
@@ -14,7 +17,7 @@ var _category_id: int
 @onready var _priority_map_container: VBoxContainer = %PriorityMapContainer
 var _priority_debouncer: Debouncer
 
-
+# ------------- [Callbacks] -------------
 func _ready() -> void:
 	_ebus_editor.on_category_selected.connect(_on_category_selected)
 
@@ -22,7 +25,7 @@ func _ready() -> void:
 	add_child(_priority_debouncer)
 	_priority_debouncer.timeout.connect(_build_priority_map)
 
-
+# ------------- [Private Method] -------------
 func _fetch_category(id: int) -> SMgrCategoryData:
 	return _AF.fetch_category_from_ebus(_ebus_editor, id)
 
@@ -60,11 +63,28 @@ func _build_priority_map() -> void:
 	for child in _priority_map_container.get_children():
 		child.queue_free()
 
+	var entries := _fetch_category_entries()
+	if entries.is_empty():
+		return
+
+	# Determine range for bar normalization
+	var min_p: int = entries[0].priority
+	var max_p: int = entries[0].priority
+	for e in entries:
+		min_p = mini(min_p, e.priority)
+		max_p = maxi(max_p, e.priority)
+
+	for e in entries:
+		var is_selected: bool = e.id == _category_id
+		_priority_map_container.add_child(_create_priority_bar_row(e, is_selected, min_p, max_p))
+
+
+func _fetch_category_entries() -> Array[Dictionary]:
 	# Fetch all category IDs
 	var cat_ids: Array[int]
 	_ebus_editor.get_categories.emit(cat_ids)
 	if cat_ids.is_empty():
-		return
+		return []
 
 	# Fetch category data for each ID
 	var entries: Array[Dictionary] = []
@@ -81,94 +101,80 @@ func _build_priority_map() -> void:
 			)
 
 	if entries.is_empty():
-		return
+		return []
 
 	# Sort by priority descending
 	entries.sort_custom(func(a, b): return a.priority > b.priority)
+	return entries
 
-	# Determine range for bar normalization
-	var min_p: int = entries[0].priority
-	var max_p: int = entries[0].priority
-	for e in entries:
-		min_p = mini(min_p, e.priority)
-		max_p = maxi(max_p, e.priority)
 
+func _create_priority_bar_row(entry: Dictionary, is_selected: bool, min_p: int, max_p: int) -> Control:
 	var range_p: int = max_p - min_p
+	var row: Control
 
-	for e in entries:
-		var is_selected: bool = e.id == _category_id
-		var row: Control
+	if is_selected:
+		# Use PanelContainer with border to highlight the selected row
+		var panel := PanelContainer.new()
+		panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var style := StyleBoxFlat.new()
+		style.border_width_left = 1
+		style.border_width_top = 1
+		style.border_width_right = 1
+		style.border_width_bottom = 1
+		style.bg_color = Color(0.4, 0.7, 1.0, 0.04)
+		style.border_color = Color(0.4, 0.7, 1.0, 0.5)
+		panel.add_theme_stylebox_override("panel", style)
+		row = panel
+	else:
+		row = HBoxContainer.new()
+		row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
-		if is_selected:
-			# Use PanelContainer with border to highlight the selected row
-			var panel := PanelContainer.new()
-			panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			panel.layout_mode = 2
-			var style := StyleBoxFlat.new()
-			style.border_width_left = 1
-			style.border_width_top = 1
-			style.border_width_right = 1
-			style.border_width_bottom = 1
-			style.bg_color = Color(0.4, 0.7, 1.0, 0.04)
-			style.border_color = Color(0.4, 0.7, 1.0, 0.5)
-			panel.add_theme_stylebox_override("panel", style)
-			row = panel
-		else:
-			row = HBoxContainer.new()
-			row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			row.layout_mode = 2
+	# Inner HBox for layout (PanelContainer needs a child to layout)
+	var inner: HBoxContainer
+	if is_selected:
+		inner = HBoxContainer.new()
+		inner.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(inner)
+	else:
+		inner = row as HBoxContainer
 
-		# Inner HBox for layout (PanelContainer needs a child to layout)
-		var inner: HBoxContainer
-		if is_selected:
-			inner = HBoxContainer.new()
-			inner.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			inner.layout_mode = 2
-			row.add_child(inner)
-		else:
-			inner = row as HBoxContainer
+	var name_label := Label.new()
+	name_label.text = entry.name
+	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	name_label.size_flags_stretch_ratio = 1.0
+	inner.add_child(name_label)
 
-		var name_label := Label.new()
-		name_label.text = e.name
-		name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		name_label.size_flags_stretch_ratio = 1.0
-		name_label.layout_mode = 2
-		inner.add_child(name_label)
+	# Bar container to give the ColorRect a fixed height context
+	var bar_bg := ColorRect.new()
+	bar_bg.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	bar_bg.size_flags_stretch_ratio = 2.0
+	bar_bg.custom_minimum_size.y = 16
+	bar_bg.color = Color(0.15, 0.15, 0.15, 0.3)
 
-		# Bar container to give the ColorRect a fixed height context
-		var bar_bg := ColorRect.new()
-		bar_bg.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		bar_bg.size_flags_stretch_ratio = 2.0
-		bar_bg.custom_minimum_size.y = 16
-		bar_bg.color = Color(0.15, 0.15, 0.15, 0.3)
-		bar_bg.layout_mode = 2
+	var bar := ColorRect.new()
+	bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	bar.custom_minimum_size.y = 12
+	bar.anchor_right = 0.0
+	if range_p > 0:
+		bar.anchor_right = float(entry.priority - min_p) / range_p
+	else:
+		bar.anchor_right = 1.0
 
-		var bar := ColorRect.new()
-		bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		bar.custom_minimum_size.y = 12
-		bar.anchor_right = 0.0
-		bar.layout_mode = 2
-		if range_p > 0:
-			bar.anchor_right = float(e.priority - min_p) / range_p
-		else:
-			bar.anchor_right = 1.0
+	if is_selected:
+		bar.color = Color(0.4, 0.7, 1.0, 0.9)
+	else:
+		bar.color = Color(0.3, 0.6, 0.9, 0.5)
 
-		if is_selected:
-			bar.color = Color(0.4, 0.7, 1.0, 0.9)
-		else:
-			bar.color = Color(0.3, 0.6, 0.9, 0.5)
+	bar_bg.add_child(bar)
+	inner.add_child(bar_bg)
 
-		bar_bg.add_child(bar)
-		inner.add_child(bar_bg)
+	var prio_label := Label.new()
+	prio_label.text = str(entry.priority)
+	prio_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	prio_label.custom_minimum_size.x = 48
+	inner.add_child(prio_label)
 
-		var prio_label := Label.new()
-		prio_label.text = str(e.priority)
-		prio_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-		prio_label.custom_minimum_size.x = 48
-		prio_label.layout_mode = 2
-		inner.add_child(prio_label)
-
-		_priority_map_container.add_child(row)
+	return row
 
 
 func _update_category_property(property: String, value: Variant) -> void:

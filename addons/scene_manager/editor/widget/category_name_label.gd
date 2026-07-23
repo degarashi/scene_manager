@@ -1,9 +1,13 @@
 @tool
 extends HBoxContainer
 
+# ------------- [Constants] -------------
 const _AF = preload("uid://dlgh4u64a7qxk")  # aux_func.gd
+
+# ------------- [Exports] -------------
 @export var _ebus_editor: SMgrEbusEditor
 
+# ------------- [Private Variable] -------------
 var _current_category_id: int = ResourceUID.INVALID_ID
 var _previous_name: String = ""
 
@@ -12,6 +16,7 @@ var _previous_name: String = ""
 @onready var _scene_count_label: Label = %SceneCountLabel
 
 
+# ------------- [Callbacks] -------------
 func _ready() -> void:
 	_ebus_editor.on_category_selected.connect(_on_category_selected)
 	if Engine.is_editor_hint():

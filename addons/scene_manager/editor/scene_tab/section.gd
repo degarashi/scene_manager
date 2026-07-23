@@ -2,9 +2,11 @@
 class_name SMgrSection
 extends Control
 
+# ------------- [Constants] -------------
 const _OPEN_ICON = preload("uid://c7o4wjygnjhjc")  # GuiOptionArrowDown.svg
 const _CLOSE_ICON = preload("uid://dhsmjlnpmbcwm")  # GuiOptionArrowRight.svg
 
+# ------------- [Private Variable] -------------
 var _is_open: bool = true
 
 @onready var _button_header: Button = %Button

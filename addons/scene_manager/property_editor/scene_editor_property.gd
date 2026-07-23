@@ -1,8 +1,12 @@
 @tool
 extends EditorProperty
 
+# ------------- [Constants] -------------
+
 const DUPLICATE_LINE_EDIT: StyleBox = preload("uid://21mjw515mptn")  # line_edit_duplicate.tres
 const OPEN_ICON: Texture2D = preload("uid://bpg21v8550rmv")  # PlayOverlay.svg
+
+# ------------- [Private Variable] -------------
 
 # The main control for editing the property.
 var property_control: SceneLineEdit = (
@@ -17,6 +21,8 @@ var current_value: SceneResource = SceneResource.new()
 # A guard against internal changes when the property is updated.
 var updating: bool = false
 
+
+# ------------- [Callbacks] -------------
 
 func _init() -> void:
 	# Add the container as a direct child of EditorProperty node.
@@ -52,6 +58,8 @@ func _on_open_button_up() -> void:
 	EditorInterface.open_scene_from_path(path)
 	EditorInterface.select_file(path)
 
+
+# ------------- [Private Method] -------------
 
 ## Runtime-safe accessor for Scenes.get_scene_path (avoids parse-time dependency).
 static func _get_scene_path(value: int) -> String:

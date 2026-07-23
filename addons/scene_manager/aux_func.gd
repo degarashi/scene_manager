@@ -11,6 +11,87 @@ static func _get_log() -> DLoggerClass:
 	return _log
 
 
+# ------------- [Private Static Method] -------------
+## Saves the resource to a temporary path.
+## Returns the temp path on success, empty string on failure.
+static func _uid_save_to_temp(resource: Resource, path: String) -> String:
+	var base_path := path.get_basename()
+	var extension := path.get_extension()
+	var tmp_path := base_path + "_tmp." + extension
+
+	var save_error := ResourceSaver.save(resource, tmp_path)
+	if save_error != OK:
+		_get_log().error("Save failed. Code: {0}. Path: {1}", [save_error, tmp_path])
+		return ""
+
+	return tmp_path
+
+
+## Handles the backup-original, rename-temp, remove-backup logic.
+## Also handles .uid file backup/recovery.
+## Returns true on success, false on failure.
+static func _uid_swap_files(path: String, tmp_path: String) -> bool:
+	var dir := DirAccess.open("res://")
+	if not dir:
+		_get_log().error("DirAccess failed.")
+		DirAccess.remove_absolute(tmp_path)
+		return false
+
+	# Use project-relative paths for DirAccess
+	var rel_path := path.trim_prefix("res://")
+	var rel_tmp_path := tmp_path.trim_prefix("res://")
+	var rel_uid_path := rel_path + ".uid"
+	var rel_tmp_uid_path := rel_tmp_path + ".uid"
+
+	var backup_path := (
+		path.get_basename() + "_backup_"
+		+ str(Time.get_ticks_msec()) + "_" + str(randi())
+		+ "." + path.get_extension()
+	)
+	var rel_backup_path := backup_path.trim_prefix("res://")
+	var rel_backup_uid_path := rel_backup_path + ".uid"
+
+	# Backup original → backup (preserves original for rollback)
+	var has_original := dir.file_exists(rel_path)
+	if has_original and dir.rename(rel_path, rel_backup_path) != OK:
+		_get_log().error("Failed to backup original file: {0}", [path])
+		dir.remove(rel_tmp_path)
+		return false
+
+	# Backup .uid if it exists
+	var has_uid := dir.file_exists(rel_uid_path)
+	if has_uid:
+		if dir.rename(rel_uid_path, rel_backup_uid_path) != OK:
+			if has_original:
+				dir.rename(rel_backup_path, rel_path)
+			dir.remove(rel_tmp_path)
+			_get_log().error("Failed to backup .uid file: {0}", [rel_uid_path])
+			return false
+
+	# Rename temp → original
+	if dir.rename(rel_tmp_path, rel_path) != OK:
+		if has_original:
+			dir.rename(rel_backup_path, rel_path)
+		if has_uid:
+			dir.rename(rel_backup_uid_path, rel_uid_path)
+		_get_log().error("Failed to rename temp to original: {0}", [path])
+		return false
+
+	# Move temp .uid → original .uid (Godot may have created one for the temp)
+	if dir.file_exists(rel_tmp_uid_path):
+		if dir.rename(rel_tmp_uid_path, rel_uid_path) != OK:
+			dir.remove(rel_tmp_uid_path)
+			_get_log().warn("Failed to move .uid for the new file: {0}", [rel_uid_path])
+
+	# Remove backup files
+	if has_original:
+		dir.remove(rel_backup_path)
+	if has_uid:
+		dir.remove(rel_backup_uid_path)
+
+	return true
+
+
 # ------------- [Public Method] -------------
 ## Returns a DLoggerClass instance for Scene Manager logging.
 ## All callers share the same static logger instance.
@@ -105,71 +186,11 @@ static func change_resource_uid(path: String) -> void:
 	# Change UID
 	res.resource_scene_unique_id = "id_" + str(ResourceUID.create_id())
 
-	var base_path := path.get_basename()
-	var extension := path.get_extension()
-	var tmp_path := base_path + "_tmp." + extension
-
-	# Save to temp
-	var save_error := ResourceSaver.save(res, tmp_path)
-	if save_error != OK:
-		_get_log().error("Save failed. Code: {0}. Path: {1}", [save_error, tmp_path])
+	var tmp_path := _uid_save_to_temp(res, path)
+	if tmp_path.is_empty():
 		return
 
-	var dir := DirAccess.open("res://")
-	if not dir:
-		_get_log().error("DirAccess failed.")
-		DirAccess.remove_absolute(tmp_path)
-		return
-
-	# Use project-relative paths for DirAccess
-	var rel_path := path.trim_prefix("res://")
-	var rel_tmp_path := tmp_path.trim_prefix("res://")
-	var rel_uid_path := rel_path + ".uid"
-	var rel_tmp_uid_path := rel_tmp_path + ".uid"
-
-	var backup_path := (
-		base_path + "_backup_" + str(Time.get_ticks_msec()) + "_" + str(randi()) + "." + extension
-	)
-	var rel_backup_path := backup_path.trim_prefix("res://")
-	var rel_backup_uid_path := rel_backup_path + ".uid"
-
-	# Backup original → backup (preserves original for rollback)
-	var has_original := dir.file_exists(rel_path)
-	if has_original and dir.rename(rel_path, rel_backup_path) != OK:
-		_get_log().error("Failed to backup original file: {0}", [path])
-		dir.remove(rel_tmp_path)
-		return
-
-	# Backup .uid if it exists
-	var has_uid := dir.file_exists(rel_uid_path)
-	if has_uid:
-		if dir.rename(rel_uid_path, rel_backup_uid_path) != OK:
-			if has_original:
-				dir.rename(rel_backup_path, rel_path)
-			dir.remove(rel_tmp_path)
-			_get_log().error("Failed to backup .uid file: {0}", [rel_uid_path])
-			return
-
-	# Rename temp → original
-	if dir.rename(rel_tmp_path, rel_path) != OK:
-		if has_original:
-			dir.rename(rel_backup_path, rel_path)
-		if has_uid:
-			dir.rename(rel_backup_uid_path, rel_uid_path)
-		_get_log().error("Failed to rename temp to original: {0}", [path])
-		return
-
-	# Move temp .uid → original .uid (Godot may have created one for the temp)
-	if dir.file_exists(rel_tmp_uid_path):
-		if dir.rename(rel_tmp_uid_path, rel_uid_path) != OK:
-			dir.remove(rel_tmp_uid_path)
-			_get_log().warn("Failed to move .uid for the new file: {0}", [rel_uid_path])
-
-	# Remove backup files
-	if has_original:
-		dir.remove(rel_backup_path)
-	if has_uid:
-		dir.remove(rel_backup_uid_path)
+	_uid_swap_files(path, tmp_path)
 
 
 ## Returns true if the path is a valid resource path

@@ -13,7 +13,7 @@ func push(value: Scenes.Id) -> void:
 
 
 func pop() -> Scenes.Id:
-	var v = _buffer.pop()
+	var v: Variant = _buffer.pop()
 	return v if v != null else Scenes.Id.NONE
 
 

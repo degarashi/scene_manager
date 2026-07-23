@@ -2,6 +2,8 @@
 class_name SMgrCategoryData
 extends DebouncedResource
 
+# ------------- [Exports] -------------
+
 @export var name: String:
 	set(value):
 		if name != value:
@@ -38,6 +40,8 @@ extends DebouncedResource
 			follow_viewport = value
 			emit_changed()
 
+
+# ------------- [Public Method] -------------
 
 func _init(p_name: String = "") -> void:
 	# Initialize the debouncer inherited from DebouncedResource

@@ -2,8 +2,12 @@ class_name SMgrLayerManager
 extends RefCounted
 ## Helper class to manage SceneLayers, their priorities, and naming.
 
+# ------------- [Constants] -------------
+
 const _C := preload("uid://c3vvdktou45u")  # scene_manager_constants.gd
 const _SCENE_LAYER := preload("uid://do8sylacoy3u4")  # scene_layer.tscn
+
+# ------------- [Private Variable] -------------
 
 var _scene_db: SMgrData
 var _ebus: SMgrEbusRuntime
@@ -15,6 +19,8 @@ func _init(p_scene_db: SMgrData, p_ebus: SMgrEbusRuntime, p_log: DLoggerClass) -
 	_ebus = p_ebus
 	_log = p_log
 
+
+# ------------- [Public Method] -------------
 
 ## Returns an object containing the aggregated category info for a specified Scene ID.
 func get_category_summary(scene_id: Scenes.Id) -> SMgrSceneCategorySummary:

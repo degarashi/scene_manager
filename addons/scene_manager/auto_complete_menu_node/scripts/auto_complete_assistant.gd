@@ -83,7 +83,7 @@ func create_complete_menu(edit: LineEdit) -> void:
 	if location_info.size() == 0:
 		return
 
-	var direction = location_info[0]
+	var direction: int = location_info[0]
 	var placement_point := get_menu_placement_vec(edit, direction)
 	var new_menu: AutoCompleteMenu = _complete_menu.instantiate()
 	add_child(new_menu)

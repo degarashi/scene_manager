@@ -2,9 +2,11 @@
 class_name SMgrRemovableItem
 extends HBoxContainer
 
+# ------------- [Signal] -------------
 signal on_remove(opt_val: Variant)
 signal on_category_changed(path: String, category_id: int)
 
+# ------------- [Private Variable] -------------
 var _opt_val: Variant
 var _category_id: int = ResourceUID.INVALID_ID
 
@@ -61,6 +63,7 @@ func get_selected_category_id() -> int:
 	return _category_id
 
 
+# ------------- [Callbacks] -------------
 func _on_remove_button_up() -> void:
 	on_remove.emit(_opt_val)
 

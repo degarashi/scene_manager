@@ -49,7 +49,7 @@ static func subtract_rects(base_rect: Rect2, sub_rect: Rect2) -> Dictionary:
 
 
 ## Debuging collection by printing everything in it.
-static func print_collection(
+static func debug_collection(
 	collection: Variant,
 	name: String = "Collection",
 	add_separator: bool = false,
@@ -63,13 +63,13 @@ static func print_collection(
 	var print_str: String = name + ":\n"
 	var max_size := name.length() + 2
 	var indent_size := max_size
-	var keys = collection.keys() if type_collection == TYPE_DICTIONARY else null
+	var keys: Array = collection.keys() if type_collection == TYPE_DICTIONARY else null
 
 	for i: int in collection.size():
 		var indent: String = str(keys[i]) if keys else " "
 		indent = indent.rpad(indent_size, " ")
-		var value = collection[keys[i]] if keys else collection[i]
-		var value_line = "  " + indent + str(value) + "\n"
+		var value: Variant = collection[keys[i]] if keys else collection[i]
+		var value_line: String = "  " + indent + str(value) + "\n"
 		if value_line.length() > max_size:
 			max_size = value_line.length()
 		print_str += value_line
@@ -87,7 +87,7 @@ static func print_collection(
 ## Returns null if no match, or a dictionary with:
 ## - "score": float (higher is better)
 ## - "indices": Array[int] (indices of matched characters for highlighting)
-static func fuzzy_match(query: String, target: String, case_sensitive: bool = false):
+static func fuzzy_match(query: String, target: String, case_sensitive: bool = false) -> Variant:
 	if query.is_empty():
 		return {"matched": true, "score": 1.0, "indices": []}
 

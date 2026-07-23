@@ -2,10 +2,14 @@
 class_name SceneLoadOptions
 extends Resource
 
+# ------------- [Constants] -------------
+
 const _C = preload("uid://c3vvdktou45u")  # scene_manager_constants.gd
 const DEFAULT_CLICKABLE_FLAG = false
 static var _ps := preload("uid://dn6eh4s0h8jhi")  # project_settings.tres
 static var _empty_cb := func(_arg: Node) -> void: pass
+
+# ------------- [Exports] -------------
 
 @export_group("Hierarchy")
 ## Where in the node structure the new scene will load.
@@ -29,10 +33,14 @@ static var _empty_cb := func(_arg: Node) -> void: pass
 ## Whether or not to block mouse input during the scene load.
 @export var clickable: bool = DEFAULT_CLICKABLE_FLAG
 
+# ------------- [Private Variable] -------------
+
 var pre_wrap_cb: Callable
 var pre_node_cb: Callable
 var scene_loaded_cb: Callable
 
+
+# ------------- [Public Method] -------------
 
 ## Helper (static method) to get default values from project settings, etc.
 static func get_default_settings() -> SMgrProjectSettings:

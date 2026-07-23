@@ -2,6 +2,8 @@
 class_name SMgrMainPanel
 extends MarginContainer
 
+# ------------- [Constants] -------------
+
 # Scene item, include item prefabs
 const _INCLUDE_ITEM_SCENE = preload("uid://ciaqe7l3hugns")  # removable_item.tscn
 const _PRIMARY_CATEGORY_SCENE = preload("uid://cf1lsul5kbw85")  # primary_category.tscn
@@ -11,9 +13,13 @@ const _AF = preload("uid://dlgh4u64a7qxk")  # aux_func.gd
 const DFileWatcher := preload("uid://2u0usajy085y")  # DFileWatch
 const _CHK = preload("uid://bfsxxd1vc4jm7")  # check_ids.gd
 
+# ------------- [Exports] -------------
 
 @export var _ebus_editor: SMgrEbusEditor
 @export var _ebus_ins: SMgrEbusInspector
+
+# ------------- [Private Variable] -------------
+
 var _ps := preload("uid://dn6eh4s0h8jhi")  # project_settings.tres
 var _manager_data: SMgrDataEditor
 var _log: DLoggerClass
@@ -54,12 +60,14 @@ var _pending_drop_files: Array[String] = []
 
 var _selected_scene_id: int = ResourceUID.INVALID_ID
 
+# ------------- [Callbacks] -------------
 
 func _ebus_get_scene_enums_as_string(recv: Array[String]) -> void:
 	var scene_all := _manager_data.get_data().get_scenes_all()
 	for scene in scene_all:
 		recv.append(SMgrUtil.sanitize_as_enum_string(scene.name))
 
+# ------------- [Public Method] -------------
 
 func prepare(conn_ebus: bool) -> void:
 	_connect_ebus = conn_ebus
@@ -95,6 +103,7 @@ func _ready() -> void:
 	_search_debouncer.timeout.connect(_do_search)
 	add_child(_search_debouncer)
 
+# ------------- [Private Method] -------------
 
 func _remove_node_safely(node: Node) -> void:
 	node.reparent(_garbage_bin)

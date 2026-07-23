@@ -31,6 +31,7 @@ class Property:
 
 # Dictionary Keys
 class Key:
+	const KEY = "key"
 	const DEFAULT = "default"
 	const TYPE = "type"
 	const HINT = "hint"
@@ -41,6 +42,54 @@ class Key:
 
 
 # ------------- [Static Variable] -------------
+static var _property_definitions: Array[Dictionary] = [
+	{
+		Key.KEY: Property.SCENE_PATH,
+		Key.DEFAULT: DEFAULT_PATH_TO_SCENES,
+		Key.TYPE: TYPE_STRING,
+		Key.HINT: PROPERTY_HINT_FILE,
+		Key.HINT_STRING: DEFAULT_SCENES_FILENAME,
+		Key.BASIC: true,
+		Key.RESTART: true,
+	},
+	{
+		Key.KEY: Property.PLAY_OUT_TIME,
+		Key.DEFAULT: DEFAULT_PLAY_OUT_TIME,
+		Key.TYPE: TYPE_FLOAT,
+		Key.BASIC: true,
+	},
+	{
+		Key.KEY: Property.PLAY_IN_TIME,
+		Key.DEFAULT: DEFAULT_PLAY_IN_TIME,
+		Key.TYPE: TYPE_FLOAT,
+		Key.BASIC: true,
+	},
+	{
+		Key.KEY: Property.AUTO_SAVE,
+		Key.DEFAULT: false,
+		Key.TYPE: TYPE_BOOL,
+		Key.INTERNAL: true,
+	},
+	{
+		Key.KEY: Property.INCLUDES_VISIBLE,
+		Key.DEFAULT: true,
+		Key.TYPE: TYPE_BOOL,
+		Key.INTERNAL: true,
+	},
+	{
+		Key.KEY: Property.TRANSITION_LAYER,
+		Key.DEFAULT: DEFAULT_TRANSITION_LAYER,
+		Key.TYPE: TYPE_INT,
+		Key.BASIC: true,
+	},
+	{
+		Key.KEY: Property.ENABLE_LOG,
+		Key.DEFAULT: false,
+		Key.TYPE: TYPE_BOOL,
+		Key.BASIC: true,
+	},
+]
+
 
 # ------------- [Public Variable] -------------
 # Runtime Properties linked to ProjectSettings
@@ -142,91 +191,56 @@ func _on_project_settings_changed() -> void:
 		on_enable_log_changed.emit(current_log)
 
 
+# ------------- [Private Static Method] -------------
+## Registers a project setting: checks existence, sets default,
+## adds property info for the editor, and sets initial value.
+static func _register_setting(
+	key: String, type: int, default: Variant,
+	hint: int = PROPERTY_HINT_NONE, hint_string: String = ""
+) -> void:
+	if not ProjectSettings.has_setting(key):
+		ProjectSettings.set_setting(key, default)
+
+	var info: Dictionary[String, Variant] = {"name": key, "type": type}
+	if hint != PROPERTY_HINT_NONE:
+		info["hint"] = hint
+	if not hint_string.is_empty():
+		info["hint_string"] = hint_string
+
+	ProjectSettings.add_property_info(info)
+	ProjectSettings.set_initial_value(key, default)
+
+
 # ------------- [Public Method] -------------
 func setup_project_settings() -> void:
 	# Connect signals (monitor direct changes from the editor)
 	_AF.connect_if_not_connected(ProjectSettings.settings_changed, _on_project_settings_changed)
 
 	_ensure_data_dir_exists(scene_path.get_base_dir())
-	# Structured configuration using constant keys
-	var settings: Dictionary[String, Dictionary] = {
-		Property.SCENE_PATH:
-		{
-			Key.DEFAULT: DEFAULT_PATH_TO_SCENES,
-			Key.TYPE: TYPE_STRING,
-			Key.HINT: PROPERTY_HINT_FILE,
-			Key.HINT_STRING: DEFAULT_SCENES_FILENAME,
-			Key.BASIC: true,
-			Key.RESTART: true
-		},
-		Property.PLAY_OUT_TIME:
-		{
-			Key.DEFAULT: DEFAULT_PLAY_OUT_TIME,
-			Key.TYPE: TYPE_FLOAT,
-			Key.BASIC: true,
-		},
-		Property.PLAY_IN_TIME:
-		{
-			Key.DEFAULT: DEFAULT_PLAY_IN_TIME,
-			Key.TYPE: TYPE_FLOAT,
-			Key.BASIC: true,
-		},
-		Property.AUTO_SAVE:
-		{
-			Key.DEFAULT: false,
-			Key.TYPE: TYPE_BOOL,
-			Key.INTERNAL: true,
-		},
-		Property.INCLUDES_VISIBLE:
-		{
-			Key.DEFAULT: true,
-			Key.TYPE: TYPE_BOOL,
-			Key.INTERNAL: true,
-		},
-		Property.TRANSITION_LAYER:
-		{
-			Key.DEFAULT: DEFAULT_TRANSITION_LAYER,
-			Key.TYPE: TYPE_INT,
-			Key.BASIC: true,
-		},
-		Property.ENABLE_LOG:
-		{
-			Key.DEFAULT: false,
-			Key.TYPE: TYPE_BOOL,
-			Key.BASIC: true,
-		}
-	}
 
 	var needs_save: bool = false
 
-	for path: String in settings:
-		var s: Dictionary = settings[path]
-		var default_val: Variant = s[Key.DEFAULT]
-		var type: int = s[Key.TYPE] as int
+	for def: Dictionary in _property_definitions:
+		var key: String = def[Key.KEY]
 
-		# Initialize setting if missing
-		if not ProjectSettings.has_setting(path):
-			ProjectSettings.set_setting(path, default_val)
+		if not ProjectSettings.has_setting(key):
 			needs_save = true
 
-		# Prepare property info for editor display (Explicit Dictionary typing)
-		var info: Dictionary[String, Variant] = {"name": path, "type": type}
-
-		if s.has(Key.HINT):
-			info["hint"] = s[Key.HINT]
-		if s.has(Key.HINT_STRING):
-			info["hint_string"] = s[Key.HINT_STRING]
-
-		ProjectSettings.add_property_info(info)
-		ProjectSettings.set_initial_value(path, default_val)
+		_register_setting(
+			key,
+			def[Key.TYPE] as int,
+			def[Key.DEFAULT],
+			def.get(Key.HINT, PROPERTY_HINT_NONE) as int,
+			def.get(Key.HINT_STRING, "") as String,
+		)
 
 		# Apply meta flags using type-safe casting
-		if s.get(Key.BASIC, false) as bool:
-			ProjectSettings.set_as_basic(path, true)
-		if s.get(Key.INTERNAL, false) as bool:
-			ProjectSettings.set_as_internal(path, true)
-		if s.get(Key.RESTART, false) as bool:
-			ProjectSettings.set_restart_if_changed(path, true)
+		if def.get(Key.BASIC, false) as bool:
+			ProjectSettings.set_as_basic(key, true)
+		if def.get(Key.INTERNAL, false) as bool:
+			ProjectSettings.set_as_internal(key, true)
+		if def.get(Key.RESTART, false) as bool:
+			ProjectSettings.set_restart_if_changed(key, true)
 
 	# Cache the initial state
 	_last_auto_save = auto_save

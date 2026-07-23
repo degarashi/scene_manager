@@ -45,3 +45,34 @@ func test_concurrent_switch_to_scene_is_locked() -> void:
 
 	assert_int(layers.size()).is_equal(1)
 	assert_int(layers[0].scene_id).is_equal(Scenes.Id.SCENE_0)
+
+
+func test_validate_scene_id_via_switch_none() -> void:
+	var result := await sm.switch_to_scene(Scenes.Id.NONE, false)
+	assert_object(result).is_null()
+
+
+func test_validate_scene_id_via_add_none() -> void:
+	var result := await sm.add_scene(Scenes.Id.NONE)
+	assert_object(result).is_null()
+
+
+func test_validate_scene_id_via_remove_none() -> void:
+	var result := sm.remove_scene(Scenes.Id.NONE)
+	assert_bool(result).is_false()
+
+
+func test_is_transitioning_state() -> void:
+	var opts := SceneLoadOptions.new()
+	opts.play_out_time = 0.5
+	opts.play_in_time = 0.5
+
+	sm.call_deferred("switch_to_scene", Scenes.Id.SCENE_0, false, opts)
+	await get_tree().process_frame
+
+	# Second call during transition should be blocked
+	var blocked := await sm.switch_to_scene(Scenes.Id.SCENE_1, false, opts)
+	assert_object(blocked).is_null()
+
+	# Wait for transition to finish
+	await get_tree().create_timer(1.5).timeout

@@ -2,12 +2,15 @@
 class_name SMgrCategoryGUIBase
 extends Control
 
+# ------------- [Constants] -------------
 const _SCENE_ITEM = preload("uid://hh0sw1g7upfc")  # scene_item.tscn
 const _SUB_SECTION = preload("uid://b4edho3whn67t")  # section.tscn
 const _C = preload("uid://c3vvdktou45u")  # scene_manager_constants.gd
 const _AF = preload("uid://dlgh4u64a7qxk")  # aux_func.gd
 
 @export var _ebus_editor: SMgrEbusEditor
+
+# ------------- [Private Variable] -------------
 var _category_id: int
 @onready var _subsection_cont: VBoxContainer = %container
 var _search_filter: String = ""
@@ -17,6 +20,7 @@ func _activate() -> void:
 	pass
 
 
+# ------------- [Public Method] -------------
 func set_search_filter(filter: String) -> void:
 	if _search_filter != filter:
 		_search_filter = filter
@@ -68,6 +72,7 @@ func _refresh_ui() -> void:
 	pass
 
 
+# ------------- [Callbacks] -------------
 func _on_data_changed() -> void:
 	_refresh_ui()
 

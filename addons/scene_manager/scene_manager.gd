@@ -258,11 +258,6 @@ func _remove_node_safely(target_node: Node) -> void:
 	_trash_can.collect(target_node)
 
 
-func _remove_name_node(sc: SMgrSceneLayer, p_name: String) -> void:
-	if sc.name == p_name:
-		_remove_node_safely(sc)
-
-
 func _setup_scene_from_packed(
 	packed_scene: PackedScene, scene_id: Scenes.Id, options: SceneLoadOptions
 ) -> Node:
@@ -369,6 +364,90 @@ func _get_layer_by_name(node_name: String) -> SMgrSceneLayer:
 	return recv[0] if not recv.is_empty() else null
 
 
+func _activate_cleanup_old_layers(loading_layer_name: String) -> void:
+	unload_scene_by_name(loading_layer_name)
+
+	if not _reserved.is_additive:
+		_notify_fade_out_end(_reserved.scene_id)
+		_ebus.process_scene_layer.emit(
+			func(sc: SMgrSceneLayer) -> void:
+				if sc.scene_id != _reserved.scene_id:
+					_remove_node_safely(sc)
+		)
+		_trash_can.flush()
+
+		var layer := _get_layer_by_id(_reserved.scene_id)
+		if layer:
+			layer.name = _AF.from_tmp_name(layer.name)
+			layer.visible = true
+		_current_scene_enum = _reserved.scene_id
+
+
+func _activate_finalize(player: ScreenTransitioner, node: Node, diff: SMgrData.CategoryDiff) -> void:
+	category_changed.emit(diff)
+	category_tags_notified.emit(diff.added)
+
+	scene_loaded.emit(_current_scene_enum, node)
+
+	await player.play_in(_reserved.options.play_in_time)
+	_notify_fade_in(node)
+
+	_reserved.clear()
+	player.set_clickable(true)
+
+	_cleanup_transition_player(player)
+
+	SMgrUtil.get_log().debug(
+		"Scene transition completed: {0}",
+		[Scenes.Id.find_key(_current_scene_enum)]
+	)
+	scene_transition_completed.emit(_current_scene_enum)
+
+	_is_transitioning = false
+
+
+# ------------- [Switch Helpers] -------------
+
+## Checks if switching to the currently active scene (reload).
+## If so, preserves the existing layer name in options.
+## Returns true if reloading the same scene.
+func _switch_handle_reload(
+	scene_id: Scenes.Id, options: SceneLoadOptions
+) -> bool:
+	var is_reloading := scene_id == _current_scene_enum
+	if is_reloading:
+		var layer := _get_layer_by_id(scene_id)
+		if layer:
+			options.node_name = layer.name
+	return is_reloading
+
+
+## Removes all existing scene layers and flushes the trash can.
+func _switch_remove_old_layers() -> void:
+	_ebus.process_scene_layer.emit(_remove_node_safely)
+	_trash_can.flush()
+
+
+## Pushes the current scene to the history stack if appropriate.
+func _switch_update_history(
+	scene_id: Scenes.Id, add_to_back: bool, is_reloading: bool
+) -> void:
+	if (
+		not is_reloading
+		and add_to_back
+		and _current_scene_enum != Scenes.Id.NONE
+	):
+		_history_stack.push(_current_scene_enum)
+
+
+## Performs cleanup after transition: sets clickable, removes the player,
+## and resets _is_transitioning.
+func _switch_cleanup(player: ScreenTransitioner, success: bool) -> void:
+	player.set_clickable(true)
+	_cleanup_transition_player(player)
+	_is_transitioning = false
+
+
 # ------------- [Public Method] -------------
 func get_history_list() -> Array[Scenes.Id]:
 	return _history_stack.get_all_items()
@@ -400,7 +479,11 @@ func unload_scene_by_name(node_name: String) -> void:
 		return
 
 	# Leverages existing logic to safely move the node to the trash can
-	_ebus.process_scene_layer.emit(_remove_name_node.bind(node_name))
+	_ebus.process_scene_layer.emit(
+		func(sc: SMgrSceneLayer) -> void:
+			if sc.name == node_name:
+				_remove_node_safely(sc)
+	)
 
 
 ## Discards the current main scene and switches to a new one. (Main Routine)
@@ -423,20 +506,12 @@ func switch_to_scene(
 	if scene_loaded_cb.is_valid():
 		options.scene_loaded_cb = scene_loaded_cb
 
-	# Even if reloading the same scene, the instance is recreated.
-	# We preserve the existing layer name and re-notify categories to maintain consistency.
-	var is_reloading := scene_id == _current_scene_enum
+	var is_reloading := _switch_handle_reload(scene_id, options)
 
 	SMgrUtil.get_log().info(
 		"Switching to scene: {0} (is_reloading: {1})",
 		[Scenes.Id.find_key(scene_id), is_reloading]
 	)
-
-	if is_reloading:
-		var layer := _get_layer_by_id(scene_id)
-		if layer:
-			# Force the new instance to use the same node name as the current one.
-			options.node_name = layer.name
 
 	# --- Transition Start ---
 	var player := _transition_service.setup_transition_player(options)
@@ -452,19 +527,9 @@ func switch_to_scene(
 
 	_notify_fade_out_end()
 
-	# Remove existing layers before setting up the new scene
-	_ebus.process_scene_layer.emit(_remove_node_safely)
-	# Immediately free trashed nodes so the old and new instances
-	# never coexist in the tree (even for a single frame).
-	_trash_can.flush()
+	_switch_remove_old_layers()
 
-	# Update history stack (only for new scene transitions)
-	if (
-		not is_reloading
-		and add_to_back
-		and _current_scene_enum != Scenes.Id.NONE
-	):
-		_history_stack.push(_current_scene_enum)
+	_switch_update_history(scene_id, add_to_back, is_reloading)
 
 	# Instantiate and setup the scene (this internally emits 'scene_loaded')
 	var packed_scene := _get_scene_blocking(scene_id)
@@ -473,9 +538,7 @@ func switch_to_scene(
 			"Failed to get scene for switch: {0}",
 			[Scenes.Id.find_key(scene_id)]
 		)
-		player.set_clickable(true)
-		_cleanup_transition_player(player)
-		_is_transitioning = false
+		_switch_cleanup(player, false)
 		return null
 	var new_scene_node := _setup_scene_from_packed(
 		packed_scene, scene_id, options
@@ -485,9 +548,7 @@ func switch_to_scene(
 			"Failed to instantiate switch_to_scene: {0}",
 			[Scenes.Id.find_key(scene_id)]
 		)
-		player.set_clickable(true)
-		_cleanup_transition_player(player)
-		_is_transitioning = false
+		_switch_cleanup(player, false)
 		return null
 
 	var category_diff := _scene_db.compare_scene_categories(
@@ -505,15 +566,12 @@ func switch_to_scene(
 
 	await player.play_in(options.play_in_time)
 	_notify_fade_in(new_scene_node)
-	player.set_clickable(true)
-
-	_cleanup_transition_player(player)
+	_switch_cleanup(player, true)
 
 	SMgrUtil.get_log().debug(
 		"Scene transition completed: {0}", [Scenes.Id.find_key(scene_id)]
 	)
 	scene_transition_completed.emit(scene_id)
-	_is_transitioning = false
 	return new_scene_node
 
 
@@ -835,48 +893,11 @@ func activate_prepared_scene() -> Node:
 	var diff := _scene_db.compare_scene_categories(
 		_current_scene_enum, _reserved.scene_id
 	)
-
-	# Remove the transition/loading scene layer
-	unload_scene_by_name(_loading_node_name)
-
-	if not _reserved.is_additive:
-		_notify_fade_out_end(_reserved.scene_id)
-		# Cleanup: Remove all layers except the new one and revert the temporary name
-		_ebus.process_scene_layer.emit(
-			func(sc: SMgrSceneLayer) -> void:
-				if sc.scene_id != _reserved.scene_id:
-					_remove_node_safely(sc)
-		)
-		_trash_can.flush()
-
-		# Now that the old scene is gone, revert the layer name to its intended original name
-		layer.name = _AF.from_tmp_name(layer.name)
-		layer.visible = true
-		_current_scene_enum = _reserved.scene_id
-
-	category_changed.emit(diff)
-	category_tags_notified.emit(diff.added)
+	_activate_cleanup_old_layers(_loading_node_name)
 
 	var node := layer.get_main_node()
-	scene_loaded.emit(_current_scene_enum, node)
-
-	# Show the new scene
-	await player.play_in(_reserved.options.play_in_time)
-	_notify_fade_in(node)
-
-	_reserved.clear()
-	player.set_clickable(true)
-
-	_cleanup_transition_player(player)
-
-	SMgrUtil.get_log().debug(
-		"Scene transition completed: {0}",
-		[Scenes.Id.find_key(_current_scene_enum)]
-	)
-	scene_transition_completed.emit(_current_scene_enum)
-
-	_is_transitioning = false
-	return layer.get_main_node()
+	await _activate_finalize(player, node, diff)
+	return node
 
 
 # ------------- [Utils] -------------

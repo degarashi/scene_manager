@@ -15,28 +15,24 @@ func test_remove_old_enum_value_is_zero() -> void:
 	assert_int(
 		SMgrInstanceScript.DuplicateNameMode.REMOVE_OLD
 	).is_equal(0)
-	await get_tree().create_timer(0.5).timeout
 
 
 func test_warn_and_skip_enum_value_is_one() -> void:
 	assert_int(
 		SMgrInstanceScript.DuplicateNameMode.WARN_AND_SKIP
 	).is_equal(1)
-	await get_tree().create_timer(0.5).timeout
 
 
 func test_rename_new_enum_value_is_two() -> void:
 	assert_int(
 		SMgrInstanceScript.DuplicateNameMode.RENAME_NEW
 	).is_equal(2)
-	await get_tree().create_timer(0.5).timeout
 
 
 func test_append_enum_value_is_three() -> void:
 	assert_int(
 		SMgrInstanceScript.DuplicateNameMode.APPEND
 	).is_equal(3)
-	await get_tree().create_timer(0.5).timeout
 
 
 # ------------- [Tests: Enum Contiguity] -------------
@@ -51,26 +47,22 @@ func test_enum_values_are_contiguous() -> void:
 	]
 	for i in range(modes.size()):
 		assert_int(modes[i]).is_equal(i)
-	await get_tree().create_timer(0.5).timeout
 
 
 func test_enum_has_four_members() -> void:
 	var keys := SMgrInstanceScript.DuplicateNameMode.keys()
 	assert_int(keys.size()).is_equal(4)
-	await get_tree().create_timer(0.5).timeout
 
 
 func test_enum_values_array_matches_expected() -> void:
 	var values := SMgrInstanceScript.DuplicateNameMode.values()
 	assert_array(values).contains_exactly([0, 1, 2, 3])
-	await get_tree().create_timer(0.5).timeout
 
 
 func test_enum_keys_are_strings() -> void:
 	var keys := SMgrInstanceScript.DuplicateNameMode.keys()
 	for key in keys:
 		assert_int(typeof(key)).is_equal(TYPE_STRING)
-	await get_tree().create_timer(0.5).timeout
 
 
 func test_enum_keys_match_expected_names() -> void:
@@ -78,7 +70,6 @@ func test_enum_keys_match_expected_names() -> void:
 	assert_array(keys).contains_exactly(
 		["REMOVE_OLD", "WARN_AND_SKIP", "RENAME_NEW", "APPEND"]
 	)
-	await get_tree().create_timer(0.5).timeout
 
 
 # ------------- [Tests: Invalid Integer to Enum] -------------
@@ -92,7 +83,6 @@ func test_invalid_negative_value_does_not_match_any_enum() -> void:
 			matched = true
 			break
 	assert_bool(matched).is_false()
-	await get_tree().create_timer(0.5).timeout
 
 
 func test_invalid_large_value_does_not_match_any_enum() -> void:
@@ -103,7 +93,6 @@ func test_invalid_large_value_does_not_match_any_enum() -> void:
 			matched = true
 			break
 	assert_bool(matched).is_false()
-	await get_tree().create_timer(0.5).timeout
 
 
 func test_invalid_max_int_value_does_not_match_any_enum() -> void:
@@ -114,7 +103,6 @@ func test_invalid_max_int_value_does_not_match_any_enum() -> void:
 			matched = true
 			break
 	assert_bool(matched).is_false()
-	await get_tree().create_timer(0.5).timeout
 
 
 func test_invalid_min_int_value_does_not_match_any_enum() -> void:
@@ -125,7 +113,6 @@ func test_invalid_min_int_value_does_not_match_any_enum() -> void:
 			matched = true
 			break
 	assert_bool(matched).is_false()
-	await get_tree().create_timer(0.5).timeout
 
 
 func test_invalid_value_four_does_not_match_any_enum() -> void:
@@ -137,7 +124,6 @@ func test_invalid_value_four_does_not_match_any_enum() -> void:
 			matched = true
 			break
 	assert_bool(matched).is_false()
-	await get_tree().create_timer(0.5).timeout
 
 
 # ------------- [Tests: DuplicateNameMode as int comparisons] -------------
@@ -152,7 +138,6 @@ func test_all_enum_values_are_integers() -> void:
 	]
 	for mode in modes:
 		assert_int(typeof(mode)).is_equal(TYPE_INT)
-	await get_tree().create_timer(0.5).timeout
 
 
 func test_enum_values_are_non_negative() -> void:
@@ -164,7 +149,6 @@ func test_enum_values_are_non_negative() -> void:
 	]
 	for mode in modes:
 		assert_bool(mode >= 0).is_true()
-	await get_tree().create_timer(0.5).timeout
 
 
 func test_enum_values_are_less_than_ten() -> void:
@@ -177,7 +161,6 @@ func test_enum_values_are_less_than_ten() -> void:
 	]
 	for mode in modes:
 		assert_bool(mode < 10).is_true()
-	await get_tree().create_timer(0.5).timeout
 
 
 # ------------- [Tests: find_key reverse lookup] -------------
@@ -196,7 +179,6 @@ func test_find_key_for_valid_values() -> void:
 	assert_str(
 		SMgrInstanceScript.DuplicateNameMode.find_key(3)
 	).is_equal("APPEND")
-	await get_tree().create_timer(0.5).timeout
 
 
 func test_find_key_for_invalid_values_returns_null() -> void:
@@ -209,7 +191,6 @@ func test_find_key_for_invalid_values_returns_null() -> void:
 	assert_object(
 		SMgrInstanceScript.DuplicateNameMode.find_key(4)
 	).is_null()
-	await get_tree().create_timer(0.5).timeout
 
 
 # ------------- [Tests: Enum type identity] -------------
@@ -218,7 +199,6 @@ func test_find_key_for_invalid_values_returns_null() -> void:
 func test_enum_is_accessible_as_class_constant() -> void:
 	var mode_val: int = SMgrInstanceScript.DuplicateNameMode.REMOVE_OLD
 	assert_int(mode_val).is_equal(0)
-	await get_tree().create_timer(0.5).timeout
 
 
 func test_enum_values_are_distinct() -> void:
@@ -233,20 +213,17 @@ func test_enum_values_are_distinct() -> void:
 	assert_bool(mode_b != mode_c).is_true()
 	assert_bool(mode_b != mode_d).is_true()
 	assert_bool(mode_c != mode_d).is_true()
-	await get_tree().create_timer(0.5).timeout
 
 
 func test_enum_self_equality() -> void:
 	var mode := SMgrInstanceScript.DuplicateNameMode.REMOVE_OLD
 	assert_bool(mode == mode).is_true()
-	await get_tree().create_timer(0.5).timeout
 
 
 func test_enum_inequality_with_different_value() -> void:
 	var mode_a := SMgrInstanceScript.DuplicateNameMode.REMOVE_OLD
 	var mode_b := SMgrInstanceScript.DuplicateNameMode.WARN_AND_SKIP
 	assert_bool(mode_a != mode_b).is_true()
-	await get_tree().create_timer(0.5).timeout
 
 
 # ------------- [Tests: SceneLoadOptions integration] -------------
@@ -257,7 +234,6 @@ func test_scene_load_options_has_no_duplicate_name_mode_property() -> void:
 	# The mode is passed as a separate parameter to add_scene()
 	var opts := SceneLoadOptions.new()
 	assert_bool("duplicate_name_mode" in opts).is_false()
-	await get_tree().create_timer(0.5).timeout
 
 
 func test_scene_load_options_copy_preserves_all_fields() -> void:
@@ -266,7 +242,6 @@ func test_scene_load_options_copy_preserves_all_fields() -> void:
 
 	assert_str(copied.node_name).is_equal("TestNode")
 	assert_bool(copied.clickable).is_true()
-	await get_tree().create_timer(0.5).timeout
 
 
 # ------------- [Tests: Boundary values] -------------
@@ -276,28 +251,24 @@ func test_zero_is_valid_enum_value() -> void:
 	assert_int(
 		SMgrInstanceScript.DuplicateNameMode.REMOVE_OLD
 	).is_equal(0)
-	await get_tree().create_timer(0.5).timeout
 
 
 func test_one_is_valid_enum_value() -> void:
 	assert_int(
 		SMgrInstanceScript.DuplicateNameMode.WARN_AND_SKIP
 	).is_equal(1)
-	await get_tree().create_timer(0.5).timeout
 
 
 func test_two_is_valid_enum_value() -> void:
 	assert_int(
 		SMgrInstanceScript.DuplicateNameMode.RENAME_NEW
 	).is_equal(2)
-	await get_tree().create_timer(0.5).timeout
 
 
 func test_three_is_valid_enum_value() -> void:
 	assert_int(
 		SMgrInstanceScript.DuplicateNameMode.APPEND
 	).is_equal(3)
-	await get_tree().create_timer(0.5).timeout
 
 
 # ------------- [Tests: Edge cases with comparisons] -------------
@@ -308,7 +279,6 @@ func test_enum_value_less_than_comparison() -> void:
 		SMgrInstanceScript.DuplicateNameMode.REMOVE_OLD
 		< SMgrInstanceScript.DuplicateNameMode.WARN_AND_SKIP
 	).is_true()
-	await get_tree().create_timer(0.5).timeout
 
 
 func test_enum_value_greater_than_comparison() -> void:
@@ -316,16 +286,13 @@ func test_enum_value_greater_than_comparison() -> void:
 		SMgrInstanceScript.DuplicateNameMode.APPEND
 		> SMgrInstanceScript.DuplicateNameMode.REMOVE_OLD
 	).is_true()
-	await get_tree().create_timer(0.5).timeout
 
 
 func test_enum_value_less_or_equal_self() -> void:
 	var mode := SMgrInstanceScript.DuplicateNameMode.RENAME_NEW
 	assert_bool(mode <= mode).is_true()
-	await get_tree().create_timer(0.5).timeout
 
 
 func test_enum_value_greater_or_equal_self() -> void:
 	var mode := SMgrInstanceScript.DuplicateNameMode.RENAME_NEW
 	assert_bool(mode >= mode).is_true()
-	await get_tree().create_timer(0.5).timeout

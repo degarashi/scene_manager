@@ -263,7 +263,7 @@ func refresh_nodes(text: String) -> void:
 			if node.raw_text_lower.find(first_char) == -1:
 				node.visible = false
 				continue
-			var result = AutoCompleteHelpers.fuzzy_match(text, node.raw_text, case_sensitive)
+			var result: Dictionary = AutoCompleteHelpers.fuzzy_match(text, node.raw_text, case_sensitive)
 			if result:
 				node.fuzzy_score = result.score
 				node.set_text(node.raw_text, result.indices)
