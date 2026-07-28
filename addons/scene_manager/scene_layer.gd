@@ -32,8 +32,9 @@ func _exit_tree() -> void:
 func _on_child_order_changed() -> void:
 	# If the number of child nodes (content) becomes zero, self-destruct
 	if get_child_count() == 0:
-		queue_free()
+		# Emit before queue_free so listeners can still access this node's properties
 		layer_disposed.emit(scene_id)
+		queue_free()
 
 
 # ------------- [Private Method] -------------
