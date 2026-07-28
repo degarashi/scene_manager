@@ -817,7 +817,7 @@ func instantiate_async_result() -> void:
 	var res := load(path) as PackedScene
 	if res:
 		var scene_node := res.instantiate()
-		scene_node.scene_file_path = path
+		# scene_file_path is set automatically by PackedScene.instantiate()
 
 		_notify_scene_init(scene_node, _reserved.options.params)
 
