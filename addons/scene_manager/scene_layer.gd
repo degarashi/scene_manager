@@ -91,7 +91,9 @@ func get_main_node() -> Node:
 
 func add_node(p_node: Node) -> void:
 	if not is_instance_valid(p_node):
-		push_warning("SMgrSceneLayer.add_node: Invalid node provided.")
+		SMgrUtil.get_log().warn(
+			"SMgrSceneLayer.add_node: Invalid node provided."
+		)
 		return
 	if p_node.get_parent():
 		p_node.reparent(self)

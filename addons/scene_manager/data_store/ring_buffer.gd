@@ -17,7 +17,9 @@ func _init() -> void:
 ## Sets how much the ring buffer can hold.
 func set_capacity(size: int) -> void:
 	if size < 0:
-		push_warning("RingBuffer: Capacity cannot be negative. Using 0.")
+		SMgrUtil.get_log().warn(
+			"RingBuffer: Capacity cannot be negative. Using 0."
+		)
 		size = 0
 	var old_items := get_all_items()
 	_ring_buffer = []

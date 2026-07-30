@@ -24,10 +24,12 @@ class _LoadTask:
 
 	func _init(p_path: String, p_callback: Callable) -> void:
 		if p_path.is_empty():
-			push_error("_LoadTask: Path cannot be empty.")
+			SMgrUtil.get_log().error("_LoadTask: Path cannot be empty.")
 			return
 		if not p_callback.is_valid():
-			push_error("_LoadTask: Callback must be a valid callable.")
+			SMgrUtil.get_log().error(
+				"_LoadTask: Callback must be a valid callable."
+			)
 			return
 		path = p_path
 		on_complete_list = [p_callback]
@@ -49,7 +51,9 @@ class _BatchTask:
 
 	func _init(p_count: int, p_callback: Callable) -> void:
 		if not p_callback.is_valid():
-			push_error("_BatchTask: Callback must be a valid callable.")
+			SMgrUtil.get_log().error(
+				"_BatchTask: Callback must be a valid callable."
+			)
 			return
 		remaining_count = p_count
 		on_all_complete = p_callback
@@ -148,7 +152,9 @@ func _finalize_batch(batch: _BatchTask) -> void:
 ## Request a resource to be loaded
 func request(path: String, callback: Callable, use_sub_threads: bool = true) -> void:
 	if path.is_empty():
-		push_error("ResourceLoaderMgr: Requested path is empty.")
+		SMgrUtil.get_log().error(
+			"ResourceLoaderMgr: Requested path is empty."
+		)
 		return
 
 	# If already loaded in ResourceLoader, handle immediately

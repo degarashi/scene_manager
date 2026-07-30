@@ -58,7 +58,9 @@ func call_debounced() -> void:
 			break
 
 	if iteration_count >= _MAX_ITERATIONS:
-		push_error("DebouncerRC: Reached max iterations. Possible runaway debouncer detected.")
+		SMgrUtil.get_log().error(
+			"DebouncerRC: Reached max iterations. Possible runaway debouncer detected."
+		)
 
 
 ## Cancels the currently pending debounce process.
