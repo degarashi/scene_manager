@@ -12,6 +12,7 @@ const _C = preload("uid://c3vvdktou45u")  # scene_manager_constants.gd
 const _AF = preload("uid://dlgh4u64a7qxk")  # aux_func.gd
 const DFileWatcher := preload("uid://2u0usajy085y")  # DFileWatch
 const _CHK = preload("uid://bfsxxd1vc4jm7")  # check_ids.gd
+const FILE_DIALOG_SIZE := Vector2(600, 600)
 
 # ------------- [Exports] -------------
 
@@ -102,7 +103,7 @@ func _ready() -> void:
 
 	_search_bar.text_changed.connect(_on_search_text_changed)
 
-	_search_debouncer = Debouncer.new(0.15)
+	_search_debouncer = Debouncer.new(_C.SHORT_DEBOUNCE_DELAY)
 	_search_debouncer.timeout.connect(_do_search)
 	add_child(_search_debouncer)
 
@@ -564,7 +565,7 @@ func _init_logger(enable: bool) -> void:
 
 
 func _on_file_dialog_button_button_up() -> void:
-	_file_dialog.popup_centered(Vector2(600, 600))
+	_file_dialog.popup_centered(FILE_DIALOG_SIZE)
 
 
 func _on_file_dialog_dir_file_selected(path: String) -> void:
