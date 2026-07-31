@@ -39,7 +39,7 @@ enum DuplicateNameMode {
 # ------------- [Exports] -------------
 @export_group("General Settings")
 @export var _loading_node_name: String = "===Transition==="
-@export var _initial_play_in_time: float = 1.0
+@export var _initial_play_in_time: float = _C.DEFAULT_PLAY_IN_TIME
 @export var _actual_scene_container_path: NodePath = "/root"
 @export var _wrap_initial_scene := true
 @export var _transitioner_source: PackedScene
@@ -310,7 +310,7 @@ func _load_scene_async(scene_id: Scenes.Id) -> PackedScene:
 	ResourceLoader.load_threaded_request(path, "", true)
 	var elapsed := 0.0
 	var status := ResourceLoader.load_threaded_get_status(path)
-	while status == ResourceLoader.THREAD_LOAD_IN_PROGRESS and elapsed < 30.0:
+	while status == ResourceLoader.THREAD_LOAD_IN_PROGRESS and elapsed < _C.THREAD_LOAD_TIMEOUT:
 		await get_tree().process_frame
 		elapsed += get_process_delta_time()
 		status = ResourceLoader.load_threaded_get_status(path)
@@ -717,7 +717,7 @@ func reload_current_scene(
 
 ## Quits the game after a fade-out effect.
 ## @param fade_time Duration of the fade-out (seconds).
-func exit_game(fade_time: float = 1.0) -> void:
+func exit_game(fade_time: float = _C.DEFAULT_PLAY_OUT_TIME) -> void:
 	if _is_transition_blocked("exit_game"):
 		return
 	if not _validate_ebus("exit_game"):
