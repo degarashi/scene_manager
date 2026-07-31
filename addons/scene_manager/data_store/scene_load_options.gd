@@ -17,9 +17,9 @@ static var _empty_cb := func(_arg: Node) -> void: pass
 
 @export_group("Visuals")
 ## Duration of the fade out effect.
-@export var play_out_time: float = 0.5
+@export var play_out_time: float = _C.DEFAULT_PLAY_TIME_EXPORT
 ## Duration of the fade in effect.
-@export var play_in_time: float = 0.5
+@export var play_in_time: float = _C.DEFAULT_PLAY_TIME_EXPORT
 ## Override the default transitioner with a custom one by specifying its Scene ID.
 @export var transition_id: int = -1
 ## Layer priority for the transition CanvasLayer. (-1 to use project default)
