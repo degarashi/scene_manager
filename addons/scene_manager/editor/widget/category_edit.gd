@@ -3,6 +3,18 @@ extends VBoxContainer
 
 # ------------- [Constants] -------------
 const _AF = preload("uid://dlgh4u64a7qxk")  # aux_func.gd
+const _C = preload("uid://c3vvdktou45u")  # scene_manager_constants.gd
+
+## UI style constants
+const BORDER_WIDTH := 1
+const SELECTED_BG_COLOR := Color(0.4, 0.7, 1.0, 0.04)
+const SELECTED_BORDER_COLOR := Color(0.4, 0.7, 1.0, 0.5)
+const BAR_BG_HEIGHT := 16
+const BAR_BG_COLOR := Color(0.15, 0.15, 0.15, 0.3)
+const BAR_HEIGHT := 12
+const SELECTED_BAR_COLOR := Color(0.4, 0.7, 1.0, 0.9)
+const UNSELECTED_BAR_COLOR := Color(0.3, 0.6, 0.9, 0.5)
+const PRIORITY_LABEL_WIDTH := 48
 # ------------- [Exports] -------------
 @export var _ebus_editor: SMgrEbusEditor
 # ------------- [Private Variable] -------------
@@ -21,7 +33,7 @@ var _priority_debouncer: Debouncer
 func _ready() -> void:
 	_ebus_editor.on_category_selected.connect(_on_category_selected)
 
-	_priority_debouncer = Debouncer.new(0.3)
+	_priority_debouncer = Debouncer.new(_C.SHORT_DEBOUNCE_DELAY)
 	add_child(_priority_debouncer)
 	_priority_debouncer.timeout.connect(_build_priority_map)
 
@@ -117,12 +129,12 @@ func _create_priority_bar_row(entry: Dictionary, is_selected: bool, min_p: int, 
 		var panel := PanelContainer.new()
 		panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var style := StyleBoxFlat.new()
-		style.border_width_left = 1
-		style.border_width_top = 1
-		style.border_width_right = 1
-		style.border_width_bottom = 1
-		style.bg_color = Color(0.4, 0.7, 1.0, 0.04)
-		style.border_color = Color(0.4, 0.7, 1.0, 0.5)
+		style.border_width_left = BORDER_WIDTH
+		style.border_width_top = BORDER_WIDTH
+		style.border_width_right = BORDER_WIDTH
+		style.border_width_bottom = BORDER_WIDTH
+		style.bg_color = SELECTED_BG_COLOR
+		style.border_color = SELECTED_BORDER_COLOR
 		panel.add_theme_stylebox_override("panel", style)
 		row = panel
 	else:
@@ -148,12 +160,12 @@ func _create_priority_bar_row(entry: Dictionary, is_selected: bool, min_p: int, 
 	var bar_bg := ColorRect.new()
 	bar_bg.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	bar_bg.size_flags_stretch_ratio = 2.0
-	bar_bg.custom_minimum_size.y = 16
-	bar_bg.color = Color(0.15, 0.15, 0.15, 0.3)
+	bar_bg.custom_minimum_size.y = BAR_BG_HEIGHT
+	bar_bg.color = BAR_BG_COLOR
 
 	var bar := ColorRect.new()
 	bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	bar.custom_minimum_size.y = 12
+	bar.custom_minimum_size.y = BAR_HEIGHT
 	bar.anchor_right = 0.0
 	if range_p > 0:
 		bar.anchor_right = float(entry.priority - min_p) / range_p
@@ -161,9 +173,9 @@ func _create_priority_bar_row(entry: Dictionary, is_selected: bool, min_p: int, 
 		bar.anchor_right = 1.0
 
 	if is_selected:
-		bar.color = Color(0.4, 0.7, 1.0, 0.9)
+		bar.color = SELECTED_BAR_COLOR
 	else:
-		bar.color = Color(0.3, 0.6, 0.9, 0.5)
+		bar.color = UNSELECTED_BAR_COLOR
 
 	bar_bg.add_child(bar)
 	inner.add_child(bar_bg)
@@ -171,7 +183,7 @@ func _create_priority_bar_row(entry: Dictionary, is_selected: bool, min_p: int, 
 	var prio_label := Label.new()
 	prio_label.text = str(entry.priority)
 	prio_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	prio_label.custom_minimum_size.x = 48
+	prio_label.custom_minimum_size.x = PRIORITY_LABEL_WIDTH
 	inner.add_child(prio_label)
 
 	return row
