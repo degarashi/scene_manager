@@ -18,3 +18,10 @@ const DEFAULT_PLAY_OUT_TIME: float = 1.0
 ## Default debounce delays
 const DEFAULT_DEBOUNCE_DELAY: float = 0.5
 const SHORT_DEBOUNCE_DELAY: float = 0.15
+const MEDIUM_DEBOUNCE_DELAY: float = 0.3
+
+## Default play time export placeholder
+const DEFAULT_PLAY_TIME_EXPORT: float = 0.5
+
+## Unique name suffix start
+const UNIQUE_NAME_SUFFIX_START := 2
