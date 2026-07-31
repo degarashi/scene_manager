@@ -12,6 +12,12 @@ const LOADING_MESSAGES: Array[String] = [
 	"Applying Render Settings",
 	"Placing UI Components"
 ]
+const PROGRESS_MAX := 100.0
+const INCREMENT_MIN := 0.1
+const INCREMENT_MAX := 0.8
+const STUTTER_PROBABILITY := 0.05
+const STUTTER_TIME_MIN := 0.2
+const STUTTER_TIME_MAX := 0.5
 
 # ------------- [Exports] -------------
 ## Parameters for testing adjustment
@@ -54,25 +60,25 @@ func _ready() -> void:
 
 # ------------- [Private Method] -------------
 func _run_fake_progress() -> void:
-	while _current_progress < 100.0:
+	while _current_progress < PROGRESS_MAX:
 		# Calculate progress increment (Adding randomness for realism)
-		var increment: float = randf_range(0.1, 0.8) * loading_speed
+		var increment: float = randf_range(INCREMENT_MIN, INCREMENT_MAX) * loading_speed
 
 		# If random_stutter is ON, occasionally pause progress (Simulating network/IO wait)
-		if random_stutter and randf() < 0.05:
-			var stutter_time: float = randf_range(0.2, 0.5)
+		if random_stutter and randf() < STUTTER_PROBABILITY:
+			var stutter_time: float = randf_range(STUTTER_TIME_MIN, STUTTER_TIME_MAX)
 			await get_tree().create_timer(stutter_time).timeout
 
 		_current_progress += increment
 
 		# UI Update
-		var display_val: int = clampi(int(_current_progress), 0, 100)
+		var display_val: int = clampi(int(_current_progress), 0, int(PROGRESS_MAX))
 		progress_bar.value = display_val
 
 		# Determine array index based on progress (0.0~1.0)
 		# Clamp index to prevent out-of-bounds at 100%
 		var msg_count: int = LOADING_MESSAGES.size()
-		var msg_index: int = clampi(int((display_val / 100.0) * msg_count), 0, msg_count - 1)
+		var msg_index: int = clampi(int((display_val / PROGRESS_MAX) * msg_count), 0, msg_count - 1)
 
 		var message: String = LOADING_MESSAGES[msg_index]
 		loading_info.text = "%s... (%d%%)" % [message, display_val]

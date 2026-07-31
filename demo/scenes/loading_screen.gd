@@ -1,6 +1,8 @@
 extends Control
 
 const _AF = preload("uid://dlgh4u64a7qxk")
+const DELAY_AFTER_LOAD := 0.3
+const PROGRESS_MAX := 100
 
 ## UI References
 @onready var _move_to_next_scene_button: Button = %MoveToNextSceneButton
@@ -47,10 +49,10 @@ func _on_load_finished() -> void:
 	SceneManager.instantiate_async_result()
 
 	# Add a slight delay so the loading screen doesn't disappear too abruptly (optional)
-	await get_tree().create_timer(0.3).timeout
+	await get_tree().create_timer(DELAY_AFTER_LOAD).timeout
 
 	# Set progress bar to 100% and show the button to proceed
-	_progress_bar.value = 100
+	_progress_bar.value = PROGRESS_MAX
 	_move_to_next_scene_button.visible = true
 	_move_to_next_scene_button.grab_focus()
 

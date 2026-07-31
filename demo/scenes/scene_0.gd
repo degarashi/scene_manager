@@ -2,6 +2,9 @@ extends "./scene_base.gd"
 
 # implements IFadeInNotify, IFadeOutNotify
 
+const SLIDE_TRANSITION_TIME := 0.6
+const FADE_TRANSITION_TIME := 1.0
+
 
 # --- INTERFACE LIST (AUTO-GENERATED) ---
 static func implements_list() -> Array[Script]:
@@ -65,15 +68,15 @@ func _on_load_additional_button_button_up() -> void:
 func _on_slide_transition_button_button_up() -> void:
 	var opts := SceneLoadOptions.new()
 	opts.transition_id = Scenes.Id.SLIDE_TRANSITIONER
-	opts.play_out_time = 0.6
-	opts.play_in_time = 0.6
+	opts.play_out_time = SLIDE_TRANSITION_TIME
+	opts.play_in_time = SLIDE_TRANSITION_TIME
 	SceneManager.switch_to_scene(Scenes.Id.SCENE_1, true, opts)
 
 
 func _on_fade_transition_button_button_up() -> void:
 	var opts := SceneLoadOptions.new()
-	opts.play_out_time = 1.0
-	opts.play_in_time = 1.0
+	opts.play_out_time = FADE_TRANSITION_TIME
+	opts.play_in_time = FADE_TRANSITION_TIME
 	SceneManager.switch_to_scene(Scenes.Id.SCENE_1, true, opts)
 
 # --- INTERFACE IMPLEMENTER (AUTO-GENERATED) ---
