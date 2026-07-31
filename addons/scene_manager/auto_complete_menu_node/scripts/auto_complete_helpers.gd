@@ -5,6 +5,14 @@ extends Object
 const AUTO_DIRECTION_STRINGS: Array[String] = ["NORTH", "EAST", "SOUTH", "WEST"]
 static var _log := DLoggerClass.new("Scene Manager")
 
+## Fuzzy match scoring weights
+const EMPTY_QUERY_SCORE := 1.0
+const BASE_CHAR_SCORE := 10.0
+const START_MATCH_BONUS := 15.0
+const CONTINUOUS_MULTIPLIER := 5.0
+const WORD_BOUNDARY_BONUS := 12.0
+const GAP_PENALTY := 1.5
+
 
 # ------------- [Public Static Method] -------------
 ## Subtracts a [param sub_rect] from a [param base_rect]
@@ -89,7 +97,7 @@ static func debug_collection(
 ## - "indices": Array[int] (indices of matched characters for highlighting)
 static func fuzzy_match(query: String, target: String, case_sensitive: bool = false) -> Variant:
 	if query.is_empty():
-		return {"matched": true, "score": 1.0, "indices": []}
+		return {"matched": true, "score": EMPTY_QUERY_SCORE, "indices": []}
 
 	var q := query if case_sensitive else query.to_lower()
 	var t := target if case_sensitive else target.to_lower()
@@ -107,16 +115,16 @@ static func fuzzy_match(query: String, target: String, case_sensitive: bool = fa
 			indices.append(t_idx)
 
 			# --- Scoring Logic ---
-			var char_score := 10.0
+			var char_score := BASE_CHAR_SCORE
 
 			# Bonus for starting match
 			if t_idx == 0:
-				char_score += 15.0
+				char_score += START_MATCH_BONUS
 
 			# Bonus for continuous matching
 			if last_match_idx != -1 and t_idx == last_match_idx + 1:
 				continuous_count += 1
-				char_score += 5.0 * continuous_count
+				char_score += CONTINUOUS_MULTIPLIER * continuous_count
 			else:
 				continuous_count = 0
 
@@ -126,15 +134,15 @@ static func fuzzy_match(query: String, target: String, case_sensitive: bool = fa
 				var curr_char := target[t_idx]
 				# snake_case boundary
 				if prev_char == "_":
-					char_score += 12.0
+					char_score += WORD_BOUNDARY_BONUS
 				# PascalCase/camelCase boundary
 				elif prev_char.to_lower() == prev_char and curr_char.to_upper() == curr_char:
-					char_score += 12.0
+					char_score += WORD_BOUNDARY_BONUS
 
 			# Penalty for gaps
 			if last_match_idx != -1:
 				var gap := t_idx - last_match_idx - 1
-				char_score -= gap * 1.5
+				char_score -= gap * GAP_PENALTY
 
 			score += char_score
 			last_match_idx = t_idx
