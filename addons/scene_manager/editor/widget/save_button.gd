@@ -1,6 +1,14 @@
 @tool
 extends Button
 
+# ------------- [Constants] -------------
+const BORDER_WIDTH := 1
+const CORNER_RADIUS := 3
+const DIRTY_BG_COLOR := Color(0.2, 0.5, 1.0, 0.2)
+const DIRTY_BORDER_COLOR := Color(0.2, 0.5, 1.0, 0.5)
+const AUTO_SAVE_BG_COLOR := Color(0.0, 0.7, 0.3, 0.15)
+const AUTO_SAVE_BORDER_COLOR := Color(0.0, 0.7, 0.3, 0.5)
+
 # ------------- [Exports] -------------
 @export var _ebus_editor: SMgrEbusEditor
 
@@ -16,28 +24,28 @@ func _ready() -> void:
 	_ps.on_auto_save_changed.connect(_adapter_func)
 
 	_dirty_style = StyleBoxFlat.new()
-	_dirty_style.bg_color = Color(0.2, 0.5, 1.0, 0.2)
-	_dirty_style.border_color = Color(0.2, 0.5, 1.0, 0.5)
-	_dirty_style.border_width_left = 1
-	_dirty_style.border_width_top = 1
-	_dirty_style.border_width_right = 1
-	_dirty_style.border_width_bottom = 1
-	_dirty_style.corner_radius_top_left = 3
-	_dirty_style.corner_radius_top_right = 3
-	_dirty_style.corner_radius_bottom_right = 3
-	_dirty_style.corner_radius_bottom_left = 3
+	_dirty_style.bg_color = DIRTY_BG_COLOR
+	_dirty_style.border_color = DIRTY_BORDER_COLOR
+	_dirty_style.border_width_left = BORDER_WIDTH
+	_dirty_style.border_width_top = BORDER_WIDTH
+	_dirty_style.border_width_right = BORDER_WIDTH
+	_dirty_style.border_width_bottom = BORDER_WIDTH
+	_dirty_style.corner_radius_top_left = CORNER_RADIUS
+	_dirty_style.corner_radius_top_right = CORNER_RADIUS
+	_dirty_style.corner_radius_bottom_right = CORNER_RADIUS
+	_dirty_style.corner_radius_bottom_left = CORNER_RADIUS
 
 	_auto_save_style = StyleBoxFlat.new()
-	_auto_save_style.bg_color = Color(0.0, 0.7, 0.3, 0.15)
-	_auto_save_style.border_color = Color(0.0, 0.7, 0.3, 0.5)
-	_auto_save_style.border_width_left = 1
-	_auto_save_style.border_width_top = 1
-	_auto_save_style.border_width_right = 1
-	_auto_save_style.border_width_bottom = 1
-	_auto_save_style.corner_radius_top_left = 3
-	_auto_save_style.corner_radius_top_right = 3
-	_auto_save_style.corner_radius_bottom_right = 3
-	_auto_save_style.corner_radius_bottom_left = 3
+	_auto_save_style.bg_color = AUTO_SAVE_BG_COLOR
+	_auto_save_style.border_color = AUTO_SAVE_BORDER_COLOR
+	_auto_save_style.border_width_left = BORDER_WIDTH
+	_auto_save_style.border_width_top = BORDER_WIDTH
+	_auto_save_style.border_width_right = BORDER_WIDTH
+	_auto_save_style.border_width_bottom = BORDER_WIDTH
+	_auto_save_style.corner_radius_top_left = CORNER_RADIUS
+	_auto_save_style.corner_radius_top_right = CORNER_RADIUS
+	_auto_save_style.corner_radius_bottom_right = CORNER_RADIUS
+	_auto_save_style.corner_radius_bottom_left = CORNER_RADIUS
 
 	_update_state.call_deferred()
 
