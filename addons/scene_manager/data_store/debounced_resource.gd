@@ -8,19 +8,20 @@ signal data_changed_debounced
 # ------------- [Constants] -------------
 const _C = preload("uid://c3vvdktou45u")  # scene_manager_constants.gd
 const _AF = preload("uid://dlgh4u64a7qxk")  # aux_func.gd
+const DEFAULT_DEBOUNCE_TIME: float = 0.3
 
 # ------------- [Private Variable] -------------
 ## Internal debouncer instance
 var _debouncer: DebouncerRC
 
 ## The debounce delay time in seconds
-var _debounce_time: float = _C.DEFAULT_DEBOUNCE_DELAY
+var _debounce_time: float = DEFAULT_DEBOUNCE_TIME
 
 
 # ------------- [Private Method] -------------
 ## Initializes the debouncer and starts monitoring change notifications.
 ## Expected to be called in the _init method of inherited classes.
-func _init_debouncer(p_delay: float = _C.DEFAULT_DEBOUNCE_DELAY) -> void:
+func _init_debouncer(p_delay: float = DEFAULT_DEBOUNCE_TIME) -> void:
 	_debounce_time = p_delay
 
 	if _debouncer == null:
