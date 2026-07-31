@@ -4,13 +4,15 @@
 class_name Debouncer
 extends Node
 
+const _C = preload("uid://c3vvdktou45u")  # scene_manager_constants.gd
+
 # ------------- [Signal] -------------
 ## Emitted when the debounce delay has successfully completed.
 signal timeout
 
 # ------------- [Exports] -------------
 ## The delay time in seconds.
-@export var delay: float = 0.5
+@export var delay: float = _C.DEFAULT_DEBOUNCE_DELAY
 ## If true, the timer only fires once (standard debounce behavior).
 @export var one_shot: bool = true
 
@@ -19,7 +21,7 @@ var _timer: Timer
 
 
 # ------------- [Callbacks] -------------
-func _init(p_delay: float = 0.5, p_one_shot: bool = true) -> void:
+func _init(p_delay: float = _C.DEFAULT_DEBOUNCE_DELAY, p_one_shot: bool = true) -> void:
 	delay = p_delay
 	one_shot = p_one_shot
 

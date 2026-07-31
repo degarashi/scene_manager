@@ -4,13 +4,15 @@
 class_name DebouncerRC
 extends RefCounted
 
+const _C = preload("uid://c3vvdktou45u")  # scene_manager_constants.gd
+
 # ------------- [Signal] -------------
 ## Emitted when the debounce _delay has successfully completed.
 signal timeout
 
 # ------------- [Private Variable] -------------
 ## The _delay time in seconds.
-var _delay: float = 0.5
+var _delay: float = _C.DEFAULT_DEBOUNCE_DELAY
 
 ## If true, the signal only fires once per call.
 ## If false, it repeats every _delay seconds until cancelled or restarted.
@@ -25,7 +27,7 @@ const _MAX_ITERATIONS := 10000
 
 
 # ------------- [Callbacks] -------------
-func _init(p_delay: float = 0.5, p_one_shot: bool = true) -> void:
+func _init(p_delay: float = _C.DEFAULT_DEBOUNCE_DELAY, p_one_shot: bool = true) -> void:
 	_delay = p_delay
 	_one_shot = p_one_shot
 
