@@ -239,7 +239,7 @@ func _on_scene_name_edit_focus_entered() -> void:
 
 
 func _ready() -> void:
-	_name_debouncer = Debouncer.new(0.3)
+	_name_debouncer = Debouncer.new(_C.MEDIUM_DEBOUNCE_DELAY)
 	add_child(_name_debouncer)
 	_name_debouncer.timeout.connect(_on_name_debounce_timeout)
 
