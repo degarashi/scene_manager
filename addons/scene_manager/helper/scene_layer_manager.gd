@@ -99,7 +99,7 @@ func get_unique_layer_name(base_name: String) -> String:
 	)
 
 	# Find a unique name by incrementing suffix
-	var suffix := 2
+	var suffix := _C.UNIQUE_NAME_SUFFIX_START
 	var new_name := base_name + str(suffix)
 	while existing_names.has(new_name):
 		suffix += 1
