@@ -12,7 +12,6 @@ const LOADING_MESSAGES: Array[String] = [
 	"Applying Render Settings",
 	"Placing UI Components"
 ]
-const PROGRESS_MAX := 100.0
 const INCREMENT_MIN := 0.1
 const INCREMENT_MAX := 0.8
 const STUTTER_PROBABILITY := 0.05
