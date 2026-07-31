@@ -48,7 +48,7 @@ func activate(category_id: int) -> void:
 			_activate()
 
 	# Force update on the first call; subsequent updates are handled via EventBus notifications.
-	_ebus_editor.on_data_changed.connect(_on_data_changed)
+	_AF.connect_if_not_connected(_ebus_editor.on_data_changed, _on_data_changed)
 	_refresh_ui()
 
 
