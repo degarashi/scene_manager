@@ -100,7 +100,7 @@ func _setup_filesystem_monitoring() -> void:
 	# We schedule a timer longer than that to ensure the debounced
 	# _on_data_changed is also suppressed — otherwise it would re-raise
 	# the dirty flag after _initial_load becomes false.
-	Engine.get_main_loop().create_timer(1.0).timeout.connect(
+	Engine.get_main_loop().create_timer(_C.INITIAL_LOAD_DELAY).timeout.connect(
 		_on_initial_load_complete
 	)
 

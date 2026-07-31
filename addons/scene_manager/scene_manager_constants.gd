@@ -25,3 +25,6 @@ const DEFAULT_PLAY_TIME_EXPORT: float = 0.5
 
 ## Unique name suffix start
 const UNIQUE_NAME_SUFFIX_START := 2
+
+## Initial load delay
+const INITIAL_LOAD_DELAY: float = 1.0
