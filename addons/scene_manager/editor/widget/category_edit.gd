@@ -33,7 +33,7 @@ var _priority_debouncer: Debouncer
 func _ready() -> void:
 	_ebus_editor.on_category_selected.connect(_on_category_selected)
 
-	_priority_debouncer = Debouncer.new(_C.SHORT_DEBOUNCE_DELAY)
+	_priority_debouncer = Debouncer.new(_C.MEDIUM_DEBOUNCE_DELAY)
 	add_child(_priority_debouncer)
 	_priority_debouncer.timeout.connect(_build_priority_map)
 
