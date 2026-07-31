@@ -60,6 +60,9 @@ var _pending_drop_files: Array[String] = []
 
 var _selected_scene_id: int = ResourceUID.INVALID_ID
 
+# --- Preview ---
+var _preview_generation: int = 0  # Incremented on each preview request to detect stale awaits
+
 # ------------- [Callbacks] -------------
 
 func _ebus_get_scene_enums_as_string(recv: Array[String]) -> void:
@@ -256,6 +259,7 @@ func _disconnect_ebus() -> void:
 
 func _on_scene_selected(scene_id: int) -> void:
 	_selected_scene_id = scene_id
+	_preview_generation += 1  # Invalidate any in-progress preview
 	var recv: Array[SMgrDataScene]
 	_ebus_editor.get_scene_info.emit(recv, scene_id)
 	if recv.is_empty():
@@ -337,8 +341,18 @@ func _on_play_transition_button_up() -> void:
 	if instance is ScreenTransitioner:
 		_sub_viewport.add_child(instance)
 		_preview_image.visible = false
+
+		# Use generation counter to detect if scene changed during preview
+		var current_gen := _preview_generation
 		await instance.play_out(1.0)
+		if current_gen != _preview_generation:
+			instance.queue_free()
+			return
 		await instance.play_in(1.0)
+		if current_gen != _preview_generation:
+			instance.queue_free()
+			return
+
 		_preview_image.visible = true
 		instance.queue_free()
 	else:
