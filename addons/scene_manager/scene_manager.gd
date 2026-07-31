@@ -774,6 +774,8 @@ func load_scene_with_transition(
 		return
 	if not _validate_ebus("load_scene_with_transition"):
 		return
+	if _is_transition_blocked("load_scene_with_transition", next_scene):
+		return
 
 	SMgrUtil.get_log().info(
 		"Loading scene with transition: {0} -> {1}",
