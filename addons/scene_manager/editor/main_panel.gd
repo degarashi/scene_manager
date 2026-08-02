@@ -289,7 +289,7 @@ func _on_scene_selected(scene_id: int) -> void:
 
 ## Check if the root node's script (or any base script) has class_name ScreenTransitioner.
 ## This catches scenes where the root node uses a generic engine type but has
-## a ScreenTransitioner subclass script attached (e.g. FadeTransitioner on type="Node").
+## a ScreenTransitioner subclass script attached (e.g. DFadeLayer on type="Node").
 func _root_extends_screen_transitioner(state: SceneState) -> bool:
 	for i in state.get_node_property_count(0):
 		if state.get_node_property_name(0, i) == &"script":
