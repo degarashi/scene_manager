@@ -460,6 +460,14 @@ func test_export_category_enum_with_categories() -> void:
 	assert_str(result).contains("ENEMIES")
 
 
+func test_export_utility_functions_includes_name_to_id_conversion() -> void:
+	## The generated utility functions include a string -> Id conversion.
+	var result: String = _editor.call("_export_utility_functions")
+	assert_str(result).contains("static func get_id_by_name(scene_name: String) -> Id:")
+	assert_str(result).contains("Id.has(sanitized)")
+	assert_str(result).contains("Id.NONE")
+
+
 # ------------- [Duplicate UID Detection] -------------
 
 const DUP_TEST_DIR := "res://.test_dup_uid"

@@ -314,6 +314,17 @@ static func get_scene_path(id: Id) -> String:
 	if id == Id.NONE:
 		return ""
 	return ResourceUID.get_id_path(id)
+
+
+## Returns the Scene ID associated with the given scene name string.
+## The name is matched case-insensitively, with spaces treated as
+## underscores (e.g. "scene 0" -> Id.SCENE_0).
+## Returns Id.NONE if no scene matches the name.
+static func get_id_by_name(scene_name: String) -> Id:
+	var sanitized := scene_name.replace(" ", "_").to_upper()
+	if Id.has(sanitized):
+		return Id[sanitized]
+	return Id.NONE
 """
 
 
