@@ -460,6 +460,69 @@ func test_export_category_enum_with_categories() -> void:
 	assert_str(result).contains("ENEMIES")
 
 
+# ------------- [Duplicate UID Detection] -------------
+
+const DUP_TEST_DIR := "res://.test_dup_uid"
+
+
+func after_test() -> void:
+	_delete_dir_recursive(DUP_TEST_DIR)
+
+
+## Recursively delete a directory
+func _delete_dir_recursive(path: String) -> void:
+	if not DirAccess.dir_exists_absolute(path):
+		return
+	var dir := DirAccess.open(path)
+	if not dir:
+		return
+	dir.list_dir_begin()
+	var name := dir.get_next()
+	while name != "":
+		if name == "." or name == "..":
+			name = dir.get_next()
+			continue
+		var full := path.path_join(name)
+		if dir.current_is_dir():
+			_delete_dir_recursive(full)
+		else:
+			dir.remove(name)
+		name = dir.get_next()
+	dir.list_dir_end()
+	# Remove the now-empty directory from its parent
+	var parent_dir := DirAccess.open(path.get_base_dir())
+	if parent_dir:
+		parent_dir.remove(path.get_file())
+
+
+func test_find_duplicate_uid_files() -> void:
+	## Two .tscn files sharing the same UID are reported as duplicates.
+	DirAccess.make_dir_recursive_absolute(DUP_TEST_DIR)
+	var uid_text := "uid://ckkekibb7wbh2"  # Arbitrary but valid-format UID
+	var file_a := DUP_TEST_DIR.path_join("dup_a.tscn")
+	var file_b := DUP_TEST_DIR.path_join("dup_b.tscn")
+	var fa := FileAccess.open(file_a, FileAccess.WRITE)
+	fa.store_string('[gd_scene format=3 uid="%s"]\n\n[node name="A" type="Node"]\n' % uid_text)
+	fa.close()
+	var fb := FileAccess.open(file_b, FileAccess.WRITE)
+	fb.store_string('[gd_scene format=3 uid="%s"]\n\n[node name="B" type="Node"]\n' % uid_text)
+	fb.close()
+
+	_editor.add_include_path(DUP_TEST_DIR)
+	var duplicates := _editor.find_duplicate_uid_files()
+	assert_int(duplicates.size()).is_equal(1)
+	var paths: Array = duplicates[0]["paths"]
+	assert_int(paths.size()).is_equal(2)
+	assert_bool(paths.has(file_a)).is_true()
+	assert_bool(paths.has(file_b)).is_true()
+
+
+func test_find_duplicate_uid_files_empty_without_includes() -> void:
+	## With no include paths, no duplicates are reported.
+	var duplicates := _editor.find_duplicate_uid_files()
+	assert_int(duplicates.size()).is_equal(0)
+
+
 # ------------- [Cleanup] -------------
 
 func test_cleanup_disconnects_ebus() -> void:

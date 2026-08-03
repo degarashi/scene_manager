@@ -146,9 +146,16 @@ func _sync_smgr_data_from_entries(entries: Array[FEWEntry]) -> void:
 				# Auto-assign category based on include path mapping
 				_auto_assign_category_to_scene(new_scene)
 		else:
-			# Existing file — update path if the file was moved
+			# Existing file — update path if the file was moved.
+			# Only rebind when the current path no longer carries the UID:
+			# with duplicate UIDs, ResourceUID.get_id_path() may point at a
+			# different file sharing the same UID (do not silently swap).
 			var actual_path := ResourceUID.get_id_path(entry.uid)
-			if not actual_path.is_empty() and existing.path != actual_path:
+			if (
+				not actual_path.is_empty()
+				and existing.path != actual_path
+				and SMgrDataScene.get_uid_from_path(existing.path) != entry.uid
+			):
 				_log.info(
 					"  Path updated: %s -> %s" % [existing.path, actual_path]
 				)
@@ -208,6 +215,58 @@ func _auto_assign_category_to_scene(scene: SMgrDataScene) -> void:
 				% [scene.name, best_match_path]
 			)
 		)
+
+
+## Collects .tscn paths under a directory (recursive) or a single file,
+## grouped by their resource UID, into uid_map.
+func _collect_tscn_paths(path: String, uid_map: Dictionary[int, Array]) -> void:
+	if DirAccess.dir_exists_absolute(path):
+		var dir := DirAccess.open(path)
+		if not dir:
+			return
+		dir.list_dir_begin()
+		var file_name := dir.get_next()
+		while file_name != "":
+			var full_path := path.path_join(file_name)
+			if dir.current_is_dir():
+				if not file_name.begins_with("."):
+					_collect_tscn_paths(full_path, uid_map)
+			elif file_name.ends_with(".tscn"):
+				var uid := _get_tscn_uid(full_path)
+				if uid != ResourceUID.INVALID_ID:
+					if not uid_map.has(uid):
+						uid_map[uid] = []
+					if not uid_map[uid].has(full_path):
+						uid_map[uid].append(full_path)
+			file_name = dir.get_next()
+		dir.list_dir_end()
+	elif FileAccess.file_exists(path) and path.ends_with(".tscn"):
+		var uid := _get_tscn_uid(path)
+		if uid != ResourceUID.INVALID_ID:
+			uid_map[uid] = [path]
+
+
+## Resolves the UID of a .tscn file. Uses the engine UID cache first;
+## falls back to parsing the uid="uid://..." header attribute so files
+## that are not (yet) registered in the cache are still detected.
+func _get_tscn_uid(path: String) -> int:
+	var uid := ResourceLoader.get_resource_uid(path)
+	if uid != ResourceUID.INVALID_ID:
+		return uid
+	var f := FileAccess.open(path, FileAccess.READ)
+	if not f:
+		return ResourceUID.INVALID_ID
+	var header := f.get_line()
+	f.close()
+	var uid_pos := header.find("uid=")
+	if uid_pos == -1:
+		return ResourceUID.INVALID_ID
+	var start_quote := header.find("\"", uid_pos + 4)
+	var end_quote := header.find("\"", start_quote + 1)
+	if start_quote == -1 or end_quote == -1:
+		return ResourceUID.INVALID_ID
+	var uid_text := header.substr(start_quote + 1, end_quote - start_quote - 1)
+	return ResourceUID.text_to_id(uid_text)
 
 
 func _export_scene_enum_string() -> String:
@@ -530,6 +589,20 @@ func add_include_path(inc_path: String) -> bool:
 
 	_log.info("Successfully added path '%s'." % inc_path)
 	return true
+
+
+## Scans all include paths for .tscn files that share the same UID.
+## @return Array of {"uid": int, "paths": Array[String]} for each duplicated UID
+func find_duplicate_uid_files() -> Array[Dictionary]:
+	var uid_map: Dictionary[int, Array] = {}
+	for inc_path in _data.get_include_list():
+		_collect_tscn_paths(inc_path, uid_map)
+
+	var duplicates: Array[Dictionary] = []
+	for uid in uid_map:
+		if uid_map[uid].size() > 1:
+			duplicates.append({"uid": uid, "paths": uid_map[uid]})
+	return duplicates
 
 
 ## Rescans registered include paths via the FileEnumWatcher.

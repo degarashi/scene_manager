@@ -59,18 +59,23 @@ static func initialize(sc_name: String, target_path: String, target_uid: int) ->
 	var final_uid: int = ResourceUID.INVALID_ID
 
 	# Resolve information (Validation Priority)
-	# Prioritize resolution by UID (resilient to file movement)
-	var path_by_uid := get_path_from_uid(target_uid)
-	if not path_by_uid.is_empty():
-		final_path = path_by_uid
+	# Prefer the entry's own path when the file still exists with the expected UID.
+	# With duplicate UIDs, ResourceUID.get_id_path() may silently point at a
+	# DIFFERENT file sharing the same UID, rebinding this scene to the wrong path.
+	var uid_from_path := get_uid_from_path(target_path)
+	if uid_from_path == target_uid:
+		final_path = target_path
 		final_uid = target_uid
 
-	# Search by path only if not resolved by UID
+	# File missing (moved) or UID mismatch: fall back to UID resolution
 	else:
-		var id_from_path := get_uid_from_path(target_path)
-		if id_from_path != ResourceUID.INVALID_ID:
+		var path_by_uid := get_path_from_uid(target_uid)
+		if not path_by_uid.is_empty():
+			final_path = path_by_uid
+			final_uid = target_uid
+		elif uid_from_path != ResourceUID.INVALID_ID:
 			final_path = target_path
-			final_uid = id_from_path
+			final_uid = uid_from_path
 		elif not target_path.is_empty():
 			if not FileAccess.file_exists(target_path):
 				_log.error("Scene Manager: Entry is broken (File not found): {0}", [target_path])

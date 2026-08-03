@@ -63,6 +63,7 @@ var _selected_scene_id: int = ResourceUID.INVALID_ID
 
 # --- Preview ---
 var _preview_generation: int = 0  # Incremented on each preview request to detect stale awaits
+var _reported_duplicate_sig: String = ""  # Signature of the last reported duplicate-UID set
 
 # ------------- [Callbacks] -------------
 
@@ -509,6 +510,49 @@ func _on_data_changed() -> void:
 	_ebus_editor.on_data_changed.emit()
 
 
+## Detects .tscn files sharing the same UID across include paths and warns.
+## Logs an error per duplicate and shows the notification dialog once per
+## distinct duplicate set (tracked via _reported_duplicate_sig).
+func _check_duplicate_uids() -> void:
+	if not _manager_data:
+		return
+	var duplicates := _manager_data.find_duplicate_uid_files()
+	if duplicates.is_empty():
+		_reported_duplicate_sig = ""
+		return
+
+	# Signature so we only notify once per distinct duplicate set
+	var parts: Array[String] = []
+	for dup in duplicates:
+		var paths: Array = dup["paths"]
+		paths.sort()
+		parts.append("%d:%s" % [dup["uid"], ",".join(paths)])
+	parts.sort()
+	var sig := "\n".join(parts)
+	if sig == _reported_duplicate_sig:
+		return
+	_reported_duplicate_sig = sig
+
+	for dup in duplicates:
+		_log.error(
+			"Duplicate scene UID {0} is used by multiple files: {1}",
+			[dup["uid"], ", ".join(dup["paths"])]
+		)
+
+	var lines := PackedStringArray(
+		["Multiple .tscn files share the same UID. Only one of them can be registered as a scene."]
+	)
+	for dup in duplicates:
+		lines.append("UID {0}:".format([dup["uid"]]))
+		for p in dup["paths"]:
+			lines.append("  " + p)
+	lines.append(
+		"Fix the UID in one of the files (edit its uid= header or delete its .uid sidecar) and press Refresh."
+	)
+	_notification_dialog.dialog_text = "\n".join(lines)
+	_notification_dialog.popup_centered()
+
+
 func _reload_data() -> void:
 	_cleanup_manager_data()
 
@@ -546,6 +590,7 @@ func _reload_data() -> void:
 		_manager_data.data_changed_debounced, _on_data_changed
 	)
 	_ebus_editor.on_dirty_flag_changed.emit(false)
+	_check_duplicate_uids()
 
 
 func _init_logger(enable: bool) -> void:
