@@ -29,6 +29,12 @@ var _watcher: FileEnumWatcher
 ## registering scenes that already exist on disk is not a user-visible edit.
 var _initial_load := true
 
+## Scan result counters, reset at the start of every entries sync.
+## Read via sync_with_filesystem()'s return value.
+var _last_scan_added := 0
+var _last_scan_removed := 0
+var _last_scan_updated := 0
+
 var _dirty_flag: bool = false:
 	set(value):
 		if _dirty_flag != value:
@@ -128,6 +134,11 @@ func _cleanup_filesystem_monitoring() -> void:
 func _sync_smgr_data_from_entries(entries: Array[FEWEntry]) -> void:
 	_log.debug("Syncing SMgrData from watcher entries...")
 
+	# Reset scan result counters for this sync pass
+	_last_scan_added = 0
+	_last_scan_removed = 0
+	_last_scan_updated = 0
+
 	var found_uids: Array[int] = []
 
 	for entry in entries:
@@ -142,6 +153,7 @@ func _sync_smgr_data_from_entries(entries: Array[FEWEntry]) -> void:
 			if new_scene:
 				_data.set_scene_data(entry.uid, new_scene)
 				_log.debug("  Registered: %s (%d)" % [entry.name, entry.uid])
+				_last_scan_added += 1
 
 				# Auto-assign category based on include path mapping
 				_auto_assign_category_to_scene(new_scene)
@@ -160,6 +172,7 @@ func _sync_smgr_data_from_entries(entries: Array[FEWEntry]) -> void:
 					"  Path updated: %s -> %s" % [existing.path, actual_path]
 				)
 				existing.path = actual_path
+				_last_scan_updated += 1
 
 	# Remove scenes that are managed but no longer present
 	var uids_to_remove: Array[int] = []
@@ -181,6 +194,7 @@ func _sync_smgr_data_from_entries(entries: Array[FEWEntry]) -> void:
 			)
 		)
 		_data.remove_scene_data(uid)
+		_last_scan_removed += 1
 
 	_log.debug("Sync complete.")
 
@@ -617,9 +631,16 @@ func find_duplicate_uid_files() -> Array[Dictionary]:
 
 
 ## Rescans registered include paths via the FileEnumWatcher.
-func sync_with_filesystem() -> void:
+## @return Dictionary with the counts of scenes added, removed, and updated
+##         by this scan: {"added": int, "removed": int, "updated": int}
+func sync_with_filesystem() -> Dictionary:
 	if _watcher:
 		_watcher.sync()
+	return {
+		"added": _last_scan_added,
+		"removed": _last_scan_removed,
+		"updated": _last_scan_updated,
+	}
 
 
 func cleanup(ebus: SMgrEbusEditor) -> void:

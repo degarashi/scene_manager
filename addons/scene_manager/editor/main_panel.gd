@@ -673,8 +673,32 @@ func _on_rescan_button_button_up() -> void:
 	if fs and not fs.is_scanning():
 		fs.scan()
 	if _manager_data:
-		_manager_data.sync_with_filesystem()
+		var stats := _manager_data.sync_with_filesystem()
+		_show_rescan_result_toast(stats)
 		_check_duplicate_uids()
+
+
+## Shows an editor toast reporting the result of a manual rescan.
+func _show_rescan_result_toast(stats: Dictionary) -> void:
+	var toaster := EditorInterface.get_editor_toaster()
+	if not toaster:
+		return
+
+	var parts: PackedStringArray = []
+	var added: int = stats.get("added", 0)
+	var removed: int = stats.get("removed", 0)
+	var updated: int = stats.get("updated", 0)
+	if added > 0:
+		parts.append("%d added" % added)
+	if removed > 0:
+		parts.append("%d removed" % removed)
+	if updated > 0:
+		parts.append("%d moved" % updated)
+
+	var message := "Rescan: no changes"
+	if not parts.is_empty():
+		message = "Rescan: " + ", ".join(parts)
+	toaster.push_toast(message)
 
 
 func _on_save_delay_timer_timeout() -> void:

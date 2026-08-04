@@ -531,6 +531,36 @@ func test_find_duplicate_uid_files_empty_without_includes() -> void:
 	assert_int(duplicates.size()).is_equal(0)
 
 
+func test_sync_with_filesystem_returns_zero_stats_without_watcher() -> void:
+	## Without a file watcher, sync_with_filesystem() reports no changes.
+	var stats := _editor.sync_with_filesystem()
+	assert_int(stats.size()).is_equal(3)
+	assert_int(stats["added"]).is_equal(0)
+	assert_int(stats["removed"]).is_equal(0)
+	assert_int(stats["updated"]).is_equal(0)
+
+
+func test_entries_sync_tracks_added_and_removed_scenes() -> void:
+	## A sync with a new entry increments "added"; a sync missing a managed
+	## scene increments "removed".
+	_editor.add_include_path("res://demo/scenes/")
+
+	var entry := FEWEntry.from_path(
+		"res://demo/scenes/scene_0.tscn", "SCENE_0"
+	)
+	assert_that(entry).is_not_null()
+	_editor._sync_smgr_data_from_entries([entry])
+	var stats := _editor.sync_with_filesystem()
+	assert_int(stats["added"]).is_equal(1)
+	assert_int(stats["removed"]).is_equal(0)
+
+	# The next sync no longer contains the file: the managed scene is removed
+	_editor._sync_smgr_data_from_entries([])
+	stats = _editor.sync_with_filesystem()
+	assert_int(stats["added"]).is_equal(0)
+	assert_int(stats["removed"]).is_equal(1)
+
+
 # ------------- [Cleanup] -------------
 
 func test_cleanup_disconnects_ebus() -> void:
