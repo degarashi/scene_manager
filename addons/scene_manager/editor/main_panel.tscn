@@ -227,6 +227,14 @@ layout_mode = 2
 layout_mode = 2
 size_flags_horizontal = 3
 
+[node name="RescanButton" type="Button" parent="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer/SaveRefreshContainer" unique_id=162685790]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "Scans include paths for new, moved, or deleted .tscn files and updates the scene registry."
+text = "Rescan"
+icon = ExtResource("5_2r30m")
+
 [node name="RefreshButton" type="Button" parent="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer/SaveRefreshContainer" unique_id=786078650]
 unique_name_in_owner = true
 layout_mode = 2
@@ -294,6 +302,7 @@ size = Vector2i(300, 100)
 [connection signal="button_up" from="MainContainer/VSplitContainer/MiscTab/Include/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer/FileDialogButton" to="." method="_on_file_dialog_button_button_up"]
 [connection signal="text_changed" from="MainContainer/VSplitContainer/MiscTab/Include/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer/AddressEdit" to="." method="_on_address_text_changed"]
 [connection signal="button_up" from="MainContainer/VSplitContainer/MiscTab/Include/IncludeAddPanel/IncludeInteractiveSectionContainer/AddIncludeContainer/DialogAddIncludeContainer2/AddIncludeButton" to="." method="_on_add_include_button_button_up"]
+[connection signal="button_up" from="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer/SaveRefreshContainer/RescanButton" to="." method="_on_rescan_button_button_up"]
 [connection signal="button_up" from="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer/SaveRefreshContainer/RefreshButton" to="." method="_on_refresh_button_up"]
 [connection signal="button_up" from="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer/SaveRefreshContainer/SaveContainer/SaveButton" to="." method="_on_save_button_button_up"]
 [connection signal="button_up" from="MainContainer/InteractiveSectionContainer/MarginRefreshSaveContainer/RefreshSaveContainer/AutoSaveRefreshContainer/CheckInvalidIdsButton" to="." method="_on_check_invalid_ids_button_button_up"]

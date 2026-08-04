@@ -665,6 +665,18 @@ func _on_refresh_button_up() -> void:
 	_refresh_ui()
 
 
+## Manually rescans the include paths for new, moved, or deleted .tscn files
+## and syncs the scene registry in place (preserving unsaved edits).
+func _on_rescan_button_button_up() -> void:
+	# Trigger an editor filesystem scan first so newly added files get UIDs.
+	var fs := EditorInterface.get_resource_filesystem()
+	if fs and not fs.is_scanning():
+		fs.scan()
+	if _manager_data:
+		_manager_data.sync_with_filesystem()
+		_check_duplicate_uids()
+
+
 func _on_save_delay_timer_timeout() -> void:
 	_do_save_when_auto()
 
